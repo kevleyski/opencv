@@ -266,6 +266,9 @@ OCV_OPTION(WITH_CUDNN "Include NVIDIA CUDA Deep Neural Network (cuDNN) library s
 OCV_OPTION(WITH_NVCUVID "Include NVidia Video Decoding library support" OFF  # disabled, details: https://github.com/opencv/opencv/issues/14850
   VISIBLE_IF WITH_CUDA
   VERIFY HAVE_NVCUVID)
+OCV_OPTION(WITH_NVCUVENC "Include NVidia Video Encoding library support" OFF
+  VISIBLE_IF WITH_CUDA
+  VERIFY HAVE_NVCUVENC)
 OCV_OPTION(WITH_EIGEN "Include Eigen2/Eigen3 support" (NOT CV_DISABLE_OPTIMIZATION AND NOT CMAKE_CROSSCOMPILING)
   VISIBLE_IF NOT WINRT
   VERIFY HAVE_EIGEN)
@@ -330,6 +333,9 @@ OCV_OPTION(WITH_OPENNI2 "Include OpenNI2 support" OFF
 OCV_OPTION(WITH_PNG "Include PNG support" ON
   VISIBLE_IF TRUE
   VERIFY HAVE_PNG)
+OCV_OPTION(WITH_SPNG "Include SPNG support" OFF
+  VISIBLE_IF TRUE
+  VERIFY HAVE_SPNG)
 OCV_OPTION(WITH_GDCM "Include DICOM support" OFF
   VISIBLE_IF TRUE
   VERIFY HAVE_GDCM)
@@ -1343,6 +1349,16 @@ if(WITH_JPEG OR HAVE_JPEG)
     status("    JPEG:" NO)
   elseif(BUILD_JPEG)
     status("    JPEG:" "build-${JPEG_LIBRARY} (ver ${JPEG_LIB_VERSION})")
+    if(ENABLE_LIBJPEG_TURBO_SIMD)
+      status("      SIMD Support Request:" "YES")
+      if(HAVE_LIBJPEG_TURBO_SIMD)
+        status("      SIMD Support:" "YES")
+      else()
+        status("      SIMD Support:" "NO")
+      endif()
+    else()
+      status("      SIMD Support Request:" "NO")
+    endif()
   else()
     status("    JPEG:" "${JPEG_LIBRARY} (ver ${JPEG_LIB_VERSION})")
   endif()
@@ -1352,8 +1368,12 @@ if(WITH_WEBP OR HAVE_WEBP)
   status("    WEBP:" WEBP_FOUND THEN "${WEBP_LIBRARY} (ver ${WEBP_VERSION})" ELSE "build (ver ${WEBP_VERSION})")
 endif()
 
-if(WITH_PNG OR HAVE_PNG)
-  status("    PNG:"  PNG_FOUND  THEN "${PNG_LIBRARY} (ver ${PNG_VERSION})" ELSE "build (ver ${PNG_VERSION})")
+if(WITH_PNG OR HAVE_PNG OR WITH_SPNG)
+  if(WITH_SPNG)
+    status("    PNG:" "build-${SPNG_LIBRARY} (ver ${SPNG_VERSION})")
+  else()
+    status("    PNG:"  PNG_FOUND  THEN "${PNG_LIBRARY} (ver ${PNG_VERSION})" ELSE "build (ver ${PNG_VERSION})")
+  endif()
 endif()
 
 if(WITH_TIFF OR HAVE_TIFF)
@@ -1644,6 +1664,7 @@ if(WITH_CUDA OR HAVE_CUDA)
     IF HAVE_CUFFT THEN "CUFFT"
     IF HAVE_CUBLAS THEN "CUBLAS"
     IF HAVE_NVCUVID THEN "NVCUVID"
+    IF HAVE_NVCUVENC THEN "NVCUVENC"
     IF CUDA_FAST_MATH THEN "FAST_MATH"
     ELSE "no extra features")
   status("")

@@ -17,26 +17,23 @@
 
 #ifdef HAVE_DIRECTX
 #ifdef HAVE_D3D11
-#pragma comment(lib,"d3d11.lib")
 
 // get rid of generate macro max/min/etc from DX side
 #define D3D11_NO_HELPERS
 #define NOMINMAX
 #include <d3d11.h>
 #include <d3d11_4.h>
-#pragma comment(lib, "dxgi")
 #undef D3D11_NO_HELPERS
 #undef NOMINMAX
 #endif // HAVE_D3D11
 #endif // HAVE_DIRECTX
 
 #ifdef __linux__
+#include <fcntl.h>
+#include <unistd.h>
 #if defined(HAVE_VA) || defined(HAVE_VA_INTEL)
 #include "va/va.h"
 #include "va/va_drm.h"
-
-#include <fcntl.h>
-#include <unistd.h>
 #endif // defined(HAVE_VA) || defined(HAVE_VA_INTEL)
 #endif // __linux__
 

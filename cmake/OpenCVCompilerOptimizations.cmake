@@ -50,6 +50,7 @@ list(APPEND CPU_ALL_OPTIMIZATIONS NEON VFPV3 FP16 NEON_DOTPROD)
 list(APPEND CPU_ALL_OPTIMIZATIONS MSA)
 list(APPEND CPU_ALL_OPTIMIZATIONS VSX VSX3)
 list(APPEND CPU_ALL_OPTIMIZATIONS RVV)
+list(APPEND CPU_ALL_OPTIMIZATIONS LASX)
 list(REMOVE_DUPLICATES CPU_ALL_OPTIMIZATIONS)
 
 ocv_update(CPU_VFPV3_FEATURE_ALIAS "")
@@ -380,6 +381,12 @@ elseif(RISCV)
   set(CPU_DISPATCH "RVV" CACHE STRING "${HELP_CPU_DISPATCH}")
   set(CPU_BASELINE "RVV" CACHE STRING "${HELP_CPU_BASELINE}")
 
+elseif(LOONGARCH64)
+  ocv_update(CPU_LASX_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_lasx.cpp")
+  ocv_update(CPU_KNOWN_OPTIMIZATIONS "LASX")
+  ocv_update(CPU_LASX_FLAGS_ON "-mlasx")
+  set(CPU_BASELINE "LASX" CACHE STRING "${HELP_CPU_BASELINE}")
+
 endif()
 
 # Helper values for cmake-gui
@@ -691,7 +698,7 @@ macro(ocv_compiler_optimization_process_sources SOURCES_VAR_NAME LIBS_VAR_NAME T
           if(fname_LOWER MATCHES "\\.${OPT_LOWER}\\.cpp$")
 #message("${fname} BASELINE-${OPT}")
             set(__opt_found 1)
-            list(APPEND __result "${fname}")
+            list(APPEND __result_${OPT} "${fname}")
             break()
           endif()
         endforeach()
@@ -725,7 +732,7 @@ macro(ocv_compiler_optimization_process_sources SOURCES_VAR_NAME LIBS_VAR_NAME T
     endif()
   endforeach()
 
-  foreach(OPT ${CPU_DISPATCH_FINAL})
+  foreach(OPT ${CPU_BASELINE_FINAL} ${CPU_DISPATCH_FINAL})
     if(__result_${OPT})
 #message("${OPT}: ${__result_${OPT}}")
       if(CMAKE_GENERATOR MATCHES "^Visual"

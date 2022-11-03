@@ -20,13 +20,11 @@
 
 #ifdef HAVE_DIRECTX
 #ifdef HAVE_D3D11
-#pragma comment(lib,"d3d11.lib")
 
 // get rid of generate macro max/min/etc from DX side
 #define D3D11_NO_HELPERS
 #define NOMINMAX
 #include <d3d11.h>
-#pragma comment(lib, "dxgi")
 #undef NOMINMAX
 #undef D3D11_NO_HELPERS
 #endif // HAVE_D3D11
@@ -499,11 +497,11 @@ int main(int argc, char *argv[]) {
         std::tie(dx11_dev, dx11_ctx) = create_device_with_ctx(intel_adapter.get());
         gpu_accel_device = cv::util::make_optional(
                             cv::gapi::wip::onevpl::create_dx11_device(
-                                                        reinterpret_cast<void*>(dx11_dev.get()),
+                                                        reinterpret_cast<void*>(dx11_dev.release()),
                                                         "GPU"));
         gpu_accel_ctx = cv::util::make_optional(
                             cv::gapi::wip::onevpl::create_dx11_context(
-                                                        reinterpret_cast<void*>(dx11_ctx.get())));
+                                                        reinterpret_cast<void*>(dx11_ctx.release())));
 #endif // HAVE_D3D11
 #endif // HAVE_DIRECTX
 #ifdef __linux__
