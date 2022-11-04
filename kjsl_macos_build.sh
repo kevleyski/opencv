@@ -1,12 +1,14 @@
 #!/bin/bash
 
 BUILD=cmake-build-debug
-BUILD=build
 
 mkdir -p $BUILD
 cd $BUILD || exit 1
 
-cmake -D CMAKE_BUILD_TYPE=DEBUG \
+export LDFLAGS="-L/usr/local/opt/libffi/lib"
+export CPPFLAGS="-I/usr/local/opt/libffi/include"
+
+PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH" cmake -D CMAKE_BUILD_TYPE=DEBUG \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
     -D INSTALL_C_EXAMPLES=ON \
     -D INSTALL_PYTHON_EXAMPLES=ON \
