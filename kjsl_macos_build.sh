@@ -32,6 +32,8 @@ PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig:/usr/local/lib/pkgconfig:/u
     -D OPENCV_GENERATE_PKGCONFIG=ON \
     -D WITH_FFMPEG=ON \
     -D WITH_OPENCL=ON \
+    -D BUILD_ZLIB=ON \
+    -D BUILD_OPENEXR=ON \
     -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
     -D BUILD_EXAMPLES=ON ..
 
