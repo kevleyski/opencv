@@ -22,8 +22,8 @@ export CPPFLAGS="-I/usr/local/opt/libffi/include"
 
 brew install openh264
 
-mkdir -p build
-cd build || exit 1
+mkdir -p cmake-build-debug
+cd cmake-build-debug || exit 1
 
 PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH" cmake -D CMAKE_BUILD_TYPE=DEBUG \
     -D CMAKE_INSTALL_PREFIX=/usr/local \
