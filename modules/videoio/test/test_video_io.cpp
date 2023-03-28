@@ -215,8 +215,24 @@ public:
             throw SkipTestException(cv::String("Backend ") +  cv::videoio_registry::getBackendName(apiPref) +
                     cv::String(" can't open the video: ")  + video_file);
 
+        int frame_count = (int)cap.get(CAP_PROP_FRAME_COUNT);
+
+        // HACK: Video consists of 125 frames, but cv::VideoCapture with FFmpeg reports only 122 frames for mpg video.
+        // mpg file reports 5.08 sec * 24 fps => property returns 122 frames,but actual number of frames returned is 125
+        // HACK: CAP_PROP_FRAME_COUNT is not supported for vmw + MSMF. Just force check for all 125 frames
+        if (ext == "mpg")
+            EXPECT_GT(frame_count, 121);
+        else if ((ext == "wmv") && (apiPref == CAP_MSMF))
+            frame_count = 125;
+        else
+            EXPECT_EQ(frame_count, 125);
         Mat img;
-        for(int i = 0; i < 10; i++)
+
+        // HACK: FFmpeg reports picture_pts = AV_NOPTS_VALUE_ for the last frame for AVI container by some reason
+        if ((ext == "avi") && (apiPref == CAP_FFMPEG))
+            frame_count--;
+
+        for (int i = 0; i < frame_count; i++)
         {
             double timestamp = 0;
             ASSERT_NO_THROW(cap >> img);
@@ -372,6 +388,7 @@ static Ext_Fourcc_PSNR synthetic_params[] = {
     {"wmv", "WMV3", 30.f, CAP_MSMF},
     {"wmv", "WVC1", 30.f, CAP_MSMF},
     {"mov", "H264", 30.f, CAP_MSMF},
+ // {"mov", "HEVC", 30.f, CAP_MSMF},  // excluded due to CI issue: https://github.com/opencv/opencv/pull/23172
 #endif
 
 #ifdef HAVE_AVFOUNDATION
@@ -391,6 +408,8 @@ static Ext_Fourcc_PSNR synthetic_params[] = {
     {"mkv", "XVID", 30.f, CAP_FFMPEG},
     {"mkv", "MPEG", 30.f, CAP_FFMPEG},
     {"mkv", "MJPG", 30.f, CAP_FFMPEG},
+    {"avi", "FFV1", 30.f, CAP_FFMPEG},
+    {"mkv", "FFV1", 30.f, CAP_FFMPEG},
 
     {"avi", "MPEG", 28.f, CAP_GSTREAMER},
     {"avi", "MJPG", 30.f, CAP_GSTREAMER},
@@ -771,8 +790,8 @@ static const VideoCaptureAccelerationInput hw_filename[] = {
         { "sample_322x242_15frames.yuv420p.libxvid.mp4", 28.0 },
         { "sample_322x242_15frames.yuv420p.mjpeg.mp4", 20.0 },
         { "sample_322x242_15frames.yuv420p.mpeg2video.mp4", 24.0 },  // GSTREAMER on Ubuntu 18.04
-        { "sample_322x242_15frames.yuv420p.libx264.mp4", 24.0 },  // GSTREAMER on Ubuntu 18.04
-        { "sample_322x242_15frames.yuv420p.libx265.mp4", 30.0 },
+        { "sample_322x242_15frames.yuv420p.libx264.mp4", 20.0 },  // 20 - D3D11 (i7-11800H), 23 - D3D11 on GHA/Windows, GSTREAMER on Ubuntu 18.04
+        { "sample_322x242_15frames.yuv420p.libx265.mp4", 20.0 },  // 20 - D3D11 (i7-11800H), 23 - D3D11 on GHA/Windows
         { "sample_322x242_15frames.yuv420p.libvpx-vp9.mp4", 30.0 },
         { "sample_322x242_15frames.yuv420p.libaom-av1.mp4", 30.0 }
 };
@@ -973,6 +992,7 @@ static Ext_Fourcc_PSNR hw_codecs[] = {
 #ifdef _WIN32
         {"mp4", "MPEG", 29.f, CAP_MSMF},
         {"mp4", "H264", 29.f, CAP_MSMF},
+        {"mp4", "HEVC", 29.f, CAP_MSMF},
 #endif
 };
 

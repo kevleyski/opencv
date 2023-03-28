@@ -47,8 +47,10 @@
 
 #define CV_TEST_TAG_DNN_SKIP_ONNX_CONFORMANCE    "dnn_skip_onnx_conformance"
 #define CV_TEST_TAG_DNN_SKIP_PARSER              "dnn_skip_parser"
+#define CV_TEST_TAG_DNN_SKIP_GLOBAL              "dnn_skip_global"
 
 #define CV_TEST_TAG_DNN_SKIP_TIMVX               "dnn_skip_timvx"
+#define CV_TEST_TAG_DNN_SKIP_CANN                "dnn_skip_cann"
 
 #ifdef HAVE_INF_ENGINE
 #if INF_ENGINE_VER_MAJOR_EQ(2018050000)
@@ -130,9 +132,7 @@ void normAssertTextDetections(
 
 void readFileContent(const std::string& filename, CV_OUT std::vector<char>& content);
 
-#ifdef HAVE_INF_ENGINE
 bool validateVPUType();
-#endif
 
 testing::internal::ParamGenerator< tuple<Backend, Target> > dnnBackendsAndTargets(
         bool withInferenceEngine = true,
@@ -141,7 +141,8 @@ testing::internal::ParamGenerator< tuple<Backend, Target> > dnnBackendsAndTarget
         bool withVkCom = true,
         bool withCUDA = true,
         bool withNgraph = true,
-        bool withWebnn = true
+        bool withWebnn = true,
+        bool withCann = true
 );
 
 testing::internal::ParamGenerator< tuple<Backend, Target> > dnnBackendsAndTargetsIE();

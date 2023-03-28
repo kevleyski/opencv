@@ -247,6 +247,7 @@ std::wstring GetTempFileNameWinRT(std::wstring prefix)
 #if defined __MACH__ && defined __APPLE__
 #include <mach/mach.h>
 #include <mach/mach_time.h>
+#include <sys/sysctl.h>
 #endif
 
 #endif
@@ -434,6 +435,8 @@ struct HWFeatures
         g_hwFeatureNames[CPU_AVX512_ICL] = "AVX512-ICL";
 
         g_hwFeatureNames[CPU_RVV] = "RVV";
+
+        g_hwFeatureNames[CPU_LASX] = "LASX";
     }
 
     void initialize(void)
@@ -633,6 +636,14 @@ struct HWFeatures
     #if (defined __ARM_FP  && (((__ARM_FP & 0x2) != 0) && defined __ARM_NEON__))
         have[CV_CPU_FP16] = true;
     #endif
+    #if (defined __ARM_FEATURE_DOTPROD)
+        int has_feat_dotprod = 0;
+        size_t has_feat_dotprod_size = sizeof(has_feat_dotprod);
+        sysctlbyname("hw.optional.arm.FEAT_DotProd", &has_feat_dotprod, &has_feat_dotprod_size, NULL, 0);
+        if (has_feat_dotprod) {
+            have[CV_CPU_NEON_DOTPROD] = true;
+        }
+    #endif
     #elif (defined __clang__)
     #if (defined __ARM_NEON__ || (defined __ARM_NEON && defined __aarch64__))
         have[CV_CPU_NEON] = true;
@@ -687,6 +698,10 @@ struct HWFeatures
 
     #if defined __riscv && defined __riscv_vector
         have[CV_CPU_RVV] = true;
+    #endif
+
+    #if defined __loongarch_asx
+        have[CV_CPU_LASX] = true;
     #endif
 
         bool skip_baseline_check = false;
