@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="CMakeRunConfigurationManager" shouldGenerate="true" shouldDeleteObsolete="true">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="CMakePresetLoader">{
+  &quot;useNewFormat&quot;: true
+}</component>
+  <component name="CMakeReloadState">
+    <option name="reloaded" value="true" />
+  </component>
+  <component name="CMakeRunConfigurationManager">
     <generated>
       <config projectName="OpenCV" targetName="example_tutorial_optical_flow_dense" />
       <config projectName="OpenCV" targetName="example_ximgproc_edgepreserving_filter_demo" />
@@ -31,6 +40,7 @@
       <config projectName="OpenCV" targetName="opencv_samples_cpp" />
       <config projectName="OpenCV" targetName="example_intensity_transform_intensity_transform" />
       <config projectName="OpenCV" targetName="example_structured_light_projectorcalibration" />
+      <config projectName="OpenCV" targetName="example_gapi_onevpl_infer_with_advanced_device_selection" />
       <config projectName="OpenCV" targetName="opencv_waldboost_detector" />
       <config projectName="OpenCV" targetName="example_cpp_grabcut" />
       <config projectName="OpenCV" targetName="example_snippet_core_merge" />
@@ -77,6 +87,7 @@
       <config projectName="OpenCV" targetName="opencv_test_rgbd" />
       <config projectName="OpenCV" targetName="developer_scripts" />
       <config projectName="OpenCV" targetName="example_tutorial_filter2D_demo" />
+      <config projectName="OpenCV" targetName="opencv_perf_wechat_qrcode" />
       <config projectName="OpenCV" targetName="example_cpp_videocapture_gstreamer_pipeline" />
       <config projectName="OpenCV" targetName="opencv_samples_rgbd" />
       <config projectName="OpenCV" targetName="opencv_samples_tracking" />
@@ -87,8 +98,11 @@
       <config projectName="OpenCV" targetName="example_cpp_image_alignment" />
       <config projectName="OpenCV" targetName="example_xfeatures2d_bagofwords_classification" />
       <config projectName="OpenCV" targetName="example_datasets_ar_sports" />
+      <config projectName="OpenCV" targetName="example_cpp_aruco_dict_utils" />
+      <config projectName="OpenCV" targetName="example_cpp_barcode" />
       <config projectName="OpenCV" targetName="opencv_test_stereo" />
       <config projectName="OpenCV" targetName="example_quality_brisque_eval_tid2008" />
+      <config projectName="OpenCV" targetName="compile_java_tutorials" />
       <config projectName="OpenCV" targetName="example_cpp_npr_demo" />
       <config projectName="OpenCV" targetName="example_surface_matching_ppf_load_match" />
       <config projectName="OpenCV" targetName="example_gapi_oak_basic_infer" />
@@ -162,11 +176,13 @@
       <config projectName="OpenCV" targetName="libtiff" />
       <config projectName="OpenCV" targetName="example_line_descriptor_radius_matching" />
       <config projectName="OpenCV" targetName="example_xfeatures2d_gms_matcher" />
+      <config projectName="OpenCV" targetName="opencv_java" />
       <config projectName="OpenCV" targetName="example_tutorial_HoughCircle_Demo" />
       <config projectName="OpenCV" targetName="example_dnn_object_detection" />
       <config projectName="OpenCV" targetName="opencv_samples_dpm" />
       <config projectName="OpenCV" targetName="example_cpp_convexhull" />
       <config projectName="OpenCV" targetName="opencv_test_saliency" />
+      <config projectName="OpenCV" targetName="example_dnn_nanotrack_tracker" />
       <config projectName="OpenCV" targetName="example_bioinspired_OpenEXRimages_HDR_Retina_toneMapping" />
       <config projectName="OpenCV" targetName="opencv_perf_bioinspired" />
       <config projectName="OpenCV" targetName="example_phase_unwrapping_unwrap" />
@@ -236,7 +252,6 @@
       <config projectName="OpenCV" targetName="opencv_structured_light" />
       <config projectName="OpenCV" targetName="example_cpp_watershed" />
       <config projectName="OpenCV" targetName="example_text_textbox_demo" />
-      <config projectName="OpenCV" targetName="example_gapi_onevpl_infer_single_roi" />
       <config projectName="OpenCV" targetName="example_cpp_text_skewness_correction" />
       <config projectName="OpenCV" targetName="opencv_core" />
       <config projectName="OpenCV" targetName="example_datasets_hpe_parse" />
@@ -267,7 +282,7 @@
       <config projectName="OpenCV" targetName="example_cpp_fitellipse" />
       <config projectName="OpenCV" targetName="example_tutorial_porting_anisotropic_image_segmentation_gapi_fluid" />
       <config projectName="OpenCV" targetName="example_datasets_ir_affine" />
-      <config projectName="OpenCV" targetName="example_aruco_aruco_dict_utils" />
+      <config projectName="OpenCV" targetName="opencv_test_java" />
       <config projectName="OpenCV" targetName="opencv_ximgproc" />
       <config projectName="OpenCV" targetName="example_tutorial_AddingImages" />
       <config projectName="OpenCV" targetName="example_cpp_lkdemo" />
@@ -282,7 +297,6 @@
       <config projectName="OpenCV" targetName="example_tutorial_introduction_to_svm" />
       <config projectName="OpenCV" targetName="example_tutorial_EqualizeHist_Demo" />
       <config projectName="OpenCV" targetName="libopenjp2" />
-      <config projectName="OpenCV" targetName="opencv_barcode" />
       <config projectName="OpenCV" targetName="example_tutorial_npr_demo" />
       <config projectName="OpenCV" targetName="opencv_tests" />
       <config projectName="OpenCV" targetName="example_snippet_imgproc_HoughLinesP" />
@@ -295,6 +309,7 @@
       <config projectName="OpenCV" targetName="example_tutorial_out_of_focus_deblur_filter" />
       <config projectName="OpenCV" targetName="opencv_dpm" />
       <config projectName="OpenCV" targetName="opencv_modules" />
+      <config projectName="OpenCV" targetName="IlmImf" />
       <config projectName="OpenCV" targetName="opencv_samples_saliency" />
       <config projectName="OpenCV" targetName="example_face_mace_webcam" />
       <config projectName="OpenCV" targetName="example_text_text_recognition_cnn" />
@@ -334,12 +349,12 @@
       <config projectName="OpenCV" targetName="opencv_samples_img_hash" />
       <config projectName="OpenCV" targetName="example_cpp_phase_corr" />
       <config projectName="OpenCV" targetName="example_xphoto_color_balance" />
+      <config projectName="OpenCV" targetName="example_gapi_onevpl_source_to_bgr_conv" />
       <config projectName="OpenCV" targetName="opencv_test_reg" />
       <config projectName="OpenCV" targetName="example_cpp_inpaint" />
       <config projectName="OpenCV" targetName="example_snippet_imgproc_segmentation" />
       <config projectName="OpenCV" targetName="example_mcc_color_correction_model" />
       <config projectName="OpenCV" targetName="opencv_perf_optflow" />
-      <config projectName="OpenCV" targetName="opencv_python2" />
       <config projectName="OpenCV" targetName="example_snippet_core_various" />
       <config projectName="OpenCV" targetName="example_tutorial_Threshold" />
       <config projectName="OpenCV" targetName="opencv_test_structured_light" />
@@ -364,7 +379,6 @@
       <config projectName="OpenCV" targetName="example_cpp_videocapture_camera" />
       <config projectName="OpenCV" targetName="example_dnn_person_reid" />
       <config projectName="OpenCV" targetName="opencv_visualisation" />
-      <config projectName="OpenCV" targetName="opencv_samples_barcode" />
       <config projectName="OpenCV" targetName="example_cpp_kmeans" />
       <config projectName="OpenCV" targetName="example_cpp_drawing" />
       <config projectName="OpenCV" targetName="example_cpp_intersectExample" />
@@ -431,6 +445,7 @@
       <config projectName="OpenCV" targetName="example_tutorial_HitMiss" />
       <config projectName="OpenCV" targetName="example_tutorial_Morphology_2" />
       <config projectName="OpenCV" targetName="opencv_xfeatures2d" />
+      <config projectName="OpenCV" targetName="opencv_java_test_source_copy" />
       <config projectName="OpenCV" targetName="example_tutorial_Morphology_3" />
       <config projectName="OpenCV" targetName="example_cpp_contours2" />
       <config projectName="OpenCV" targetName="example_snippet_imgproc_calcHist" />
@@ -462,7 +477,6 @@
       <config projectName="OpenCV" targetName="example_cpp_imagelist_reader" />
       <config projectName="OpenCV" targetName="example_cpp_smiledetect" />
       <config projectName="OpenCV" targetName="gen-pkgconfig" />
-      <config projectName="OpenCV" targetName="example_barcode_barcode" />
       <config projectName="OpenCV" targetName="example_cpp_select3dobj" />
       <config projectName="OpenCV" targetName="libjpeg-turbo" />
       <config projectName="OpenCV" targetName="opencv_perf_calib3d" />
@@ -500,6 +514,7 @@
       <config projectName="OpenCV" targetName="opencv_samples_reg" />
       <config projectName="OpenCV" targetName="example_cpp_stitching_detailed" />
       <config projectName="OpenCV" targetName="example_rgbd_odometry_evaluation" />
+      <config projectName="OpenCV" targetName="opencv_java_jar_source_copy" />
       <config projectName="OpenCV" targetName="example_snippet_imgproc_HoughLinesCircles" />
       <config projectName="OpenCV" targetName="example_tutorial_LATCH_match" />
       <config projectName="OpenCV" targetName="example_tapi_hog" />
@@ -508,6 +523,7 @@
       <config projectName="OpenCV" targetName="opencv_perf_stitching" />
       <config projectName="OpenCV" targetName="example_tutorial_pnp_registration" />
       <config projectName="OpenCV" targetName="example_gapi_oak_rgb_camera_encoding" />
+      <config projectName="OpenCV" targetName="example_dnn_vit_tracker" />
       <config projectName="OpenCV" targetName="example_datasets_tr_chars" />
       <config projectName="OpenCV" targetName="example_gapi_privacy_masking_camera" />
       <config projectName="OpenCV" targetName="example_cpp_cloning_gui" />
@@ -600,6 +616,7 @@
       <config projectName="OpenCV" targetName="opencv_perf_dnn" />
       <config projectName="OpenCV" targetName="example_optflow_simpleflow_demo" />
       <config projectName="OpenCV" targetName="example_rgbd_linemod" />
+      <config projectName="OpenCV" targetName="opencv_java_jar" />
       <config projectName="OpenCV" targetName="example_rgbd_large_kinfu_demo" />
       <config projectName="OpenCV" targetName="opencv_perf_rgbd" />
       <config projectName="OpenCV" targetName="opencv_perf_stereo" />
@@ -611,7 +628,6 @@
       <config projectName="OpenCV" targetName="example_ximgproc_fourier_descriptors_demo" />
       <config projectName="OpenCV" targetName="example_tutorial_video-write" />
       <config projectName="OpenCV" targetName="opencv_perf_ximgproc" />
-      <config projectName="OpenCV" targetName="opencv_test_barcode" />
       <config projectName="OpenCV" targetName="example_cpp_ela" />
       <config projectName="OpenCV" targetName="opencv_test_wechat_qrcode" />
       <config projectName="OpenCV" targetName="example_cpp_stereo_calib" />
@@ -659,15 +675,16 @@
       <config projectName="OpenCV" targetName="example_img_hash_hash_samples" />
     </generated>
   </component>
-  <component name="CMakeSettings">
+  <component name="CMakeSettings" AUTO_RELOAD="true">
     <configurations>
-      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" />
+      <configuration PROFILE_NAME="Debug" ENABLED="true" CONFIG_NAME="Debug" GENERATION_OPTIONS="-DCMAKE_INSTALL_PREFIX=/usr/local -DINSTALL_C_EXAMPLES=ON -DINSTALL_PYTHON_EXAMPLES=ON -DOPENCV_GENERATE_PKGCONFIG=ON -DWITH_FFMPEG=ON -DWITH_GSTREAMER=OFF -DWITH_OPENCL=ON -DBUILD_ZLIB=ON -DBUILD_OPENEXR=ON -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules -DBUILD_EXAMPLES=ON" />
     </configurations>
   </component>
   <component name="ChangeListManager">
     <list default="true" id="a274b47f-b7b4-4fd5-8c02-316000316464" name="Changes" comment="KJSL build">
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/CMakeCache.txt" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/cmake-build-debug/build.ninja" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/kjsl_macos_build.sh" beforeDir="false" afterPath="$PROJECT_DIR$/kjsl_macos_build.sh" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -677,6 +694,7 @@
   <component name="ClangdSettings">
     <option name="formatViaClangd" value="false" />
   </component>
+  <component name="ExecutionTargetManager" SELECTED_TARGET="CMakeBuildProfile:Debug" />
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
@@ -700,28 +718,39 @@
     <option name="minorVersion" value="3.2" />
   </component>
   <component name="ProjectId" id="2H3e0pY16afyS10tCH4U6BRk2Ku" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">
-    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
-    <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
-    <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
-    <property name="RunOnceActivity.cidr.known.project.marker" value="true" />
-    <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="cf.first.check.clang-format" value="false" />
-    <property name="cidr.known.project.marker" value="true" />
-    <property name="cmake.loaded.for.project" value="true" />
-    <property name="ctest.advertisement.all.test.configuration.is.created" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="node.js.detected.package.eslint" value="true" />
-    <property name="node.js.selected.package.eslint" value="(autodetect)" />
-    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
-    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
-    <property name="nodejs_package_manager_path" value="npm" />
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ASKED_ADD_EXTERNAL_FILES": "true",
+    "RunOnceActivity.OpenProjectViewOnStart": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.cidr.known.project.marker": "true",
+    "WebServerToolWindowFactoryState": "true",
+    "cf.first.check.clang-format": "false",
+    "cidr.known.project.marker": "true",
+    "ctest.advertisement.all.test.configuration.is.created": "true",
+    "last_opened_file_path": "/Users/kevin.staunton-lambert/workspace/github_kevleyski/opencv",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "CMakeSettings",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/cmake-build-debug" />
+    </key>
   </component>
-  <component name="RunManager" selected="BashSupport Pro.kjsl_macos_build.sh">
+  <component name="RunManager" selected="CMake Application.example_cpp_videocapture_camera">
     <configuration name="kjsl_linux_build.sh" type="BashProRunConfiguration" temporary="true">
       <option name="scriptPath" value="$PROJECT_DIR$/kjsl_linux_build.sh" />
       <RunnerSettings bashdbVersion="Automatic" bashPathMapper="Automatic" RunnerId="pro.bashsupport.shDebugRunner" />
@@ -732,12 +761,22 @@
       <RunnerSettings bashdbVersion="Automatic" bashPathMapper="Automatic" RunnerId="pro.bashsupport.shDebugRunner" />
       <method v="2" />
     </configuration>
+    <configuration name="IlmImf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="IlmImf" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="ade" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="ade" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="compile_java_tutorials" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="compile_java_tutorials" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -753,11 +792,6 @@
       </method>
     </configuration>
     <configuration name="example_alphamat_information_flow_matting" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_alphamat_information_flow_matting" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_alphamat_information_flow_matting">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="example_aruco_aruco_dict_utils" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_aruco_aruco_dict_utils" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_aruco_aruco_dict_utils">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -817,11 +851,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="example_barcode_barcode" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_barcode_barcode" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_barcode_barcode">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="example_bgsegm_bgfg" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_bgsegm_bgfg" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_bgsegm_bgfg">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -872,12 +901,22 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="example_cpp_aruco_dict_utils" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_cpp_aruco_dict_utils" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_cpp_aruco_dict_utils">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="example_cpp_asift" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_cpp_asift" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_cpp_asift">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
     <configuration name="example_cpp_audio_spectrogram" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_cpp_audio_spectrogram" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_cpp_audio_spectrogram">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="example_cpp_barcode" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_cpp_barcode" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_cpp_barcode">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -1537,6 +1576,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="example_dnn_nanotrack_tracker" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_dnn_nanotrack_tracker" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_dnn_nanotrack_tracker">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="example_dnn_objdetect_image_classification" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_dnn_objdetect_image_classification" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_dnn_objdetect_image_classification">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -1613,6 +1657,11 @@
       </method>
     </configuration>
     <configuration name="example_dnn_text_detection" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_dnn_text_detection" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_dnn_text_detection">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="example_dnn_vit_tracker" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_dnn_vit_tracker" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_dnn_vit_tracker">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -1772,7 +1821,12 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="example_gapi_onevpl_infer_single_roi" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_gapi_onevpl_infer_single_roi" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_gapi_onevpl_infer_single_roi">
+    <configuration name="example_gapi_onevpl_infer_with_advanced_device_selection" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_gapi_onevpl_infer_with_advanced_device_selection" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_gapi_onevpl_infer_with_advanced_device_selection">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="example_gapi_onevpl_source_to_bgr_conv" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="example_gapi_onevpl_source_to_bgr_conv" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="example_gapi_onevpl_source_to_bgr_conv">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -3077,11 +3131,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="opencv_barcode" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_barcode" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="opencv_bgsegm" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_bgsegm" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -3208,6 +3257,26 @@
       </method>
     </configuration>
     <configuration name="opencv_interactive-calibration" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_interactive-calibration" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="opencv_interactive-calibration">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="opencv_java" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_java" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="opencv_java_jar" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_java_jar" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="opencv_java_jar_source_copy" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_java_jar_source_copy" CONFIG_NAME="Debug">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="opencv_java_test_source_copy" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_java_test_source_copy" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -3362,6 +3431,11 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
+    <configuration name="opencv_perf_wechat_qrcode" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_perf_wechat_qrcode" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="opencv_perf_wechat_qrcode">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
     <configuration name="opencv_perf_xfeatures2d" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_perf_xfeatures2d" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="opencv_perf_xfeatures2d">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -3388,11 +3462,6 @@
       </method>
     </configuration>
     <configuration name="opencv_plot" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_plot" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="opencv_python2" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_python2" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -3433,11 +3502,6 @@
       </method>
     </configuration>
     <configuration name="opencv_samples_aruco" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_samples_aruco" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration name="opencv_samples_barcode" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_samples_barcode" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -3682,11 +3746,6 @@
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
     </configuration>
-    <configuration name="opencv_test_barcode" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_test_barcode" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="opencv_test_barcode">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
     <configuration name="opencv_test_bgsegm" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_test_bgsegm" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="opencv_test_bgsegm">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
@@ -3773,6 +3832,11 @@
       </method>
     </configuration>
     <configuration name="opencv_test_intensity_transform" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_test_intensity_transform" CONFIG_NAME="Debug" RUN_TARGET_PROJECT_NAME="OpenCV" RUN_TARGET_NAME="opencv_test_intensity_transform">
+      <method v="2">
+        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="opencv_test_java" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="opencv_test_java" CONFIG_NAME="Debug">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -4019,8 +4083,6 @@
       </method>
     </configuration>
     <list>
-      <item itemvalue="BashSupport Pro.kjsl_linux_build.sh" />
-      <item itemvalue="BashSupport Pro.kjsl_macos_build.sh" />
       <item itemvalue="CMake Application.ade" />
       <item itemvalue="CMake Application.developer_scripts" />
       <item itemvalue="CMake Application.gen-pkgconfig" />
@@ -4038,6 +4100,7 @@
       <item itemvalue="CMake Application.libpng" />
       <item itemvalue="CMake Application.libtiff" />
       <item itemvalue="CMake Application.libwebp" />
+      <item itemvalue="CMake Application.IlmImf" />
       <item itemvalue="CMake Application.libopenjp2" />
       <item itemvalue="CMake Application.libprotobuf" />
       <item itemvalue="CMake Application.quirc" />
@@ -4073,7 +4136,8 @@
       <item itemvalue="CMake Application.example_gapi_oak_copy" />
       <item itemvalue="CMake Application.example_gapi_oak_rgb_camera_encoding" />
       <item itemvalue="CMake Application.example_gapi_oak_small_hetero_pipeline" />
-      <item itemvalue="CMake Application.example_gapi_onevpl_infer_single_roi" />
+      <item itemvalue="CMake Application.example_gapi_onevpl_infer_with_advanced_device_selection" />
+      <item itemvalue="CMake Application.example_gapi_onevpl_source_to_bgr_conv" />
       <item itemvalue="CMake Application.example_gapi_pipeline_modeling_tool" />
       <item itemvalue="CMake Application.example_gapi_privacy_masking_camera" />
       <item itemvalue="CMake Application.example_gapi_semantic_segmentation" />
@@ -4094,6 +4158,11 @@
       <item itemvalue="CMake Application.opencv_perf_imgproc" />
       <item itemvalue="CMake Application.opencv_test_imgproc" />
       <item itemvalue="CMake Application.gen_opencv_java_source" />
+      <item itemvalue="CMake Application.opencv_java_jar" />
+      <item itemvalue="CMake Application.opencv_java_jar_source_copy" />
+      <item itemvalue="CMake Application.opencv_java" />
+      <item itemvalue="CMake Application.opencv_java_test_source_copy" />
+      <item itemvalue="CMake Application.opencv_test_java" />
       <item itemvalue="CMake Application.gen_opencv_js_source" />
       <item itemvalue="CMake Application.opencv_ml" />
       <item itemvalue="CMake Application.opencv_test_ml" />
@@ -4107,7 +4176,6 @@
       <item itemvalue="CMake Application.opencv_photo" />
       <item itemvalue="CMake Application.opencv_test_photo" />
       <item itemvalue="CMake Application.gen_opencv_python_source" />
-      <item itemvalue="CMake Application.opencv_python2" />
       <item itemvalue="CMake Application.opencv_perf_stitching" />
       <item itemvalue="CMake Application.opencv_stitching" />
       <item itemvalue="CMake Application.opencv_test_stitching" />
@@ -4121,8 +4189,10 @@
       <item itemvalue="CMake Application.opencv_videoio_plugins" />
       <item itemvalue="CMake Application.example_cpp_3calibration" />
       <item itemvalue="CMake Application.example_cpp_application_trace" />
+      <item itemvalue="CMake Application.example_cpp_aruco_dict_utils" />
       <item itemvalue="CMake Application.example_cpp_asift" />
       <item itemvalue="CMake Application.example_cpp_audio_spectrogram" />
+      <item itemvalue="CMake Application.example_cpp_barcode" />
       <item itemvalue="CMake Application.example_cpp_bgfg_segm" />
       <item itemvalue="CMake Application.example_cpp_calibration" />
       <item itemvalue="CMake Application.example_cpp_camshiftdemo" />
@@ -4338,6 +4408,7 @@
       <item itemvalue="CMake Application.example_dnn_dasiamrpn_tracker" />
       <item itemvalue="CMake Application.example_dnn_face_detect" />
       <item itemvalue="CMake Application.example_dnn_human_parsing" />
+      <item itemvalue="CMake Application.example_dnn_nanotrack_tracker" />
       <item itemvalue="CMake Application.example_dnn_object_detection" />
       <item itemvalue="CMake Application.example_dnn_openpose" />
       <item itemvalue="CMake Application.example_dnn_person_reid" />
@@ -4347,7 +4418,9 @@
       <item itemvalue="CMake Application.example_dnn_segmentation" />
       <item itemvalue="CMake Application.example_dnn_speech_recognition" />
       <item itemvalue="CMake Application.example_dnn_text_detection" />
+      <item itemvalue="CMake Application.example_dnn_vit_tracker" />
       <item itemvalue="CMake Application.opencv_samples_dnn" />
+      <item itemvalue="CMake Application.compile_java_tutorials" />
       <item itemvalue="CMake Application.example_opencl_opencl-opencv-interop" />
       <item itemvalue="CMake Application.opencv_samples_opencl" />
       <item itemvalue="CMake Application.example_tapi_bgfg_segm" />
@@ -4364,7 +4437,6 @@
       <item itemvalue="CMake Application.example_alphamat_information_flow_matting" />
       <item itemvalue="CMake Application.opencv_alphamat" />
       <item itemvalue="CMake Application.opencv_samples_alphamat" />
-      <item itemvalue="CMake Application.example_aruco_aruco_dict_utils" />
       <item itemvalue="CMake Application.example_aruco_calibrate_camera" />
       <item itemvalue="CMake Application.example_aruco_calibrate_camera_charuco" />
       <item itemvalue="CMake Application.example_aruco_create_board" />
@@ -4380,10 +4452,6 @@
       <item itemvalue="CMake Application.opencv_perf_aruco" />
       <item itemvalue="CMake Application.opencv_samples_aruco" />
       <item itemvalue="CMake Application.opencv_test_aruco" />
-      <item itemvalue="CMake Application.example_barcode_barcode" />
-      <item itemvalue="CMake Application.opencv_barcode" />
-      <item itemvalue="CMake Application.opencv_samples_barcode" />
-      <item itemvalue="CMake Application.opencv_test_barcode" />
       <item itemvalue="CMake Application.example_bgsegm_bgfg" />
       <item itemvalue="CMake Application.opencv_bgsegm" />
       <item itemvalue="CMake Application.opencv_samples_bgsegm" />
@@ -4623,6 +4691,7 @@
       <item itemvalue="CMake Application.opencv_videostab" />
       <item itemvalue="CMake Application.example_wechat_qrcode_qrcode_example" />
       <item itemvalue="CMake Application.example_wechat_qrcode_qrcode_example_without_nn" />
+      <item itemvalue="CMake Application.opencv_perf_wechat_qrcode" />
       <item itemvalue="CMake Application.opencv_samples_wechat_qrcode" />
       <item itemvalue="CMake Application.opencv_test_wechat_qrcode" />
       <item itemvalue="CMake Application.opencv_wechat_qrcode" />
@@ -4678,12 +4747,6 @@
       <item itemvalue="CMake Application.opencv_xphoto" />
       <item itemvalue="CTest Application.All CTest" />
     </list>
-    <recent_temporary>
-      <list>
-        <item itemvalue="BashSupport Pro.kjsl_macos_build.sh" />
-        <item itemvalue="BashSupport Pro.kjsl_linux_build.sh" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -4695,6 +4758,8 @@
       <updated>1667517974028</updated>
       <workItem from="1667517976401" duration="3344000" />
       <workItem from="1667521474523" duration="1222000" />
+      <workItem from="1698286361728" duration="1961000" />
+      <workItem from="1698354956284" duration="1338000" />
     </task>
     <task id="LOCAL-00001" summary="KJSL build">
       <created>1667518607000</created>
@@ -4749,6 +4814,7 @@
     </option>
   </component>
   <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
     <MESSAGE value="KJSL build" />
     <option name="LAST_COMMIT_MESSAGE" value="KJSL build" />
   </component>
