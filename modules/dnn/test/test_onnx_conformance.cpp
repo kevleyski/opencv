@@ -957,7 +957,7 @@ public:
         backend = get<0>(get<1>(GetParam()));
         target = get<1>(get<1>(GetParam()));
 
-        if (target == DNN_TARGET_CUDA_FP16 || target == DNN_TARGET_OPENCL_FP16 || target == DNN_TARGET_MYRIAD)
+        if (target == DNN_TARGET_CUDA_FP16 || target == DNN_TARGET_OPENCL_FP16 || target == DNN_TARGET_MYRIAD || target == DNN_TARGET_CPU_FP16)
         {
             default_l1 = 7e-3;
             default_lInf = 2e-2;
@@ -1257,4 +1257,4 @@ INSTANTIATE_TEST_CASE_P(/**/, Test_ONNX_conformance,
     printOnnxConfParams
 );
 
-};
+}

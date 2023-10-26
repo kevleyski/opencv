@@ -634,11 +634,12 @@ public:
     }
 
 #ifdef HAVE_CANN
-    virtual Ptr<BackendNode> initCann(const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
+    virtual Ptr<BackendNode> initCann(const std::vector<Ptr<BackendWrapper> > &inputs,
+                                      const std::vector<Ptr<BackendWrapper> > &outputs,
                                       const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
     {
         bool isSplit = sliceRanges.size() > 1;
-        auto x = inputsWrapper[0].dynamicCast<CannBackendWrapper>();
+        auto x = inputs[0].dynamicCast<CannBackendWrapper>();
 
         if (isSplit)
         {
@@ -758,7 +759,7 @@ public:
     {
         CV_Assert_N(nodes.size() <= 2);
         auto& ieInpNode = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
-        CV_Assert(finalSliceRanges[0].size() == ieInpNode->get_shape().size());
+        CV_Assert(finalSliceRanges[0].size() == ieInpNode.get_shape().size());
 
         std::vector<int64_t> offsets, dims;
         for (int i = 0; i < finalSliceRanges[0].size(); ++i)
