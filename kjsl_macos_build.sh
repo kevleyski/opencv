@@ -26,16 +26,17 @@ mkdir -p cmake-build-debug
 cd cmake-build-debug || exit 1
 
 PKG_CONFIG_PATH="/usr/local/opt/libffi/lib/pkgconfig:/usr/local/lib/pkgconfig:/usr/lib/pkgconfig:$PKG_CONFIG_PATH" cmake -D CMAKE_BUILD_TYPE=DEBUG \
-    -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D INSTALL_C_EXAMPLES=ON \
-    -D INSTALL_PYTHON_EXAMPLES=ON \
-    -D OPENCV_GENERATE_PKGCONFIG=ON \
-    -D WITH_FFMPEG=ON \
-    -D WITH_OPENCL=ON \
-    -D BUILD_ZLIB=ON \
-    -D BUILD_OPENEXR=ON \
-    -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
-    -D BUILD_EXAMPLES=ON ..
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DINSTALL_C_EXAMPLES=ON \
+    -DINSTALL_PYTHON_EXAMPLES=ON \
+    -DOPENCV_GENERATE_PKGCONFIG=ON \
+    -DWITH_FFMPEG=ON \
+    -DFFMPEG_LIBDIR="/usr/local/lib" -DFFMPEG_INCLUDE_DIRS="/usr/local/include" -D OPENCV_FFMPEG_SKIP_BUILD_CHECK=ON \
+    -DWITH_OPENCL=ON \
+    -DBUILD_ZLIB=ON \
+    -DBUILD_OPENEXR=ON \
+    -DOPENCV_EXTRA_MODULES_PATH=../../opencv_contrib/modules \
+    -DBUILD_EXAMPLES=ON ..
 
 make -j$(nproc)
 sudo make install
