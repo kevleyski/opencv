@@ -17,7 +17,7 @@ zlib () {
 
 cd $HERE || exit 1
 
-export LDFLAGS="-L/usr/local/opt/libffi/lib"
+export LDFLAGS="-L/usr/local/opt/libffi/libi,-Wl,-ld_classic"
 export CPPFLAGS="-I/usr/local/opt/libffi/include"
 
 brew install openh264

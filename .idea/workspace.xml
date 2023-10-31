@@ -587,7 +587,9 @@
     </configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="a274b47f-b7b4-4fd5-8c02-316000316464" name="Changes" comment="KJSL build macOS Sonoma weirdness" />
+    <list default="true" id="a274b47f-b7b4-4fd5-8c02-316000316464" name="Changes" comment="KJSL build macOS Sonoma weirdness">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -664,7 +666,7 @@
       <recent name="$PROJECT_DIR$/cmake-build-debug" />
     </key>
   </component>
-  <component name="RunManager" selected="CMake Application.example_cpp_videocapture_camera">
+  <component name="RunManager" selected="CMake Application.example_cpp_qrcode">
     <configuration name="kjsl_linux_build.sh" type="BashProRunConfiguration" temporary="true">
       <option name="scriptPath" value="$PROJECT_DIR$/kjsl_linux_build.sh" />
       <RunnerSettings bashdbVersion="Automatic" bashPathMapper="Automatic" RunnerId="pro.bashsupport.shDebugRunner" />
@@ -676,11 +678,6 @@
       <method v="2" />
     </configuration>
     <configuration name="IlmImf" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true" PROJECT_NAME="OpenCV" TARGET_NAME="IlmImf" CONFIG_NAME="Debug">
-      <method v="2">
-        <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
-      </method>
-    </configuration>
-    <configuration default="true" type="CMakeRunConfiguration" factoryName="Application" REDIRECT_INPUT="false" ELEVATE="false" USE_EXTERNAL_CONSOLE="false" EMULATE_TERMINAL="false" PASS_PARENT_ENVS_2="true">
       <method v="2">
         <option name="com.jetbrains.cidr.execution.CidrBuildBeforeRunTaskProvider$BuildBeforeRunTask" enabled="true" />
       </method>
@@ -4105,7 +4102,7 @@
       <workItem from="1698704581928" duration="842000" />
       <workItem from="1698705548682" duration="374000" />
       <workItem from="1698706151630" duration="1131000" />
-      <workItem from="1698717896160" duration="2212000" />
+      <workItem from="1698717896160" duration="2832000" />
     </task>
     <task id="LOCAL-00001" summary="KJSL build">
       <created>1667518607000</created>
@@ -4186,7 +4183,15 @@
       <option name="project" value="LOCAL" />
       <updated>1698719915790</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="KJSL build macOS Sonoma weirdness">
+      <option name="closed" value="true" />
+      <created>1698720397008</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1698720397008</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
