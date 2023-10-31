@@ -1,0 +1,722 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="PublishConfigData" remoteFilesAllowedToDisappearOnAutoupload="false">
+    <serverData>
+      <paths name="GarageEnc (c71756ef-34da-4026-a06f-517e734e391c)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Local Ubuntu Docker (5cfc56f6-a63b-426e-899a-7c9aea0f4046)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="Remote GDB Server (6286467e-bb58-4534-b851-ccbf33efa7f3)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="betaverse (560054d8-16c5-42ab-bfd9-4001e52f781c)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="kevs-imac">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="kevs-nano (7447d958-df6b-4836-9f71-682d994e5caf)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="kevs-raspi4">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="na2 (9570cdac-3277-428b-b5f0-acc2273d9e03)">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="sharky">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="slurpy">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+      <paths name="t4gpu">
+        <serverdata>
+          <mappings>
+            <mapping local="$PROJECT_DIR$" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ximgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xphoto" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xfeatures2d" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/reg" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/optflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/line_descriptor" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/saliency" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/wechat_qrcode" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/structured_light" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/freetype" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/quality" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/text" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/surface_matching" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/mcc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/datasets" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rgbd" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/stereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bioinspired" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/sfm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/img_hash" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/aruco" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ccalib" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/videostab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/shape" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/face" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/fuzzy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/alphamat" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/tracking" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hdf" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaimgproc" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/phase_unwrapping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dnn_objdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/dpm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/bgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/plot" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudalegacy" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/superres" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/matlab" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaarithm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/hfs" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/xobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/rapid" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudawarping" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/intensity_transform" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/viz" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaobjdetect" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudabgsegm" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/julia" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/ovis" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafilters" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudev" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudastereo" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cnn_3dobj" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudaoptflow" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudacodec" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cvv" web="/" />
+            <mapping local="$PROJECT_DIR$/../opencv_contrib/modules/cudafeatures2d" web="/" />
+          </mappings>
+        </serverdata>
+      </paths>
+    </serverData>
+  </component>
+</project>
