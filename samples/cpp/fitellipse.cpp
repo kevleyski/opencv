@@ -218,11 +218,6 @@ int main( int argc, char** argv )
     return 0;
 }
 
-inline static bool isGoodBox(const RotatedRect& box) {
-    //size.height >= size.width awalys,only if the pts are on a line or at the same point,size.width=0
-    return (box.size.height <= box.size.width * 30) && (box.size.width > 0);
-}
-
 // Define trackbar callback function. This function finds contours,
 // draws them, and approximates by ellipses.
 void processImage(int /*h*/, void*)
@@ -281,30 +276,39 @@ void processImage(int /*h*/, void*)
     {
         vector<Point2f> pts = points[i];
 
-        //At least 5 points can fit an ellipse
-        if (pts.size()<5) {
+        if (pts.size()<=5) {
             continue;
         }
         if (fitEllipseQ) {
             box = fitEllipse(pts);
-            if (isGoodBox(box)) {
-                paper.drawEllipseWithBox(box, fitEllipseColor, 3);
-            }
+            if( MAX(box.size.width, box.size.height) > MIN(box.size.width, box.size.height)*30 ||
+               MAX(box.size.width, box.size.height) <= 0 ||
+               MIN(box.size.width, box.size.height) <= 0){continue;};
         }
         if (fitEllipseAMSQ) {
             boxAMS = fitEllipseAMS(pts);
-            if (isGoodBox(boxAMS)) {
-                paper.drawEllipseWithBox(boxAMS, fitEllipseAMSColor, 2);
-            }
+            if( MAX(boxAMS.size.width, boxAMS.size.height) > MIN(boxAMS.size.width, boxAMS.size.height)*30 ||
+               MAX(box.size.width, box.size.height) <= 0 ||
+               MIN(box.size.width, box.size.height) <= 0){continue;};
         }
         if (fitEllipseDirectQ) {
             boxDirect = fitEllipseDirect(pts);
-            if (isGoodBox(boxDirect)){
-                paper.drawEllipseWithBox(boxDirect, fitEllipseDirectColor, 1);
-            }
+            if( MAX(boxDirect.size.width, boxDirect.size.height) > MIN(boxDirect.size.width, boxDirect.size.height)*30 ||
+               MAX(box.size.width, box.size.height) <= 0 ||
+               MIN(box.size.width, box.size.height) <= 0 ){continue;};
         }
 
-        paper.drawPoints(pts, fitEllipseTrueColor);
+        if (fitEllipseQ) {
+            paper.drawEllipseWithBox(box, fitEllipseColor, 3);
+        }
+        if (fitEllipseAMSQ) {
+            paper.drawEllipseWithBox(boxAMS, fitEllipseAMSColor, 2);
+        }
+        if (fitEllipseDirectQ) {
+            paper.drawEllipseWithBox(boxDirect, fitEllipseDirectColor, 1);
+        }
+
+        paper.drawPoints(pts, cv::Scalar(255,255,255));
     }
 
     imshow("result", paper.img);

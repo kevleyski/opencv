@@ -58,7 +58,6 @@ inline void verify_size(const std::string &nm, const cv::Mat &img)
         && !defined HAVE_QT \
         && !defined HAVE_WIN32UI \
         && !defined HAVE_COCOA \
-        && !defined HAVE_WAYLAND \
     )
 TEST(Highgui_GUI, DISABLED_regression)
 #else
@@ -136,7 +135,6 @@ static void Foo(int, void* counter)
         && !defined HAVE_GTK \
         && !defined HAVE_QT \
         && !defined HAVE_WIN32UI \
-        && !defined HAVE_WAYLAND \
     ) \
     || defined(__APPLE__)  // test fails on Mac (cocoa)
 TEST(Highgui_GUI, DISABLED_trackbar_unsafe)
@@ -176,7 +174,6 @@ void testTrackbarCallback(int pos, void* param)
         && !defined HAVE_GTK \
         && !defined HAVE_QT \
         && !defined HAVE_WIN32UI \
-        && !defined HAVE_WAYLAND \
     ) \
     || defined(__APPLE__)  // test fails on Mac (cocoa)
 TEST(Highgui_GUI, DISABLED_trackbar)

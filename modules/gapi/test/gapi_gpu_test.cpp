@@ -146,7 +146,7 @@ namespace cv
             }
         };
 
-        cv::GKernelPackage gpuTestPackage = cv::gapi::kernels
+        cv::gapi::GKernelPackage gpuTestPackage = cv::gapi::kernels
             <GGPUSymm7x7_test
             >();
 

@@ -6,19 +6,24 @@
 // Third party copyrights are property of their respective owners.
 
 #include "../../precomp.hpp"
+#include "common.hpp"
 #include "internal.hpp"
 
 namespace cv { namespace dnn { namespace vkcom {
 
 #ifdef HAVE_VULKAN
 
-Tensor::Tensor(Format fmt, VkBufferUsageFlags usageFlag) : size_in_byte_(0), format_(fmt), usageFlag_(usageFlag)
+Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
 {
+    createContext();
+    device_ = kDevice;
 }
 
-Tensor::Tensor(const char* data, std::vector<int>& shape, Format fmt, VkBufferUsageFlags usageFlag)
-               : size_in_byte_(0), format_(fmt), usageFlag_(usageFlag)
+Tensor::Tensor(const char* data, std::vector<int>& shape, Format fmt)
+               : size_in_byte_(0), format_(fmt)
 {
+    createContext();
+    device_ = kDevice;
     reshape(data, shape);
 }
 
@@ -26,7 +31,7 @@ void* Tensor::map()
 {
     void *p;
 
-    VK_CHECK_RESULT(vkMapMemory(kDevice, buffer_->getVkMemory(),
+    VK_CHECK_RESULT(vkMapMemory(device_, buffer_->getVkMemory(),
                                 0, size_in_byte_, 0, (void **)&p));
 
     return p;
@@ -34,7 +39,7 @@ void* Tensor::map()
 
 void Tensor::unMap()
 {
-    vkUnmapMemory(kDevice, buffer_->getVkMemory());
+    vkUnmapMemory(device_, buffer_->getVkMemory());
 }
 
 Shape Tensor::getShape() const
@@ -62,9 +67,9 @@ int Tensor::dimNum() const
 
 Tensor Tensor::reshape(const char* data, const std::vector<int>& shape, bool alloc, Format fmt)
 {
-    if (kDevice == VK_NULL_HANDLE)
+    if (device_ == VK_NULL_HANDLE)
     {
-        CV_Error(Error::StsError, "device is NULL!");
+        CV_Error(Error::StsError, "device is NULL");
         return *this;
     }
 
@@ -80,7 +85,7 @@ Tensor Tensor::reshape(const char* data, const std::vector<int>& shape, bool all
 
     if (alloc)
     {
-        buffer_.reset(new Buffer(size_in_byte_, data, usageFlag_));
+        buffer_.reset(new Buffer(device_, size_in_byte_, data));
     }
     else if (data)
     {
@@ -94,9 +99,9 @@ Tensor Tensor::reshape(const char* data, const std::vector<int>& shape, bool all
 
 void Tensor::setTo(float val)
 {
-    if (kDevice == VK_NULL_HANDLE)
+    if (device_ == VK_NULL_HANDLE)
     {
-        CV_Error(Error::StsError, "device is NULL!");
+        CV_Error(Error::StsError, "device is NULL");
         return;
     }
 

@@ -204,7 +204,7 @@ static void DCT_1D( const Mat& _src, Mat& _dst, int flags, const Mat& _wave=Mat(
         }
     }
     else
-        CV_Assert(0);
+        assert(0);
 }
 
 

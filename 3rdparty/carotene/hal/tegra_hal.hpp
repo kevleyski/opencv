@@ -1296,13 +1296,13 @@ struct MorphCtx
     CAROTENE_NS::BORDER_MODE border;
     uchar borderValues[4];
 };
-inline int TEGRA_MORPHINIT(cvhalFilter2D **context, int operation, int src_type, int dst_type, int width, int height,
+inline int TEGRA_MORPHINIT(cvhalFilter2D **context, int operation, int src_type, int dst_type, int, int,
                            int kernel_type, uchar *kernel_data, size_t kernel_step, int kernel_width, int kernel_height, int anchor_x, int anchor_y,
                            int borderType, const double borderValue[4], int iterations, bool allowSubmatrix, bool allowInplace)
 {
     if(!context || !kernel_data || src_type != dst_type ||
        CV_MAT_DEPTH(src_type) != CV_8U || src_type < 0 || (src_type >> CV_CN_SHIFT) > 3 ||
-       width < kernel_width || height < kernel_height ||
+
        allowSubmatrix || allowInplace || iterations != 1 ||
        !CAROTENE_NS::isSupportedConfiguration())
         return CV_HAL_ERROR_NOT_IMPLEMENTED;
@@ -1844,18 +1844,14 @@ TegraCvtColor_Invoker(bgrx2hsvf, bgrx2hsv, src_data + static_cast<size_t>(range.
 #define cv_hal_cvtBGRtoGray TEGRA_CVTBGRTOGRAY
 #undef cv_hal_cvtGraytoBGR
 #define cv_hal_cvtGraytoBGR TEGRA_CVTGRAYTOBGR
-#if 0  // bit-exact tests are failed
 #undef cv_hal_cvtBGRtoYUV
 #define cv_hal_cvtBGRtoYUV TEGRA_CVTBGRTOYUV
-#endif
 #undef cv_hal_cvtBGRtoHSV
 #define cv_hal_cvtBGRtoHSV TEGRA_CVTBGRTOHSV
-#if 0  // bit-exact tests are failed
 #undef cv_hal_cvtTwoPlaneYUVtoBGR
 #define cv_hal_cvtTwoPlaneYUVtoBGR TEGRA_CVT2PYUVTOBGR
 #undef cv_hal_cvtTwoPlaneYUVtoBGREx
 #define cv_hal_cvtTwoPlaneYUVtoBGREx TEGRA_CVT2PYUVTOBGR_EX
-#endif
 
 #endif // OPENCV_IMGPROC_HAL_INTERFACE_H
 

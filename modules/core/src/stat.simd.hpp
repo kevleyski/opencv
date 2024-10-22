@@ -33,11 +33,11 @@ int normHamming(const uchar* a, int n)
     int i = 0;
     int result = 0;
 
-#if (CV_SIMD || CV_SIMD_SCALABLE)
+#if CV_SIMD && CV_SIMD_WIDTH > 16
     {
         v_uint64 t = vx_setzero_u64();
-        for (; i <= n - VTraits<v_uint8>::vlanes(); i += VTraits<v_uint8>::vlanes())
-            t = v_add(t, v_popcount(v_reinterpret_as_u64(vx_load(a + i))));
+        for (; i <= n - v_uint8::nlanes; i += v_uint8::nlanes)
+            t += v_popcount(v_reinterpret_as_u64(vx_load(a + i)));
         result = (int)v_reduce_sum(t);
         vx_cleanup();
     }
@@ -55,6 +55,13 @@ int normHamming(const uchar* a, int n)
         {
             result += CV_POPCNT_U32(*(uint*)(a + i));
         }
+    }
+#elif CV_SIMD
+    {
+        v_uint64x2 t = v_setzero_u64();
+        for(; i <= n - v_uint8x16::nlanes; i += v_uint8x16::nlanes)
+            t += v_popcount(v_reinterpret_as_u64(v_load(a + i)));
+        result += (int)v_reduce_sum(t);
     }
 #endif
 #if CV_ENABLE_UNROLLED
@@ -78,11 +85,11 @@ int normHamming(const uchar* a, const uchar* b, int n)
     int i = 0;
     int result = 0;
 
-#if (CV_SIMD || CV_SIMD_SCALABLE)
+#if CV_SIMD && CV_SIMD_WIDTH > 16
     {
         v_uint64 t = vx_setzero_u64();
-        for (; i <= n - VTraits<v_uint8>::vlanes(); i += VTraits<v_uint8>::vlanes())
-            t = v_add(t, v_popcount(v_reinterpret_as_u64(v_xor(vx_load(a + i), vx_load(b + i)))));
+        for (; i <= n - v_uint8::nlanes; i += v_uint8::nlanes)
+            t += v_popcount(v_reinterpret_as_u64(vx_load(a + i) ^ vx_load(b + i)));
         result += (int)v_reduce_sum(t);
     }
 #endif
@@ -99,6 +106,13 @@ int normHamming(const uchar* a, const uchar* b, int n)
         {
             result += CV_POPCNT_U32(*(uint*)(a + i) ^ *(uint*)(b + i));
         }
+    }
+#elif CV_SIMD
+    {
+        v_uint64x2 t = v_setzero_u64();
+        for(; i <= n - v_uint8x16::nlanes; i += v_uint8x16::nlanes)
+            t += v_popcount(v_reinterpret_as_u64(v_load(a + i) ^ v_load(b + i)));
+        result += (int)v_reduce_sum(t);
     }
 #endif
 #if CV_ENABLE_UNROLLED

@@ -147,7 +147,7 @@ public:
         return handle != NULL;
     }
     void* getSymbol(const char* symbolName) const;
-    std::string getName() const;
+    const std::string getName() const;
 private:
     void libraryLoad(const FileSystemPath_t& filename);
     void libraryRelease();

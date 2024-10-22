@@ -70,7 +70,7 @@ using namespace cv;
 
 static int icvMkDir( const char* filename )
 {
-    char path[PATH_MAX+1];
+    char path[PATH_MAX];
     char* p;
     int pos;
 
@@ -83,8 +83,7 @@ static int icvMkDir( const char* filename )
     mode = 0755;
 #endif /* _WIN32 */
 
-    path[0] = '\0';
-    strncat( path, filename, PATH_MAX );
+    strcpy( path, filename );
 
     p = path;
     for( ; ; )
@@ -1168,7 +1167,7 @@ void cvCreateTestSamples( const char* infoname,
             }
             else
             {
-                filename++; // character after last / or \
+                filename++;
             }
 
             count = MIN( count, cvbgdata->count );
@@ -1200,8 +1199,8 @@ void cvCreateTestSamples( const char* infoname,
                                          1, 0.0, 0.0, &data );
 
 
-                snprintf( filename, sizeof(fullname) - (filename - fullname), "%04d_%04d_%04d_%04d_%04d.jpg",
-                          (i + 1), x, y, width, height );
+                sprintf( filename, "%04d_%04d_%04d_%04d_%04d.jpg",
+                         (i + 1), x, y, width, height );
 
                 if( info )
                 {

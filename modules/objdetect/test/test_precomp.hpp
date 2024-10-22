@@ -7,10 +7,4 @@
 #include "opencv2/ts.hpp"
 #include "opencv2/objdetect.hpp"
 
-#if defined CV_CXX11
-  #include <random>
-#else
-  #include <cstdlib>
-#endif
-
 #endif

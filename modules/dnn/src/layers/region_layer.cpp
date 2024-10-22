@@ -317,7 +317,6 @@ public:
                                 dstData[box_index + 1] = (y + y_tmp) / rows;
                                 dstData[box_index + 2] = (srcData[box_index + 2]) * (srcData[box_index + 2]) * 4 * biasData[2 * a] / wNorm;
                                 dstData[box_index + 3] = (srcData[box_index + 3]) * (srcData[box_index + 3]) * 4 * biasData[2 * a + 1] / hNorm;
-                                dstData[box_index + 4] = srcData[p_index];
 
                                 scale = srcData[p_index];
                                 if (classfix == -1 && scale < thresh)
@@ -466,7 +465,7 @@ public:
                                         const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
     {
         auto& input = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
-        auto parent_shape = input.get_shape();
+        auto parent_shape = input->get_shape();
         int64_t b = parent_shape[0];
         int64_t h = parent_shape[1];
         int64_t w = parent_shape[2];
@@ -526,14 +525,14 @@ public:
 
             std::vector<float> x_indices(w * h * anchors);
             auto begin = x_indices.begin();
-            for (int i = 0; i < w; i++)
+            for (int i = 0; i < h; i++)
             {
                 std::fill(begin + i * anchors, begin + (i + 1) * anchors, i);
             }
 
-            for (int j = 1; j < h; j++)
+            for (int j = 1; j < w; j++)
             {
-                std::copy(begin, begin + w * anchors, begin + j * w * anchors);
+                std::copy(begin, begin + h * anchors, begin + j * h * anchors);
             }
             auto horiz = std::make_shared<ngraph::op::Constant>(ngraph::element::f32, box_broad_shape, x_indices.data());
             box_x = std::make_shared<ngraph::op::v1::Add>(box_x, horiz, ngraph::op::AutoBroadcastType::NUMPY);
@@ -567,7 +566,7 @@ public:
             int hNorm, wNorm;
             if (nodes.size() > 1)
             {
-                auto node_1_shape = nodes[1].dynamicCast<InfEngineNgraphNode>()->node.get_shape();
+                auto node_1_shape = nodes[1].dynamicCast<InfEngineNgraphNode>()->node->get_shape();
                 hNorm = node_1_shape[2];
                 wNorm = node_1_shape[3];
             }

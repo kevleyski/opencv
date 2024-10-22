@@ -23,7 +23,6 @@ Transformations
 -   @subpage tutorial_canny_detector
 -   @subpage tutorial_hough_lines
 -   @subpage tutorial_hough_circle
--   @subpage tutorial_generalized_hough_ballard_guil
 -   @subpage tutorial_remap
 -   @subpage tutorial_warp_affine
 

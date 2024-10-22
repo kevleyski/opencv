@@ -42,6 +42,8 @@
 #include <vector>
 #include <algorithm>
 
+#define ABSCLIP(val,threshold) MIN(MAX((val),-(threshold)),(threshold))
+
 namespace cv{
 
     class AddFloatToCharScaled{

@@ -11,7 +11,7 @@
 //
 // Author: Christian Duvivier (cduvivier@google.com)
 
-#include "src/dsp/cpu.h"
+#include "src/dsp/dsp.h"
 
 #if defined(WEBP_HAVE_NEON_RTCD)
 #include <stdio.h>
@@ -173,7 +173,6 @@ static int x86CPUInfo(CPUFeature feature) {
   }
   return 0;
 }
-WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 VP8CPUInfo VP8GetCPUInfo = x86CPUInfo;
 #elif defined(WEBP_ANDROID_NEON)  // NB: needs to be before generic NEON test.
 static int AndroidCPUInfo(CPUFeature feature) {
@@ -185,23 +184,22 @@ static int AndroidCPUInfo(CPUFeature feature) {
   }
   return 0;
 }
-WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 VP8CPUInfo VP8GetCPUInfo = AndroidCPUInfo;
 #elif defined(EMSCRIPTEN) // also needs to be before generic NEON test
 // Use compile flags as an indicator of SIMD support instead of a runtime check.
 static int wasmCPUInfo(CPUFeature feature) {
   switch (feature) {
-#ifdef WEBP_HAVE_SSE2
+#ifdef WEBP_USE_SSE2
     case kSSE2:
       return 1;
 #endif
-#ifdef WEBP_HAVE_SSE41
+#ifdef WEBP_USE_SSE41
     case kSSE3:
     case kSlowSSSE3:
     case kSSE4_1:
       return 1;
 #endif
-#ifdef WEBP_HAVE_NEON
+#ifdef WEBP_USE_NEON
     case kNEON:
       return 1;
 #endif
@@ -210,12 +208,10 @@ static int wasmCPUInfo(CPUFeature feature) {
   }
   return 0;
 }
-WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 VP8CPUInfo VP8GetCPUInfo = wasmCPUInfo;
-#elif defined(WEBP_HAVE_NEON)
-// In most cases this function doesn't check for NEON support (it's assumed by
-// the configuration), but enables turning off NEON at runtime, for testing
-// purposes, by setting VP8GetCPUInfo = NULL.
+#elif defined(WEBP_USE_NEON)
+// define a dummy function to enable turning off NEON at runtime by setting
+// VP8DecGetCPUInfo = NULL
 static int armCPUInfo(CPUFeature feature) {
   if (feature != kNEON) return 0;
 #if defined(__linux__) && defined(WEBP_HAVE_NEON_RTCD)
@@ -239,7 +235,6 @@ static int armCPUInfo(CPUFeature feature) {
   return 1;
 #endif
 }
-WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 VP8CPUInfo VP8GetCPUInfo = armCPUInfo;
 #elif defined(WEBP_USE_MIPS32) || defined(WEBP_USE_MIPS_DSP_R2) || \
       defined(WEBP_USE_MSA)
@@ -251,9 +246,7 @@ static int mipsCPUInfo(CPUFeature feature) {
   }
 
 }
-WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 VP8CPUInfo VP8GetCPUInfo = mipsCPUInfo;
 #else
-WEBP_EXTERN VP8CPUInfo VP8GetCPUInfo;
 VP8CPUInfo VP8GetCPUInfo = NULL;
 #endif

@@ -148,7 +148,7 @@ public:
     void write( const char* key, double value )
     {
         char buf[128];
-        writeScalar( key, fs::doubleToString( buf, sizeof(buf), value, false ) );
+        writeScalar( key, fs::doubleToString( buf, value, false ) );
     }
 
     void write(const char* key, const char* str, bool quote)
@@ -208,7 +208,7 @@ public:
                     }
                     else
                     {
-                        snprintf( data, sizeof(buf) - (data - buf), "#x%02x", (uchar)c );
+                        sprintf( data, "#x%02x", (uchar)c );
                         data += 4;
                     }
                     *data++ = ';';
@@ -308,8 +308,8 @@ public:
 
         if( !multiline )
         {
-            ptr = fs->resizeWriteBuffer( ptr, len + 5+4+1 );
-            snprintf( ptr, len + 5+4+1, "<!-- %s -->", comment );
+            ptr = fs->resizeWriteBuffer( ptr, len + 9 );
+            sprintf( ptr, "<!-- %s -->", comment );
             len = (int)strlen(ptr);
         }
         else
@@ -344,7 +344,7 @@ public:
                 fs->setBufferPtr(ptr);
                 ptr = fs->flush();
             }
-            strcpy( ptr, "-->" );
+            sprintf( ptr, "-->" );
             fs->setBufferPtr(ptr + 3);
             fs->flush();
         }
@@ -387,7 +387,7 @@ public:
 
                 if( c == '-' )
                 {
-                    CV_Assert( ptr[1] == '-' && ptr[2] == '>' );
+                    assert( ptr[1] == '-' && ptr[2] == '>' );
                     mode = 0;
                     ptr += 3;
                 }
@@ -694,7 +694,7 @@ public:
         else if( *ptr == '!' )
         {
             tag_type = CV_XML_DIRECTIVE_TAG;
-            CV_Assert( ptr[1] != '-' || ptr[2] != '-' );
+            assert( ptr[1] != '-' || ptr[2] != '-' );
             ptr++;
         }
         else

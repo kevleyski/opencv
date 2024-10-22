@@ -307,10 +307,7 @@ int WebPEncodingSetError(const WebPPicture* const pic,
                          WebPEncodingError error) {
   assert((int)error < VP8_ENC_ERROR_LAST);
   assert((int)error >= VP8_ENC_OK);
-  // The oldest error reported takes precedence over the new one.
-  if (pic->error_code == VP8_ENC_OK) {
-    ((WebPPicture*)pic)->error_code = error;
-  }
+  ((WebPPicture*)pic)->error_code = error;
   return 0;
 }
 
@@ -320,7 +317,8 @@ int WebPReportProgress(const WebPPicture* const pic,
     *percent_store = percent;
     if (pic->progress_hook && !pic->progress_hook(percent, pic)) {
       // user abort requested
-      return WebPEncodingSetError(pic, VP8_ENC_ERROR_USER_ABORT);
+      WebPEncodingSetError(pic, VP8_ENC_ERROR_USER_ABORT);
+      return 0;
     }
   }
   return 1;  // ok
@@ -331,14 +329,16 @@ int WebPEncode(const WebPConfig* config, WebPPicture* pic) {
   int ok = 0;
   if (pic == NULL) return 0;
 
-  pic->error_code = VP8_ENC_OK;  // all ok so far
+  WebPEncodingSetError(pic, VP8_ENC_OK);  // all ok so far
   if (config == NULL) {  // bad params
     return WebPEncodingSetError(pic, VP8_ENC_ERROR_NULL_PARAMETER);
   }
   if (!WebPValidateConfig(config)) {
     return WebPEncodingSetError(pic, VP8_ENC_ERROR_INVALID_CONFIGURATION);
   }
-  if (!WebPValidatePicture(pic)) return 0;
+  if (pic->width <= 0 || pic->height <= 0) {
+    return WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_DIMENSION);
+  }
   if (pic->width > WEBP_MAX_DIMENSION || pic->height > WEBP_MAX_DIMENSION) {
     return WebPEncodingSetError(pic, VP8_ENC_ERROR_BAD_DIMENSION);
   }

@@ -15,7 +15,7 @@ namespace cv {
 namespace gimpl {
 namespace streaming {
 
-cv::GKernelPackage kernels();
+cv::gapi::GKernelPackage kernels();
 
 struct GCopy final : public cv::detail::NoTag
 {

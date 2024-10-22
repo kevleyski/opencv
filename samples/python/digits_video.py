@@ -29,7 +29,7 @@ def main():
         src = sys.argv[1]
     except:
         src = 0
-    cap = video.create_capture(src, fallback='synth:bg={}:noise=0.05'.format(cv.samples.findFile('sudoku.png')))
+    cap = video.create_capture(src)
 
     classifier_fn = 'digits_svm.dat'
     if not os.path.exists(classifier_fn):

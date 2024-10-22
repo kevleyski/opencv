@@ -120,7 +120,7 @@ ade::NodeHandle GIsland::producer(const ade::Graph &g,
     }
     // Consistency: A GIsland requested for producer() of slot_nh should
     // always had the appropriate GModel node handle in its m_out_ops vector.
-    GAPI_Error("Broken GIslandModel ?.");
+    GAPI_Assert(false && "Broken GIslandModel ?.");
 }
 
 std::string GIsland::name() const
@@ -164,7 +164,7 @@ void GIslandModel::generateInitial(GIslandModel::Graph &g,
         {
         case NodeType::OP:   all_operations.insert(src_nh);                break;
         case NodeType::DATA: data_to_slot[src_nh] = mkSlotNode(g, src_nh); break;
-        default: GAPI_Error("InternalError"); break;
+        default: GAPI_Assert(false); break;
         }
     } // for (src_g.nodes)
 
@@ -346,9 +346,9 @@ std::string GIslandModel::traceIslandName(const ade::NodeHandle& island_nh, cons
     auto& backend_impl = island_ptr->backend().priv();
     std::string backend_impl_type_name = typeid(backend_impl).name();
 
-    // NOTE: Major part of already existing backends implementation classes are called using
+    // NOTE: Major part of already existing backends implementaion classes are called using
     //       "*G[Name]BackendImpl*" pattern.
-    //       We are trying to match against this pattern and retrieve just [Name] part.
+    //       We are trying to match against this pattern and retrive just [Name] part.
     //       If matching isn't successful, full mangled class name will be used.
     //
     //       To match we use following algorithm:
@@ -412,17 +412,7 @@ void GIslandExecutable::run(GIslandExecutable::IInput &in, GIslandExecutable::IO
         out_objs.emplace_back(ade::util::value(it),
                               out.get(ade::util::checked_cast<int>(ade::util::index(it))));
     }
-
-    try {
-        run(std::move(in_objs), std::move(out_objs));
-    } catch (...) {
-        auto eptr = std::current_exception();
-        for (auto &&it: out_objs)
-        {
-            out.post(std::move(it.second), eptr);
-        }
-        return;
-    }
+    run(std::move(in_objs), std::move(out_objs));
 
     // Propagate in-graph meta down to the graph
     // Note: this is not a complete implementation! Mainly this is a stub

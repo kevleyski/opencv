@@ -19,15 +19,17 @@ namespace cv { namespace dnn { namespace vkcom {
 class Buffer
 {
 public:
-    Buffer(VkBufferUsageFlags usageFlag = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
-    Buffer(size_t size_in_bytes, const char* data, VkBufferUsageFlags usageFlags = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT);
+    Buffer(VkDevice& device)
+        : device_(device), buffer_(VK_NULL_HANDLE), memory_(VK_NULL_HANDLE){};
+    Buffer(VkDevice& device, size_t size_in_bytes, const char* data);
     ~Buffer();
     VkDeviceMemory getVkMemory() { return memory_; }
     VkBuffer getVkBuffer() { return buffer_; }
 
 private:
+    Buffer();
     bool init(size_t size_in_bytes, const char* data);
-    VkBufferUsageFlags usageFlag_;
+    VkDevice device_;
     VkBuffer buffer_;
     VkDeviceMemory memory_;
 };

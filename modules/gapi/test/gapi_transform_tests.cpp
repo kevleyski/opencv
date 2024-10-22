@@ -168,7 +168,7 @@ TEST(KernelPackageTransform, CreatePackage)
 
 TEST(KernelPackageTransform, Include)
 {
-    cv::GKernelPackage pkg;
+    cv::gapi::GKernelPackage pkg;
     pkg.include<gmat_in_gmat_out>();
     pkg.include<gmat2_in_gmat_out>();
     pkg.include<gmat2_in_gmat3_out>();

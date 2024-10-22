@@ -43,17 +43,6 @@ public:
     float y = 0.f;
 };
 
-class Point3f
-{
-public:
-    Point3f() = default;
-    Point3f(float _x, float _y, float _z) : x(_x),  y(_y), z(_z) {}
-
-    float x = 0.f;
-    float y = 0.f;
-    float z = 0.f;
-};
-
 class Rect
 {
 public:
@@ -100,7 +89,7 @@ inline Rect& operator&=(Rect& lhs, const Rect& rhs)
     return lhs;
 }
 
-inline Rect operator&(const Rect& lhs, const Rect& rhs)
+inline const Rect operator&(const Rect& lhs, const Rect& rhs)
 {
     Rect result = lhs;
     return result &= rhs;
@@ -154,7 +143,6 @@ inline std::ostream& operator<<(std::ostream& o, const Size& s)
     return o;
 }
 
-struct VoidType {};
 } // namespace own
 } // namespace gapi
 } // namespace cv

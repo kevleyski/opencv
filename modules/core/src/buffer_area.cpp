@@ -29,7 +29,8 @@ public:
     }
     void cleanup() const
     {
-        CV_DbgAssert(ptr);
+        CV_Assert(ptr && *ptr);
+        *ptr = 0;
         if (raw_mem)
             fastFree(raw_mem);
     }

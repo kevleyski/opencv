@@ -587,34 +587,34 @@ TEST(Variant, DynamicVisitor)
         test_validation::MyBoolParamIndexedVisitor visitor(ss);
 
         EXPECT_TRUE(cv::util::visit(visitor, var, int{42}));
-        EXPECT_EQ(std::string("0:42,"), ss.str());
+        EXPECT_EQ(ss.str(), std::string("0:42,"));
     }
 
     std::stringstream ss;
     test_validation::MyBoolNoParamNonIndexedVisitor visitor(ss);
 
     cv::util::visit(visitor, var);
-    EXPECT_EQ(std::string("0:42,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,"));
 
     var = double{1.0};
     EXPECT_TRUE(cv::util::visit(visitor, var));
-    EXPECT_EQ(std::string("0:42,1:1,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,"));
 
     var = char{'a'};
     EXPECT_TRUE(cv::util::visit(visitor, var));
-    EXPECT_EQ(std::string("0:42,1:1,2:a,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,"));
 
     var = float{6.0};
     EXPECT_TRUE(cv::util::visit(visitor, var));
-    EXPECT_EQ(std::string("0:42,1:1,2:a,3:6,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,3:6,"));
 
     var = test_validation::MyType{};
     EXPECT_TRUE(cv::util::visit(visitor, var));
-    EXPECT_EQ(std::string("0:42,1:1,2:a,3:6,4:MyType,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,3:6,4:MyType,"));
 
     var = test_validation::MyClass{};
     EXPECT_TRUE(cv::util::visit(visitor, var));
-    EXPECT_EQ(std::string("0:42,1:1,2:a,3:6,4:MyType,5:MyClass,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,3:6,4:MyType,5:MyClass,"));
 }
 
 TEST(Variant, StaticVisitor)
@@ -625,27 +625,27 @@ TEST(Variant, StaticVisitor)
     test_validation::MyVoidNoParamNonIndexedVisitor visitor(ss);
 
     cv::util::visit(visitor, var);
-    EXPECT_EQ(std::string("42,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("42,"));
 
     var = double{1.0};
     cv::util::visit(visitor, var);
-    EXPECT_EQ(std::string("42,1,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("42,1,"));
 
     var = char{'a'};
     cv::util::visit(visitor, var);
-    EXPECT_EQ(std::string("42,1,a,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("42,1,a,"));
 
     var = float{6.0};
     cv::util::visit(visitor, var);
-    EXPECT_EQ(std::string("42,1,a,6,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("42,1,a,6,"));
 
     var = test_validation::MyType{};
     cv::util::visit(visitor, var);
-    EXPECT_EQ(std::string("42,1,a,6,MyType,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("42,1,a,6,MyType,"));
 
     var = test_validation::MyClass{};
     cv::util::visit(visitor, var);
-    EXPECT_EQ(std::string("42,1,a,6,MyType,MyClass,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("42,1,a,6,MyType,MyClass,"));
 }
 
 TEST(Variant, StaticIndexedVisitor)
@@ -655,27 +655,27 @@ TEST(Variant, StaticIndexedVisitor)
 
     std::stringstream ss;
     cv::util::visit(test_validation::MyVoidNoParamIndexedVisitor {ss}, var);
-    EXPECT_EQ(std::string("0:42,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,"));
 
     var = double{1.0};
     cv::util::visit(test_validation::MyVoidNoParamIndexedVisitor (ss), var);
-    EXPECT_EQ(std::string("0:42,1:1,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,"));
 
     var = char{'a'};
     cv::util::visit(test_validation::MyVoidNoParamIndexedVisitor (ss), var);
-    EXPECT_EQ(std::string("0:42,1:1,2:a,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,"));
 
     var = float{6.0};
     cv::util::visit(test_validation::MyVoidNoParamIndexedVisitor (ss), var);
-    EXPECT_EQ(std::string("0:42,1:1,2:a,3:6,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,3:6,"));
 
     var = test_validation::MyType{};
     cv::util::visit(test_validation::MyVoidNoParamIndexedVisitor (ss), var);
-    EXPECT_EQ(std::string("0:42,1:1,2:a,3:6,4:MyType,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,3:6,4:MyType,"));
 
     var = test_validation::MyClass{};
     cv::util::visit(test_validation::MyVoidNoParamIndexedVisitor (ss), var);
-    EXPECT_EQ(std::string("0:42,1:1,2:a,3:6,4:MyType,5:MyClass,"), ss.str());
+    EXPECT_EQ(ss.str(), std::string("0:42,1:1,2:a,3:6,4:MyType,5:MyClass,"));
 }
 
 
@@ -686,7 +686,7 @@ TEST(Variant, LambdaVisitor)
     {
         cv::util::visit(cv::util::overload_lambdas(
                 [](int value) {
-                    EXPECT_EQ(42, value);
+                    EXPECT_EQ(value, 42);
                 },
                 [](double) {
                     ADD_FAILURE() << "can't be called for `double`";
@@ -719,7 +719,7 @@ TEST(Variant, LambdaVisitor)
                     ADD_FAILURE() << "can't be called for `double`";
                 },
                 [](char value) {
-                    EXPECT_EQ('c', value);
+                    EXPECT_EQ(value, 'c');
                 },
                 [](float) {
                     ADD_FAILURE() << "can't be called for `float`";

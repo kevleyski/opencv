@@ -2,12 +2,12 @@
 // This file is auto-generated. Please don't modify it!
 //
 
-#import "$objcName.h"
+#import "$module.h"
 #import "CVObjcUtil.h"
 
 $imports
 
-@implementation $objcName
+@implementation $module
 
 $methodImplementations
 

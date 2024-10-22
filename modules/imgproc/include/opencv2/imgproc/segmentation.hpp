@@ -92,7 +92,7 @@ public:
     CV_WRAP
     IntelligentScissorsMB& applyImage(InputArray image);
 
-    /** @brief Specify custom features of input image
+    /** @brief Specify custom features of imput image
      *
      * Customized advanced variant of applyImage() call.
      *

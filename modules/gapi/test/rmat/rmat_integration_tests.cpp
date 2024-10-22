@@ -113,10 +113,10 @@ struct RMatIntTestStreaming : public RMatIntTestBase<RMatAdapterT>
 };
 
 struct OcvKernels {
-    cv::GKernelPackage kernels() { return cv::gapi::imgproc::cpu::kernels(); }
+    cv::gapi::GKernelPackage kernels() { return cv::gapi::imgproc::cpu::kernels(); }
 };
 struct FluidKernels {
-    cv::GKernelPackage kernels() { return cv::gapi::imgproc::fluid::kernels(); }
+    cv::gapi::GKernelPackage kernels() { return cv::gapi::imgproc::fluid::kernels(); }
 };
 
 struct RMatIntTestCpuRef : public

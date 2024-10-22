@@ -35,7 +35,8 @@ cv::gapi::GBackend::Priv::compile(const ade::Graph&,
                                   const std::vector<ade::NodeHandle> &) const
 {
     // ...and this method is here for the same reason!
-    GAPI_Error("InternalError");
+    GAPI_Assert(false);
+    return {};
 }
 
 std::unique_ptr<cv::gimpl::GIslandExecutable>
@@ -61,7 +62,7 @@ void cv::gapi::GBackend::Priv::addMetaSensitiveBackendPasses(ade::ExecutionEngin
     // which are sensitive to metadata
 }
 
-cv::GKernelPackage cv::gapi::GBackend::Priv::auxiliaryKernels() const
+cv::gapi::GKernelPackage cv::gapi::GBackend::Priv::auxiliaryKernels() const
 {
     return {};
 }
@@ -223,6 +224,7 @@ void bindOutArg(Mag& mag, const RcDesc &rc, const GRunArgP &arg, HandleRMat hand
 
     default:
         util::throw_error(std::logic_error("Unsupported GShape type"));
+        break;
     }
 }
 
@@ -254,6 +256,7 @@ void resetInternalData(Mag& mag, const Data &d)
 
     default:
         util::throw_error(std::logic_error("Unsupported GShape type"));
+        break;
     }
 }
 
@@ -281,6 +284,7 @@ cv::GRunArg getArg(const Mag& mag, const RcDesc &ref)
                        mag.meta<cv::MediaFrame>().at(ref.id));
     default:
         util::throw_error(std::logic_error("Unsupported GShape type"));
+        break;
     }
 }
 
@@ -323,6 +327,7 @@ cv::GRunArgP getObjPtr(Mag& mag, const RcDesc &rc, bool is_umat)
 
     default:
         util::throw_error(std::logic_error("Unsupported GShape type"));
+        break;
     }
 }
 
@@ -354,6 +359,7 @@ void writeBack(const Mag& mag, const RcDesc &rc, GRunArgP &g_arg)
 
     default:
         util::throw_error(std::logic_error("Unsupported GShape type"));
+        break;
     }
 }
 
@@ -385,7 +391,7 @@ void unbind(Mag& mag, const RcDesc &rc)
         break;
 
     default:
-        GAPI_Error("InternalError");
+        GAPI_Assert(false);
     }
 }
 
@@ -405,12 +411,6 @@ void createMat(const cv::GMatDesc &desc, cv::Mat& mat)
     {
         GAPI_Assert(!desc.planar);
         mat.create(desc.dims, desc.depth);
-#if !defined(GAPI_STANDALONE)
-        // NB: WA for 1D mats.
-        if (desc.dims.size() == 1u) {
-            mat.dims = 1;
-        }
-#endif
     }
 }
 

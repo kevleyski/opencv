@@ -50,7 +50,7 @@ namespace perf {
 
 void checkDeviceMaxMemoryAllocSize(const Size& size, int type, int factor)
 {
-    CV_Assert(factor > 0);
+    assert(factor > 0);
 
     if (!cv::ocl::useOpenCL())
         return;

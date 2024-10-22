@@ -82,7 +82,7 @@ TEST( Features2d_DescriptorExtractor, batch_ORB )
     for( i = 0; i < n; i++ )
     {
         string imgname = format("%s/img%d.png", path.c_str(), i+1);
-        Mat img = imread(imgname, IMREAD_GRAYSCALE);
+        Mat img = imread(imgname, 0);
         imgs.push_back(img);
     }
 
@@ -110,7 +110,7 @@ TEST( Features2d_DescriptorExtractor, batch_SIFT )
     for( i = 0; i < n; i++ )
     {
         string imgname = format("%s/img%d.png", path.c_str(), i+1);
-        Mat img = imread(imgname, IMREAD_GRAYSCALE);
+        Mat img = imread(imgname, 0);
         imgs.push_back(img);
     }
 
@@ -142,7 +142,7 @@ TEST_P(DescriptorImage, no_crash)
 {
     vector<String> fnames;
     glob(cvtest::TS::ptr()->get_data_path() + pattern, fnames, false);
-    std::sort(fnames.begin(), fnames.end());
+    sort(fnames.begin(), fnames.end());
 
     Ptr<AKAZE> akaze_mldb = AKAZE::create(AKAZE::DESCRIPTOR_MLDB);
     Ptr<AKAZE> akaze_mldb_upright = AKAZE::create(AKAZE::DESCRIPTOR_MLDB_UPRIGHT);

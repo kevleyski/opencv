@@ -19,7 +19,6 @@
 #ifdef _MSC_VER
 #include <stdlib.h>  // _byteswap_ulong
 #endif
-#include "src/dsp/cpu.h"
 #include "src/webp/types.h"
 
 // Warning! This macro triggers quite some MACRO wizardry around func signature!
@@ -65,7 +64,7 @@ extern "C" {
 #define BITS 56
 #elif defined(__arm__) || defined(_M_ARM)      // ARM
 #define BITS 24
-#elif WEBP_AARCH64                             // ARM 64bit
+#elif defined(__aarch64__)                     // ARM 64bit
 #define BITS 56
 #elif defined(__mips__)                        // MIPS
 #define BITS 24

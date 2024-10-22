@@ -149,7 +149,7 @@ void dumpDot(const ade::Graph &g, std::ostream& os)
             }
         }
         break;
-        default: GAPI_Error("InternalError");
+        default: GAPI_Assert(false);
         }
     }
 
@@ -209,7 +209,7 @@ void dumpDot(const ade::Graph &g, std::ostream& os)
             }
             break;
         default:
-            GAPI_Error("InternalError");
+            GAPI_Assert(false);
             break;
         }
     }

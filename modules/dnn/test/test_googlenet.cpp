@@ -58,8 +58,6 @@ TEST_P(Reproducibility_GoogLeNet, Batching)
     const int targetId = GetParam();
     if (targetId == DNN_TARGET_OPENCL_FP16)
         applyTestTag(CV_TEST_TAG_DNN_SKIP_OPENCL_FP16);
-    if (targetId == DNN_TARGET_CPU_FP16)
-        applyTestTag(CV_TEST_TAG_DNN_SKIP_CPU_FP16);
     Net net = readNetFromCaffe(findDataFile("dnn/bvlc_googlenet.prototxt"),
                                findDataFile("dnn/bvlc_googlenet.caffemodel", false));
     net.setPreferableBackend(DNN_BACKEND_OPENCV);
@@ -91,8 +89,6 @@ TEST_P(Reproducibility_GoogLeNet, IntermediateBlobs)
     const int targetId = GetParam();
     if (targetId == DNN_TARGET_OPENCL_FP16)
         applyTestTag(CV_TEST_TAG_DNN_SKIP_OPENCL_FP16);
-    if (targetId == DNN_TARGET_CPU_FP16)
-        applyTestTag(CV_TEST_TAG_DNN_SKIP_CPU_FP16);
     Net net = readNetFromCaffe(findDataFile("dnn/bvlc_googlenet.prototxt"),
                                findDataFile("dnn/bvlc_googlenet.caffemodel", false));
     net.setPreferableBackend(DNN_BACKEND_OPENCV);
@@ -124,8 +120,6 @@ TEST_P(Reproducibility_GoogLeNet, SeveralCalls)
     const int targetId = GetParam();
     if (targetId == DNN_TARGET_OPENCL_FP16)
         applyTestTag(CV_TEST_TAG_DNN_SKIP_OPENCL_FP16);
-    if (targetId == DNN_TARGET_CPU_FP16)
-        applyTestTag(CV_TEST_TAG_DNN_SKIP_CPU_FP16);
     Net net = readNetFromCaffe(findDataFile("dnn/bvlc_googlenet.prototxt"),
                                findDataFile("dnn/bvlc_googlenet.caffemodel", false));
     net.setPreferableBackend(DNN_BACKEND_OPENCV);

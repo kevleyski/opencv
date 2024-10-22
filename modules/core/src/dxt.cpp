@@ -64,6 +64,8 @@ namespace cv
                                Discrete Fourier Transform
 \****************************************************************************************/
 
+#define CV_MAX_LOCAL_DFT_SIZE  (1 << 15)
+
 static unsigned char bitrevTab[] =
 {
   0x00,0x80,0x40,0xc0,0x20,0xa0,0x60,0xe0,0x10,0x90,0x50,0xd0,0x30,0xb0,0x70,0xf0,
@@ -236,7 +238,7 @@ DFTInit( int n0, int nf, const int* factors, int* itab, int elem_size, void* _wa
     else
     {
         // radix[] is initialized from index 'nf' down to zero
-        CV_Assert (nf < 34);
+        assert (nf < 34);
         radix[nf] = 1;
         digits[nf] = 0;
         for( i = 0; i < nf; i++ )
@@ -372,7 +374,7 @@ DFTInit( int n0, int nf, const int* factors, int* itab, int elem_size, void* _wa
     else
     {
         Complex<float>* wave = (Complex<float>*)_wave;
-        CV_Assert( elem_size == sizeof(Complex<float>) );
+        assert( elem_size == sizeof(Complex<float>) );
 
         wave[0].re = 1.f;
         wave[0].im = 0.f;
@@ -872,13 +874,13 @@ DFT(const OcvDftOptions & c, const Complex<T>* src, Complex<T>* dst)
     // 0. shuffle data
     if( dst != src )
     {
-        CV_Assert( !c.noPermute );
+        assert( !c.noPermute );
         if( !inv )
         {
             for( i = 0; i <= n - 2; i += 2, itab += 2*tab_step )
             {
                 int k0 = itab[0], k1 = itab[tab_step];
-                CV_Assert( (unsigned)k0 < (unsigned)n && (unsigned)k1 < (unsigned)n );
+                assert( (unsigned)k0 < (unsigned)n && (unsigned)k1 < (unsigned)n );
                 dst[i] = src[k0]; dst[i+1] = src[k1];
             }
 
@@ -890,7 +892,7 @@ DFT(const OcvDftOptions & c, const Complex<T>* src, Complex<T>* dst)
             for( i = 0; i <= n - 2; i += 2, itab += 2*tab_step )
             {
                 int k0 = itab[0], k1 = itab[tab_step];
-                CV_Assert( (unsigned)k0 < (unsigned)n && (unsigned)k1 < (unsigned)n );
+                assert( (unsigned)k0 < (unsigned)n && (unsigned)k1 < (unsigned)n );
                 t.re = src[k0].re; t.im = -src[k0].im;
                 dst[i] = t;
                 t.re = src[k1].re; t.im = -src[k1].im;
@@ -919,7 +921,7 @@ DFT(const OcvDftOptions & c, const Complex<T>* src, Complex<T>* dst)
                     for( i = 0; i < n2; i += 2, itab += tab_step*2 )
                     {
                         j = itab[0];
-                        CV_Assert( (unsigned)j < (unsigned)n2 );
+                        assert( (unsigned)j < (unsigned)n2 );
 
                         CV_SWAP(dst[i+1], dsth[j], t);
                         if( j > i )
@@ -936,7 +938,7 @@ DFT(const OcvDftOptions & c, const Complex<T>* src, Complex<T>* dst)
                 for( i = 0; i < n; i++, itab += tab_step )
                 {
                     j = itab[0];
-                    CV_Assert( (unsigned)j < (unsigned)n );
+                    assert( (unsigned)j < (unsigned)n );
                     if( j > i )
                         CV_SWAP(dst[i], dst[j], t);
                 }
@@ -1216,7 +1218,7 @@ RealDFT(const OcvDftOptions & c, const T* src, T* dst)
         setIppErrorStatus();
 #endif
     }
-    CV_Assert( c.tab_size == n );
+    assert( c.tab_size == n );
 
     if( n == 1 )
     {
@@ -1336,11 +1338,11 @@ CCSIDFT(const OcvDftOptions & c, const T* src, T* dst)
     T save_s1 = 0.;
     T t0, t1, t2, t3, t;
 
-    CV_Assert( c.tab_size == n );
+    assert( c.tab_size == n );
 
     if( complex_input )
     {
-        CV_Assert( src != dst );
+        assert( src != dst );
         save_s1 = src[1];
         ((T*)src)[1] = src[0];
         src++;
@@ -3175,7 +3177,7 @@ protected:
             }
             else
             {
-                CV_Assert( !inv );
+                assert( !inv );
                 CopyColumn( dbuf0, complex_elem_size, dptr0,
                                dst_step, len, complex_elem_size );
                 if( even )
@@ -3872,7 +3874,7 @@ DCTInit( int n, int elem_size, void* _wave, int inv )
     if( n == 1 )
         return;
 
-    CV_Assert( (n&1) == 0 );
+    assert( (n&1) == 0 );
 
     if( (n & (n - 1)) == 0 )
     {
@@ -3910,7 +3912,7 @@ DCTInit( int n, int elem_size, void* _wave, int inv )
     else
     {
         Complex<float>* wave = (Complex<float>*)_wave;
-        CV_Assert( elem_size == sizeof(Complex<float>) );
+        assert( elem_size == sizeof(Complex<float>) );
 
         w.re = (float)scale;
         w.im = 0.f;

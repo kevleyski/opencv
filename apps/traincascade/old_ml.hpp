@@ -800,12 +800,13 @@ public:
     virtual const CvMat* get_var_importance();
     CV_WRAP virtual void clear();
 
-    virtual void read( const cv::FileNode& node );
-    virtual void write( cv::FileStorage& fs, const char* name ) const;
+    virtual void read( CvFileStorage* fs, CvFileNode* node );
+    virtual void write( CvFileStorage* fs, const char* name ) const;
 
     // special read & write methods for trees in the tree ensembles
-    virtual void read( const cv::FileNode& node, CvDTreeTrainData* data );
-    virtual void write( cv::FileStorage& fs ) const;
+    virtual void read( CvFileStorage* fs, CvFileNode* node,
+                       CvDTreeTrainData* data );
+    virtual void write( CvFileStorage* fs ) const;
 
     const CvDTreeNode* get_root() const;
     int get_pruned_tree_idx() const;
@@ -842,12 +843,12 @@ protected:
     virtual void free_prune_data(bool cut_tree);
     virtual void free_tree();
 
-    virtual void write_node( cv::FileStorage& fs, CvDTreeNode* node ) const;
-    virtual void write_split( cv::FileStorage& fs, CvDTreeSplit* split ) const;
-    virtual CvDTreeNode* read_node( const cv::FileNode& node, CvDTreeNode* parent );
-    virtual CvDTreeSplit* read_split( const cv::FileNode& node );
-    virtual void write_tree_nodes( cv::FileStorage& fs ) const;
-    virtual void read_tree_nodes( const cv::FileNode& node );
+    virtual void write_node( CvFileStorage* fs, CvDTreeNode* node ) const;
+    virtual void write_split( CvFileStorage* fs, CvDTreeSplit* split ) const;
+    virtual CvDTreeNode* read_node( CvFileStorage* fs, CvFileNode* node, CvDTreeNode* parent );
+    virtual CvDTreeSplit* read_split( CvFileStorage* fs, CvFileNode* node );
+    virtual void write_tree_nodes( CvFileStorage* fs ) const;
+    virtual void read_tree_nodes( CvFileStorage* fs, CvFileNode* node );
 
     CvDTreeNode* root;
     CvMat* var_importance;
@@ -875,7 +876,7 @@ public:
     virtual bool train( CvDTreeTrainData* trainData, const CvMat* _subsample_idx, CvRTrees* forest );
 
     virtual int get_var_count() const {return data ? data->var_count : 0;}
-    virtual void read( cv::FileStorage& fs, cv::FileNode& node, CvRTrees* forest, CvDTreeTrainData* _data );
+    virtual void read( CvFileStorage* fs, CvFileNode* node, CvRTrees* forest, CvDTreeTrainData* _data );
 
     /* dummy methods to avoid warnings: BEGIN */
     virtual bool train( const CvMat* trainData, int tflag,
@@ -885,8 +886,8 @@ public:
                         CvDTreeParams params=CvDTreeParams() );
 
     virtual bool train( CvDTreeTrainData* trainData, const CvMat* _subsample_idx );
-    virtual void read( cv::FileStorage& fs, cv::FileNode& node );
-    virtual void read( cv::FileStorage& fs, cv::FileNode& node,
+    virtual void read( CvFileStorage* fs, CvFileNode* node );
+    virtual void read( CvFileStorage* fs, CvFileNode* node,
                        CvDTreeTrainData* data );
     /* dummy methods to avoid warnings: END */
 
@@ -948,8 +949,8 @@ public:
 
     virtual float get_train_error();
 
-    virtual void read( cv::FileStorage& fs, cv::FileNode& node );
-    virtual void write( cv::FileStorage& fs, const char* name ) const;
+    virtual void read( CvFileStorage* fs, CvFileNode* node );
+    virtual void write( CvFileStorage* fs, const char* name ) const;
 
     CvMat* get_active_var_mask();
     CvRNG* get_rng();
@@ -1066,7 +1067,7 @@ public:
                         const CvMat* subsample_idx, CvBoost* ensemble );
 
     virtual void scale( double s );
-    virtual void read( const cv::FileNode& node,
+    virtual void read( CvFileStorage* fs, CvFileNode* node,
                        CvBoost* ensemble, CvDTreeTrainData* _data );
     virtual void clear();
 
@@ -1078,8 +1079,9 @@ public:
                         CvDTreeParams params=CvDTreeParams() );
     virtual bool train( CvDTreeTrainData* trainData, const CvMat* _subsample_idx );
 
-    virtual void read( cv::FileNode& node );
-    virtual void read( cv::FileNode& node, CvDTreeTrainData* data );
+    virtual void read( CvFileStorage* fs, CvFileNode* node );
+    virtual void read( CvFileStorage* fs, CvFileNode* node,
+                       CvDTreeTrainData* data );
     /* dummy methods to avoid warnings: END */
 
 protected:
@@ -1158,8 +1160,8 @@ public:
 
     CV_WRAP virtual void clear();
 
-    virtual void write( cv::FileStorage& storage, const char* name ) const;
-    virtual void read( cv::FileNode& node );
+    virtual void write( CvFileStorage* storage, const char* name ) const;
+    virtual void read( CvFileStorage* storage, CvFileNode* node );
     virtual const CvMat* get_active_vars(bool absolute_idx=true);
 
     CvSeq* get_weak_predictors();
@@ -1175,8 +1177,8 @@ protected:
     virtual bool set_params( const CvBoostParams& params );
     virtual void update_weights( CvBoostTree* tree );
     virtual void trim_weights();
-    virtual void write_params( cv::FileStorage & fs ) const;
-    virtual void read_params( cv::FileNode& node );
+    virtual void write_params( CvFileStorage* fs ) const;
+    virtual void read_params( CvFileStorage* fs, CvFileNode* node );
 
     virtual void initialize_weights(double (&p)[2]);
 
@@ -1546,7 +1548,7 @@ public:
     // Write parameters of the gtb model and data. Write learned model.
     //
     // API
-    // virtual void write( cv::FileStorage& fs, const char* name ) const;
+    // virtual void write( CvFileStorage* fs, const char* name ) const;
     //
     // INPUT
     // fs     - file storage to read parameters from.
@@ -1554,7 +1556,7 @@ public:
     // OUTPUT
     // RESULT
     */
-    virtual void write( cv::FileStorage& fs, const char* name ) const;
+    virtual void write( CvFileStorage* fs, const char* name ) const;
 
 
     /*
@@ -1562,7 +1564,7 @@ public:
     // Read parameters of the gtb model and data. Read learned model.
     //
     // API
-    // virtual void read( cv::FileStorage& fs, cv::FileNode& node );
+    // virtual void read( CvFileStorage* fs, CvFileNode* node );
     //
     // INPUT
     // fs     - file storage to read parameters from.
@@ -1570,7 +1572,7 @@ public:
     // OUTPUT
     // RESULT
     */
-    virtual void read( cv::FileStorage& fs, cv::FileNode& node );
+    virtual void read( CvFileStorage* fs, CvFileNode* node );
 
 
     // new-style C++ interface
@@ -1721,14 +1723,14 @@ protected:
     // Write parameters of the gtb model.
     //
     // API
-    // virtual void write_params( cv::FileStorage& fs ) const;
+    // virtual void write_params( CvFileStorage* fs ) const;
     //
     // INPUT
     // fs           - file storage to write parameters to.
     // OUTPUT
     // RESULT
     */
-    virtual void write_params( cv::FileStorage& fs ) const;
+    virtual void write_params( CvFileStorage* fs ) const;
 
 
     /*
@@ -1748,7 +1750,7 @@ protected:
     // class_labels - output class labels map.
     // RESULT
     */
-    virtual void read_params( cv::FileStorage& fs, cv::FileNode& fnode );
+    virtual void read_params( CvFileStorage* fs, CvFileNode* fnode );
     int get_len(const CvMat* mat) const;
 
 
@@ -1844,8 +1846,8 @@ public:
     // available training flags
     enum { UPDATE_WEIGHTS = 1, NO_INPUT_SCALE = 2, NO_OUTPUT_SCALE = 4 };
 
-    virtual void read( cv::FileStorage& fs, cv::FileNode& node );
-    virtual void write( cv::FileStorage& storage, const char* name ) const;
+    virtual void read( CvFileStorage* fs, CvFileNode* node );
+    virtual void write( CvFileStorage* storage, const char* name ) const;
 
     int get_layer_count() { return layer_sizes ? layer_sizes->cols : 0; }
     const CvMat* get_layer_sizes() { return layer_sizes; }
@@ -1878,8 +1880,8 @@ protected:
     virtual void calc_input_scale( const CvVectors* vecs, int flags );
     virtual void calc_output_scale( const CvVectors* vecs, int flags );
 
-    virtual void write_params( cv::FileStorage& fs ) const;
-    virtual void read_params( cv::FileStorage& fs, cv::FileNode& node );
+    virtual void write_params( CvFileStorage* fs ) const;
+    virtual void read_params( CvFileStorage* fs, CvFileNode* node );
 
     CvMat* layer_sizes;
     CvMat* wbuf;

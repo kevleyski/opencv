@@ -67,8 +67,6 @@ class Builder:
         self.options = options
         self.build_dir = check_dir(options.build_dir, create=True)
         self.opencv_dir = check_dir(options.opencv_dir)
-        print('-----------------------------------------------------------')
-        print('options.opencv_dir:', options.opencv_dir)
         self.emscripten_dir = check_dir(options.emscripten_dir)
 
     def get_toolchain_file(self):
@@ -86,7 +84,6 @@ class Builder:
                "-DCMAKE_BUILD_TYPE=Release",
                "-DCMAKE_TOOLCHAIN_FILE='%s'" % self.get_toolchain_file(),
                "-DCPU_BASELINE=''",
-               "-DCMAKE_INSTALL_PREFIX=/usr/local",
                "-DCPU_DISPATCH=''",
                "-DCV_TRACE=OFF",
                "-DBUILD_SHARED_LIBS=OFF",
@@ -139,10 +136,10 @@ class Builder:
                "-DBUILD_opencv_js=ON",
                "-DBUILD_opencv_python2=OFF",
                "-DBUILD_opencv_python3=OFF",
-               "-DBUILD_EXAMPLES=ON",
+               "-DBUILD_EXAMPLES=OFF",
                "-DBUILD_PACKAGE=OFF",
-               "-DBUILD_TESTS=ON",
-               "-DBUILD_PERF_TESTS=ON"]
+               "-DBUILD_TESTS=OFF",
+               "-DBUILD_PERF_TESTS=OFF"]
         if self.options.cmake_option:
             cmd += self.options.cmake_option
         if self.options.build_doc:
@@ -165,9 +162,6 @@ class Builder:
         else:
             cmd.append("-DBUILD_WASM_INTRIN_TESTS=OFF")
 
-        if self.options.webnn:
-            cmd.append("-DWITH_WEBNN=ON")
-
         flags = self.get_build_flags()
         if flags:
             cmd += ["-DCMAKE_C_FLAGS='%s'" % flags,
@@ -180,8 +174,6 @@ class Builder:
             flags += "-s WASM=1 "
         elif self.options.disable_wasm:
             flags += "-s WASM=0 "
-        if not self.options.disable_single_file:
-            flags += "-s SINGLE_FILE=1 "
         if self.options.threads:
             flags += "-s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 "
         else:
@@ -192,8 +184,6 @@ class Builder:
             flags += "-msimd128 "
         if self.options.build_flags:
             flags += self.options.build_flags
-        if self.options.webnn:
-            flags += "-s USE_WEBNN=1 "
         return flags
 
     def config(self):
@@ -235,7 +225,6 @@ if __name__ == "__main__":
     parser.add_argument('--emscripten_dir', default=emscripten_dir, help="Path to Emscripten to use for build (deprecated in favor of 'emcmake' launcher)")
     parser.add_argument('--build_wasm', action="store_true", help="Build OpenCV.js in WebAssembly format")
     parser.add_argument('--disable_wasm', action="store_true", help="Build OpenCV.js in Asm.js format")
-    parser.add_argument('--disable_single_file', action="store_true", help="Do not merge JavaScript and WebAssembly into one single file")
     parser.add_argument('--threads', action="store_true", help="Build OpenCV.js with threads optimization")
     parser.add_argument('--simd', action="store_true", help="Build OpenCV.js with SIMD optimization")
     parser.add_argument('--build_test', action="store_true", help="Build tests")
@@ -254,7 +243,6 @@ if __name__ == "__main__":
     # Write a path to modify file like argument of this flag
     parser.add_argument('--config', default=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'opencv_js.config.py'),
                         help="Specify configuration file with own list of exported into JS functions")
-    parser.add_argument('--webnn', action="store_true", help="Enable WebNN Backend")
 
     args = parser.parse_args()
 

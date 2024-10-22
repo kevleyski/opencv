@@ -8,7 +8,11 @@
 #include "opencv2/gapi/own/exports.hpp" // GAPI_EXPORTS
 
 #ifdef HAVE_ONEVPL
-#include "streaming/onevpl/onevpl_export.hpp"
+#if (MFX_VERSION >= 2000)
+#include <vpl/mfxdispatcher.h>
+#endif
+
+#include <vpl/mfx.h>
 
 namespace cv {
 namespace gapi {
@@ -24,18 +28,13 @@ public:
     using free_surface_iterator_t = typename surface_container_t::iterator;
     using cached_surface_container_t = std::map<mfxFrameSurface1*, surface_ptr_t>;
 
-    explicit CachedPool(size_t reserved_size = 0);
-
     void push_back(surface_ptr_t &&surf);
-    size_t total_size() const;
-    size_t available_size() const;
+    void reserve(size_t size);
+    size_t size() const;
     void clear();
-
     surface_ptr_t find_free();
     surface_ptr_t find_by_handle(mfxFrameSurface1* handle);
 private:
-    void reserve(size_t size);
-
     surface_container_t surfaces;
     free_surface_iterator_t next_free_it;
     cached_surface_container_t cache;

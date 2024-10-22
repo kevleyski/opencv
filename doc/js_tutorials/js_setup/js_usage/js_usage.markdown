@@ -4,9 +4,7 @@ Using OpenCV.js {#tutorial_js_usage}
 Steps
 -----
 
-In this tutorial, you will learn how to include and start to use `opencv.js` inside a web page.
-You can get a copy of `opencv.js` from `opencv-{VERSION_NUMBER}-docs.zip` in each [release](https://github.com/opencv/opencv/releases), or simply download the prebuilt script from the online documentations at "https://docs.opencv.org/{VERSION_NUMBER}/opencv.js" (For example, [https://docs.opencv.org/4.5.0/opencv.js](https://docs.opencv.org/4.5.0/opencv.js). Use `4.x` if you want the latest build).
-You can also build your own copy by following the tutorial @ref tutorial_js_setup.
+In this tutorial, you will learn how to include and start to use `opencv.js` inside a web page. You can get a copy of `opencv.js` from `opencv-{VERSION_NUMBER}-docs.zip` in each [release](https://github.com/opencv/opencv/releases), or simply download the prebuilt script from the online documentations at "https://docs.opencv.org/{VERSION_NUMBER}/opencv.js" (For example, [https://docs.opencv.org/3.4.0/opencv.js](https://docs.opencv.org/3.4.0/opencv.js). Use `master` if you want the latest build). You can also build your own copy by following the tutorial on Build Opencv.js.
 
 ### Create a web page
 
@@ -122,14 +120,11 @@ imgElement.onload = function() {
   mat.delete();
 };
 
-var Module = {
-  // https://emscripten.org/docs/api_reference/module.html#Module.onRuntimeInitialized
-  onRuntimeInitialized() {
-    document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
-  }
-};
+function onOpenCvReady() {
+  document.getElementById('status').innerHTML = 'OpenCV.js is ready.';
+}
 </script>
-<script async src="opencv.js" type="text/javascript"></script>
+<script async src="opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
 </body>
 </html>
 @endcode

@@ -60,57 +60,61 @@ void CvStatModel::clear()
 
 void CvStatModel::save( const char* filename, const char* name ) const
 {
-    cv::FileStorage fs;
+    CvFileStorage* fs = 0;
 
     CV_FUNCNAME( "CvStatModel::save" );
 
     __BEGIN__;
 
-    if( !fs.open( filename, cv::FileStorage::WRITE ))
+    CV_CALL( fs = cvOpenFileStorage( filename, 0, CV_STORAGE_WRITE ));
+    if( !fs )
         CV_ERROR( CV_StsError, "Could not open the file storage. Check the path and permissions" );
 
     write( fs, name ? name : default_model_name );
 
     __END__;
 
+    cvReleaseFileStorage( &fs );
 }
 
 
 void CvStatModel::load( const char* filename, const char* name )
 {
-    cv::FileStorage fs;
+    CvFileStorage* fs = 0;
 
-    CV_FUNCNAME( "CvStatModel::load" );
+    CV_FUNCNAME( "CvAlgorithm::load" );
 
     __BEGIN__;
 
-    cv::FileNode model_node;
+    CvFileNode* model_node = 0;
 
-    if( !fs.open(filename, cv::FileStorage::READ) )
-        CV_ERROR( CV_StsError, "Could not open the file storage. Check the path and permissions" );
+    CV_CALL( fs = cvOpenFileStorage( filename, 0, CV_STORAGE_READ ));
+    if( !fs )
+        EXIT;
 
     if( name )
-        model_node = fs[ name ];
+        model_node = cvGetFileNodeByName( fs, 0, name );
     else
     {
-        auto root = fs.root();
-        if ( root.size() > 0 )
-            model_node = fs[0];
+        CvFileNode* root = cvGetRootFileNode( fs );
+        if( root->data.seq->total > 0 )
+            model_node = (CvFileNode*)cvGetSeqElem( root->data.seq, 0 );
     }
 
-    read( model_node );
+    read( fs, model_node );
 
     __END__;
 
+    cvReleaseFileStorage( &fs );
 }
 
 
-void CvStatModel::write( cv::FileStorage&, const char* ) const
+void CvStatModel::write( CvFileStorage*, const char* ) const
 {
     OPENCV_ERROR( CV_StsNotImplemented, "CvStatModel::write", "" );
 }
 
-void CvStatModel::read( const cv::FileNode& )
+void CvStatModel::read( CvFileStorage*, CvFileNode* )
 {
     OPENCV_ERROR( CV_StsNotImplemented, "CvStatModel::read", "" );
 }
@@ -516,7 +520,7 @@ cvPreprocessCategoricalResponses( const CvMat* responses,
             if( ri != rf )
             {
                 char buf[100];
-                snprintf( buf, sizeof(buf), "response #%d is not integral", idx );
+                sprintf( buf, "response #%d is not integral", idx );
                 CV_ERROR( CV_StsBadArg, buf );
             }
             dst[i] = ri;

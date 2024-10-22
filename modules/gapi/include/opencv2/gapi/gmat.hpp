@@ -48,7 +48,6 @@ struct GOrigin;
  *    `cv::GOpaque<T>`   | T
  *    cv::GFrame         | cv::MediaFrame
  */
-
 /**
  * @brief GMat class represents image or tensor data in the
  * graph.

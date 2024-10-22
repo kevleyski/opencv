@@ -2,16 +2,11 @@
 // It is subject to the license terms in the LICENSE file found in the top-level directory
 // of this distribution and at http://opencv.org/license.html.
 //
-// Copyright (C) 2018-2022 Intel Corporation
+// Copyright (C) 2018-2020 Intel Corporation
 
 
 #ifndef OPENCV_GAPI_GCPUKERNEL_HPP
 #define OPENCV_GAPI_GCPUKERNEL_HPP
-
-#if defined _MSC_VER
-#pragma warning(push)
-#pragma warning(disable: 4702)  // "Unreachable code" on postprocess(...) call inside OCVCallHelper
-#endif
 
 #include <functional>
 #include <unordered_map>
@@ -33,6 +28,14 @@ namespace gimpl
 {
     // Forward-declare an internal class
     class GCPUExecutable;
+
+    namespace render
+    {
+    namespace ocv
+    {
+        class GRenderExecutable;
+    }
+    }
 } // namespace gimpl
 
 namespace gapi
@@ -130,6 +133,7 @@ protected:
     std::unordered_map<std::size_t, GRunArgP> m_results;
 
     friend class gimpl::GCPUExecutable;
+    friend class gimpl::render::ocv::GRenderExecutable;
 };
 
 class GAPI_EXPORTS GCPUKernel
@@ -534,9 +538,5 @@ gapi::cpu::GOCVFunctor gapi::cpu::ocv_kernel(const Callable& c)
 //! @endcond
 
 } // namespace cv
-
-#if defined _MSC_VER
-#pragma warning(pop)
-#endif
 
 #endif // OPENCV_GAPI_GCPUKERNEL_HPP

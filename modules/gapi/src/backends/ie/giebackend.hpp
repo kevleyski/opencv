@@ -62,12 +62,12 @@ public:
 
     virtual inline bool canReshape() const override { return false; }
     virtual inline void reshape(ade::Graph&, const GCompileArgs&) override {
-        GAPI_Error("InternalError"); // Not implemented yet
+        GAPI_Assert(false); // Not implemented yet
     }
 
     virtual void run(std::vector<InObj>  &&,
                      std::vector<OutObj> &&) override {
-        GAPI_Error("Not implemented");
+        GAPI_Assert(false && "Not implemented");
     }
 
     virtual void run(GIslandExecutable::IInput  &in,

@@ -4,8 +4,6 @@
 
 #include "precomp.hpp"
 
-#include <sstream>
-
 #include "opencv2/core/check.hpp"
 
 namespace cv {
@@ -16,7 +14,7 @@ const char* depthToString(int depth)
     return s ? s : "<invalid depth>";
 }
 
-cv::String typeToString(int type)
+const cv::String typeToString(int type)
 {
     cv::String s = detail::typeToString_(type);
     if (s.empty())
@@ -49,7 +47,7 @@ const char* depthToString_(int depth)
     return (depth <= CV_16F && depth >= 0) ? depthNames[depth] : NULL;
 }
 
-cv::String typeToString_(int type)
+const cv::String typeToString_(int type)
 {
     int depth = CV_MAT_DEPTH(type);
     int cn = CV_MAT_CN(type);
@@ -98,10 +96,6 @@ void check_failed_MatType(const int v1, const int v2, const CheckContext& ctx)
 void check_failed_MatChannels(const int v1, const int v2, const CheckContext& ctx)
 {
     check_failed_auto_<int>(v1, v2, ctx);
-}
-void check_failed_auto(const bool v1, const bool v2, const CheckContext& ctx)
-{
-    check_failed_auto_<bool>(v1, v2, ctx);
 }
 void check_failed_auto(const int v1, const int v2, const CheckContext& ctx)
 {
@@ -156,22 +150,6 @@ void check_failed_MatType(const int v, const CheckContext& ctx)
 void check_failed_MatChannels(const int v, const CheckContext& ctx)
 {
     check_failed_auto_<int>(v, ctx);
-}
-void check_failed_true(const bool v, const CheckContext& ctx)
-{
-    CV_UNUSED(v);
-    std::stringstream ss;
-    ss  << ctx.message << ":" << std::endl
-        << "    '" << ctx.p1_str << "' must be 'true'";
-    cv::error(cv::Error::StsError, ss.str(), ctx.func, ctx.file, ctx.line);
-}
-void check_failed_false(const bool v, const CheckContext& ctx)
-{
-    CV_UNUSED(v);
-    std::stringstream ss;
-    ss  << ctx.message << ":" << std::endl
-        << "    '" << ctx.p1_str << "' must be 'false'";
-    cv::error(cv::Error::StsError, ss.str(), ctx.func, ctx.file, ctx.line);
 }
 void check_failed_auto(const int v, const CheckContext& ctx)
 {

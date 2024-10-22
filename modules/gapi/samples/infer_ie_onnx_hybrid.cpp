@@ -156,6 +156,7 @@ int main(int argc, char *argv[])
 
     auto in_src = cv::gapi::wip::make_src<cv::gapi::wip::GCaptureSource>(input);
     pipeline.setSource(cv::gin(in_src));
+    pipeline.start();
 
     cv::util::optional<cv::Mat>               out_frame;
     cv::util::optional<std::vector<cv::Rect>> out_faces;
@@ -166,13 +167,8 @@ int main(int argc, char *argv[])
     std::vector<cv::Mat>  last_emotions;
 
     cv::VideoWriter writer;
-    cv::TickMeter tm;
-    std::size_t frames = 0u;
 
-    tm.start();
-    pipeline.start();
     while (pipeline.pull(cv::gout(out_frame, out_faces, out_emotions))) {
-        ++frames;
         if (out_faces && out_emotions) {
             last_faces = *out_faces;
             last_emotions = *out_emotions;
@@ -195,7 +191,5 @@ int main(int argc, char *argv[])
             cv::waitKey(1);
         }
     }
-    tm.stop();
-    std::cout << "Processed " << frames << " frames" << " (" << frames / tm.getTimeSec() << " FPS)" << std::endl;
     return 0;
 }

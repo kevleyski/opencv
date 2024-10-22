@@ -230,8 +230,7 @@ enum KmeansFlags {
 enum ReduceTypes { REDUCE_SUM = 0, //!< the output is the sum of all rows/columns of the matrix.
                    REDUCE_AVG = 1, //!< the output is the mean vector of all rows/columns of the matrix.
                    REDUCE_MAX = 2, //!< the output is the maximum (column/row-wise) of all rows/columns of the matrix.
-                   REDUCE_MIN = 3,  //!< the output is the minimum (column/row-wise) of all rows/columns of the matrix.
-                   REDUCE_SUM2 = 4  //!< the output is the sum of all squared rows/columns of the matrix.
+                   REDUCE_MIN = 3  //!< the output is the minimum (column/row-wise) of all rows/columns of the matrix.
                  };
 
 //! @} core_array
@@ -349,9 +348,6 @@ be set to the default -1. In this case, the output array will have the same dept
 array, be it src1, src2 or both.
 @note Saturation is not applied when the output array has the depth CV_32S. You may even get
 result of an incorrect sign in the case of overflow.
-@note (Python) Be careful to difference behaviour between src1/src2 are single number and they are tuple/array.
-`add(src,X)` means `add(src,(X,X,X,X))`.
-`add(src,(X,))` means `add(src,(X,0,0,0))`.
 @param src1 first input array or a scalar.
 @param src2 second input array or a scalar.
 @param dst output array that has the same size and number of channels as the input array(s); the
@@ -393,9 +389,6 @@ in the first case, when src1.depth() == src2.depth(), dtype can be set to the de
 case the output array will have the same depth as the input array, be it src1, src2 or both.
 @note Saturation is not applied when the output array has the depth CV_32S. You may even get
 result of an incorrect sign in the case of overflow.
-@note (Python) Be careful to difference behaviour between src1/src2 are single number and they are tuple/array.
-`subtract(src,X)` means `subtract(src,(X,X,X,X))`.
-`subtract(src,(X,))` means `subtract(src,(X,0,0,0))`.
 @param src1 first input array or a scalar.
 @param src2 second input array or a scalar.
 @param dst output array of the same size and the same number of channels as the input array.
@@ -421,9 +414,6 @@ For a not-per-element matrix product, see gemm .
 @note Saturation is not applied when the output array has the depth
 CV_32S. You may even get result of an incorrect sign in the case of
 overflow.
-@note (Python) Be careful to difference behaviour between src1/src2 are single number and they are tuple/array.
-`multiply(src,X)` means `multiply(src,(X,X,X,X))`.
-`multiply(src,(X,))` means `multiply(src,(X,0,0,0))`.
 @param src1 first input array.
 @param src2 second input array of the same size and the same type as src1.
 @param dst output array of the same size and type as src1.
@@ -452,9 +442,6 @@ Expect correct IEEE-754 behaviour for floating-point data (with NaN, Inf result 
 
 @note Saturation is not applied when the output array has the depth CV_32S. You may even get
 result of an incorrect sign in the case of overflow.
-@note (Python) Be careful to difference behaviour between src1/src2 are single number and they are tuple/array.
-`divide(src,X)` means `divide(src,(X,X,X,X))`.
-`divide(src,(X,))` means `divide(src,(X,0,0,0))`.
 @param src1 first input array.
 @param src2 second input array of the same size and type as src1.
 @param scale scalar factor.
@@ -583,14 +570,6 @@ independently for each channel.
 @sa  countNonZero, mean, meanStdDev, norm, minMaxLoc, reduce
 */
 CV_EXPORTS_AS(sumElems) Scalar sum(InputArray src);
-
-/** @brief Checks for the presence of at least one non-zero array element.
-
-The function returns whether there are non-zero elements in src
-@param src single-channel array.
-@sa  mean, meanStdDev, norm, minMaxLoc, calcCovarMatrix
-*/
-CV_EXPORTS_W bool hasNonZero( InputArray src );
 
 /** @brief Counts non-zero array elements.
 
@@ -840,45 +819,12 @@ mixChannels , or split .
 @param minLoc pointer to the returned minimum location (in 2D case); NULL is used if not required.
 @param maxLoc pointer to the returned maximum location (in 2D case); NULL is used if not required.
 @param mask optional mask used to select a sub-array.
-@sa max, min, reduceArgMin, reduceArgMax, compare, inRange, extractImageCOI, mixChannels, split, Mat::reshape
+@sa max, min, compare, inRange, extractImageCOI, mixChannels, split, Mat::reshape
 */
 CV_EXPORTS_W void minMaxLoc(InputArray src, CV_OUT double* minVal,
                             CV_OUT double* maxVal = 0, CV_OUT Point* minLoc = 0,
                             CV_OUT Point* maxLoc = 0, InputArray mask = noArray());
 
-/**
- * @brief Finds indices of min elements along provided axis
- *
- * @note
- *      - If input or output array is not continuous, this function will create an internal copy.
- *      - NaN handling is left unspecified, see patchNaNs().
- *      - The returned index is always in bounds of input matrix.
- *
- * @param src input single-channel array.
- * @param dst output array of type CV_32SC1 with the same dimensionality as src,
- * except for axis being reduced - it should be set to 1.
- * @param lastIndex whether to get the index of first or last occurrence of min.
- * @param axis axis to reduce along.
- * @sa reduceArgMax, minMaxLoc, min, max, compare, reduce
- */
-CV_EXPORTS_W void reduceArgMin(InputArray src, OutputArray dst, int axis, bool lastIndex = false);
-
-/**
- * @brief Finds indices of max elements along provided axis
- *
- * @note
- *      - If input or output array is not continuous, this function will create an internal copy.
- *      - NaN handling is left unspecified, see patchNaNs().
- *      - The returned index is always in bounds of input matrix.
- *
- * @param src input single-channel array.
- * @param dst output array of type CV_32SC1 with the same dimensionality as src,
- * except for axis being reduced - it should be set to 1.
- * @param lastIndex whether to get the index of first or last occurrence of max.
- * @param axis axis to reduce along.
- * @sa reduceArgMin, minMaxLoc, min, max, compare, reduce
- */
-CV_EXPORTS_W void reduceArgMax(InputArray src, OutputArray dst, int axis, bool lastIndex = false);
 
 /** @brief Finds the global minimum and maximum in an array
 
@@ -924,7 +870,7 @@ The function #reduce reduces the matrix to a vector by treating the matrix rows/
 1D vectors and performing the specified operation on the vectors until a single row/column is
 obtained. For example, the function can be used to compute horizontal and vertical projections of a
 raster image. In case of #REDUCE_MAX and #REDUCE_MIN , the output image should have the same type as the source one.
-In case of #REDUCE_SUM, #REDUCE_SUM2 and #REDUCE_AVG , the output may have a larger element bit-depth to preserve accuracy.
+In case of #REDUCE_SUM and #REDUCE_AVG , the output may have a larger element bit-depth to preserve accuracy.
 And multi-channel arrays are also supported in these two reduction modes.
 
 The following code demonstrates its usage for a single channel matrix.
@@ -940,7 +886,7 @@ a single row. 1 means that the matrix is reduced to a single column.
 @param rtype reduction operation that could be one of #ReduceTypes
 @param dtype when negative, the output vector will have the same type as the input matrix,
 otherwise, its type will be CV_MAKE_TYPE(CV_MAT_DEPTH(dtype), src.channels()).
-@sa repeat, reduceArgMin, reduceArgMax
+@sa repeat
 */
 CV_EXPORTS_W void reduce(InputArray src, OutputArray dst, int dim, int rtype, int dtype = -1);
 
@@ -1122,20 +1068,6 @@ around both axes.
 @sa transpose , repeat , completeSymm
 */
 CV_EXPORTS_W void flip(InputArray src, OutputArray dst, int flipCode);
-
-/** @brief Flips a n-dimensional at given axis
- *  @param src input array
- *  @param dst output array that has the same shape of src
- *  @param axis axis that performs a flip on. 0 <= axis < src.dims.
- */
-CV_EXPORTS_W void flipND(InputArray src, OutputArray dst, int axis);
-
-/** @brief Broadcast the given Mat to the given shape.
- * @param src input array
- * @param shape target shape. Should be a list of CV_32S numbers. Note that negative values are not supported.
- * @param dst output array that has the given shape
- */
-CV_EXPORTS_W void broadcast(InputArray src, InputArray shape, OutputArray dst);
 
 enum RotateFlags {
     ROTATE_90_CLOCKWISE = 0, //!<Rotate 90 degrees clockwise
@@ -1424,9 +1356,6 @@ The function cv::absdiff calculates:
     multi-channel arrays, each channel is processed independently.
 @note Saturation is not applied when the arrays have the depth CV_32S.
 You may even get a negative value in the case of overflow.
-@note (Python) Be careful to difference behaviour between src1/src2 are single number and they are tuple/array.
-`absdiff(src,X)` means `absdiff(src,(X,X,X,X))`.
-`absdiff(src,(X,))` means `absdiff(src,(X,0,0,0))`.
 @param src1 first input array or a scalar.
 @param src2 second input array or a scalar.
 @param dst output array that has the same size and type as input arrays.
@@ -1776,16 +1705,6 @@ should be done separately if needed.
 @param dst output array of the same type as src.
 */
 CV_EXPORTS_W void transpose(InputArray src, OutputArray dst);
-
-/** @brief Transpose for n-dimensional matrices.
- *
- * @note Input should be continuous single-channel matrix.
- * @param src input array.
- * @param order a permutation of [0,1,..,N-1] where N is the number of axes of src.
- * The i’th axis of dst will correspond to the axis numbered order[i] of the input.
- * @param dst output array of the same type as src.
- */
-CV_EXPORTS_W void transposeND(InputArray src, const std::vector<int>& order, OutputArray dst);
 
 /** @brief Performs the matrix transformation of every array element.
 
@@ -3180,16 +3099,12 @@ public:
 
     /** @brief Stores algorithm parameters in a file storage
     */
-    CV_WRAP virtual void write(FileStorage& fs) const { CV_UNUSED(fs); }
+    virtual void write(FileStorage& fs) const { CV_UNUSED(fs); }
 
-    /**
+    /** @brief simplified API for language bindings
     * @overload
     */
-    CV_WRAP void write(FileStorage& fs, const String& name) const;
-#if CV_VERSION_MAJOR < 5
-    /** @deprecated */
-    void write(const Ptr<FileStorage>& fs, const String& name = String()) const;
-#endif
+    CV_WRAP void write(const Ptr<FileStorage>& fs, const String& name = String()) const;
 
     /** @brief Reads algorithm parameters from a file storage
     */

@@ -8,7 +8,6 @@
 #include "test_precomp.hpp"
 
 #include "gapi_fluid_test_kernels.hpp"
-#include "common/gapi_tests_common.hpp"
 
 namespace opencv_test
 {
@@ -41,7 +40,7 @@ GAPI_FLUID_KERNEL(FCopy, TCopy, false)
     }
 };
 
-GAPI_FLUID_KERNEL(FResizeNN1Lpi, cv::gapi::imgproc::GResize, false)
+GAPI_FLUID_KERNEL(FResizeNN1Lpi, cv::gapi::core::GResize, false)
 {
     static const int Window = 1;
     static const auto Kind = GFluidKernel::Kind::Resize;
@@ -203,7 +202,7 @@ struct Mapper
 } // namespace areaUpscale
 } // anonymous namespace
 
-GAPI_FLUID_KERNEL(FResizeLinear1Lpi, cv::gapi::imgproc::GResize, true)
+GAPI_FLUID_KERNEL(FResizeLinear1Lpi, cv::gapi::core::GResize, true)
 {
     static const int Window = 1;
     static const auto Kind = GFluidKernel::Kind::Resize;
@@ -238,7 +237,7 @@ auto endInCoord = [](int outCoord, double ratio) {
 };
 } // namespace
 
-GAPI_FLUID_KERNEL(FResizeArea1Lpi, cv::gapi::imgproc::GResize, false)
+GAPI_FLUID_KERNEL(FResizeArea1Lpi, cv::gapi::core::GResize, false)
 {
     static const int Window = 1;
     static const auto Kind = GFluidKernel::Kind::Resize;
@@ -302,7 +301,7 @@ GAPI_FLUID_KERNEL(FResizeArea1Lpi, cv::gapi::imgproc::GResize, false)
     }
 };
 
-GAPI_FLUID_KERNEL(FResizeAreaUpscale1Lpi, cv::gapi::imgproc::GResize, true)
+GAPI_FLUID_KERNEL(FResizeAreaUpscale1Lpi, cv::gapi::core::GResize, true)
 {
     static const int Window = 1;
     static const auto Kind = GFluidKernel::Kind::Resize;
@@ -326,7 +325,7 @@ GAPI_FLUID_KERNEL(FResizeAreaUpscale1Lpi, cv::gapi::imgproc::GResize, true)
 
 #define ADD_RESIZE_KERNEL_WITH_LPI(interp, lpi, scratch)                                                                           \
 struct Resize##interp##lpi##LpiHelper : public FResize##interp##1Lpi { static const int LPI = lpi; };                              \
-struct FResize##interp##lpi##Lpi : public cv::GFluidKernelImpl<Resize##interp##lpi##LpiHelper, cv::gapi::imgproc::GResize, scratch>{};
+struct FResize##interp##lpi##Lpi : public cv::GFluidKernelImpl<Resize##interp##lpi##LpiHelper, cv::gapi::core::GResize, scratch>{};
 
 ADD_RESIZE_KERNEL_WITH_LPI(NN, 2, false)
 ADD_RESIZE_KERNEL_WITH_LPI(NN, 3, false)
@@ -364,7 +363,7 @@ static auto fluidResizeTestPackage = [](int interpolation, cv::Size szIn, cv::Si
     default: CV_Assert(false);  \
     }
 
-    cv::GKernelPackage pkg;
+    GKernelPackage pkg;
     switch (interpolation)
     {
     case INTER_NEAREST: RESIZE_SWITCH(NN); break;
@@ -742,7 +741,7 @@ TEST_P(NV12PlusResizeTest, Test)
     auto out = cv::gapi::resize(rgb, out_sz, 0, 0, interp);
     cv::GComputation c(cv::GIn(y, uv), cv::GOut(out));
 
-    auto pkg = cv::gapi::combine(fluidTestPackage, cv::gapi::imgproc::fluid::kernels());
+    auto pkg = cv::gapi::combine(fluidTestPackage, cv::gapi::core::fluid::kernels());
 
     c.apply(cv::gin(y_mat, uv_mat), cv::gout(out_mat)
            ,cv::compile_args(pkg, cv::GFluidOutputRois{{roi}}));
@@ -750,7 +749,8 @@ TEST_P(NV12PlusResizeTest, Test)
     cv::Mat rgb_mat;
     cv::cvtColor(in_mat, rgb_mat, cv::COLOR_YUV2RGB_NV12);
     cv::resize(rgb_mat, out_mat_ocv, out_sz, 0, 0, interp);
-    EXPECT_TRUE(Tolerance_FloatRel_IntAbs(1e-5, 1).to_compare_f()(out_mat(roi), out_mat_ocv(roi)));
+
+    EXPECT_EQ(0, cvtest::norm(out_mat(roi), out_mat_ocv(roi), NORM_INF));
 }
 
 INSTANTIATE_TEST_CASE_P(Fluid, NV12PlusResizeTest,
@@ -829,11 +829,7 @@ TEST_P(Preproc4lpiTest, Test)
     cv::cvtColor(in_mat, rgb_mat, cv::COLOR_YUV2RGB_NV12);
     cv::resize(rgb_mat, out_mat_ocv, out_sz, 0, 0, interp);
 
-#if defined(__arm__) || defined(__aarch64__)
-    EXPECT_GE(2, cvtest::norm(out_mat(roi), out_mat_ocv(roi), NORM_INF));
-#else
     EXPECT_EQ(0, cvtest::norm(out_mat(roi), out_mat_ocv(roi), NORM_INF));
-#endif
 }
 
 INSTANTIATE_TEST_CASE_P(Fluid, Preproc4lpiTest,

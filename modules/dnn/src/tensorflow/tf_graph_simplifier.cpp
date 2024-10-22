@@ -815,7 +815,6 @@ void RemoveIdentityOps(tensorflow::GraphDef& net)
 
         if (type == "Identity" || type == "Dropout" || type == "PlaceholderWithDefault") {
             identity_ops_idx.push_back(li);
-            CV_Assert(layer.input_size() != 0);
             identity_ops[layer.name()] = layer.input(0);
         }
     }
@@ -830,19 +829,12 @@ void RemoveIdentityOps(tensorflow::GraphDef& net)
             IdentityOpsMap::iterator it = identity_ops.find(input_op_name);
 
             if (it != identity_ops.end()) {
-                std::set<String> loopCheckSet;
                 // In case of Identity after Identity
                 while (true)
                 {
                     IdentityOpsMap::iterator nextIt = identity_ops.find(it->second);
                     if (nextIt != identity_ops.end())
-                    {
-                        // Loop check
-                        if (loopCheckSet.find(it->second) != loopCheckSet.end())
-                            CV_Error(Error::StsError, "Found a loop in your input Tensorflow model, which is illegal!");
-                        loopCheckSet.insert(it->second);
                         it = nextIt;
-                    }
                     else
                         break;
                 }
@@ -998,7 +990,6 @@ void sortByExecutionOrder(tensorflow::GraphDef& net)
         nodesMap.insert(std::make_pair(node.name(), i));
     }
 
-    CV_CheckEQ(nodesMap.size(), (size_t)net.node_size(), "Node names must be unique");
     // Indices of nodes which use specific node as input.
     std::vector<std::vector<int> > edges(nodesMap.size());
     std::vector<int> numRefsToAdd(nodesMap.size(), 0);
@@ -1016,7 +1007,7 @@ void sortByExecutionOrder(tensorflow::GraphDef& net)
             nodesMapIt = nodesMap.find(inpName);
             if (nodesMapIt != nodesMap.end())
             {
-                edges.at(nodesMapIt->second).push_back(i);
+                edges[nodesMapIt->second].push_back(i);
                 numInputsInGraph += 1;
             }
         }
@@ -1028,11 +1019,11 @@ void sortByExecutionOrder(tensorflow::GraphDef& net)
             {
                 int numControlEdges = 0;
                 for (int j = 0; j < numInputsInGraph; ++j)
-                    numControlEdges += node.input(j).at(0) == '^';
-                numRefsToAdd.at(i) = numControlEdges + 1;
+                    numControlEdges += node.input(j)[0] == '^';
+                numRefsToAdd[i] = numControlEdges + 1;
             }
             else
-                numRefsToAdd.at(i) = numInputsInGraph;
+                numRefsToAdd[i] = numInputsInGraph;
         }
     }
 
@@ -1044,16 +1035,17 @@ void sortByExecutionOrder(tensorflow::GraphDef& net)
         nodesToAdd.pop_back();
 
         permIds.push_back(nodeToAdd);
-        for (int i = 0; i < edges.at(nodeToAdd).size(); ++i)
+
+        for (int i = 0; i < edges[nodeToAdd].size(); ++i)
         {
-            int consumerId = edges.at(nodeToAdd).at(i);
-            if (numRefsToAdd.at(consumerId) > 0)
+            int consumerId = edges[nodeToAdd][i];
+            if (numRefsToAdd[consumerId] > 0)
             {
-                if (numRefsToAdd.at(consumerId) == 1)
+                if (numRefsToAdd[consumerId] == 1)
                     nodesToAdd.push_back(consumerId);
                 else
-                    CV_Assert(numRefsToAdd.at(consumerId) >= 0);
-                numRefsToAdd.at(consumerId) -= 1;
+                    CV_Assert(numRefsToAdd[consumerId] >= 0);
+                numRefsToAdd[consumerId] -= 1;
             }
         }
     }
@@ -1120,16 +1112,15 @@ void removePhaseSwitches(tensorflow::GraphDef& net)
             inpName = inpName.substr(1 + (int)inpName.find('^'), inpName.rfind(':'));
             nodesMapIt = nodesMap.find(inpName);
             CV_Assert(nodesMapIt != nodesMap.end());
-            int inpNodeId = nodesMapIt->second;
 
-            CV_CheckGT(numConsumers[inpNodeId], 0,
-                       "Input node of the current node should have at least one output node");
+            int inpNodeId = nodesMapIt->second;
             if (numConsumers[inpNodeId] == 1)
             {
                 mergeOpSubgraphNodes.push(inpNodeId);
                 nodesToRemove.push_back(inpNodeId);
             }
-            numConsumers[inpNodeId] -= 1;
+            else if (numConsumers[inpNodeId] > 0)
+                numConsumers[inpNodeId] -= 1;
         }
     }
     std::sort(nodesToRemove.begin(), nodesToRemove.end());

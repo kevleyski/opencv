@@ -8,7 +8,6 @@
 #include <limits>
 #include <cstring>
 #include <algorithm>
-#include <emscripten/version.h>
 #include "opencv2/core/saturate.hpp"
 
 #define CV_SIMD128 1

@@ -545,7 +545,7 @@ bool Jpeg2KOpjDecoderBase::readHeader()
      */
     bool hasAlpha = false;
     const int numcomps = image_->numcomps;
-    CV_Check(numcomps, numcomps >= 1 && numcomps <= 4, "Unsupported number of components");
+    CV_Assert(numcomps >= 1);
     for (int i = 0; i < numcomps; i++)
     {
         const opj_image_comp_t& comp = image_->comps[i];

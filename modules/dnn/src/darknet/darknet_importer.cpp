@@ -51,7 +51,6 @@
 
 #include "darknet_io.hpp"
 
-#include <opencv2/core/utils/fp_control_utils.hpp>
 
 namespace cv {
 namespace dnn {
@@ -62,8 +61,6 @@ namespace
 
 class DarknetImporter
 {
-    FPDenormalsIgnoreHintScope fp_denormals_ignore_scope;
-
     darknet::NetParameter net;
 
 public:
@@ -207,7 +204,7 @@ Net readNetFromDarknet(const String &cfgFile, const String &darknetModel /*= Str
     std::ifstream cfgStream(cfgFile.c_str());
     if (!cfgStream.is_open())
     {
-        CV_Error(cv::Error::StsParseError, "Failed to open NetParameter file: " + std::string(cfgFile));
+        CV_Error(cv::Error::StsParseError, "Failed to parse NetParameter file: " + std::string(cfgFile));
     }
     if (darknetModel != String())
     {

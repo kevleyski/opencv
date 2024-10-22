@@ -268,7 +268,7 @@ public:
             m_buffer_list[0].finish();
 
             m_data_len = m_buffer_list[0].get_len();
-            m_last_bit_len = 32 - m_buffer_list[0].get_bits_free();
+            m_last_bit_len = m_buffer_list[0].get_bits_free() ? 32 - m_buffer_list[0].get_bits_free() : 0;
 
             return m_buffer_list[0].get_data();
         }
@@ -331,14 +331,9 @@ public:
         }
 
         //bits == 0 means that last element shouldn't be used.
-        if (bits != 0) {
-            m_output_buffer[m_data_len++] = currval;
-            m_last_bit_len = -bits;
-        }
-        else
-        {
-            m_last_bit_len = 32;
-        }
+        m_output_buffer[m_data_len++] = currval;
+
+        m_last_bit_len = -bits;
 
         return &m_output_buffer[0];
     }
@@ -1172,6 +1167,8 @@ public:
         fdct_qtab(_fdct_qtab),
         cat_table(_cat_table)
     {
+#if 0  // disable parallel processing due to buffer overrun bug: https://github.com/opencv/opencv/issues/19634
+
         //empirically found value. if number of pixels is less than that value there is no sense to parallelize it.
         const int min_pixels_count = 96*96;
 
@@ -1196,6 +1193,12 @@ public:
         int max_stripes = (height - 1)/y_step + 1;
 
         stripes_count = std::min(stripes_count, max_stripes);
+
+#else
+        if (nstripes > 1)
+            CV_LOG_ONCE_WARNING(NULL, "VIDEOIO/MJPEG: parallel processing is disabled: https://github.com/opencv/opencv/issues/19634");
+        stripes_count = 1;
+#endif
 
         m_buffer_list.allocate_buffers(stripes_count, (height*width*2)/stripes_count);
     }

@@ -586,15 +586,6 @@ Stream cv::cuda::StreamAccessor::wrapStream(cudaStream_t stream)
 
 #endif
 
-Stream cv::cuda::wrapStream(size_t cudaStreamMemoryAddress) {
-#ifndef HAVE_CUDA
-    CV_UNUSED(cudaStreamMemoryAddress);
-    throw_no_cuda();
-#else
-    return cv::cuda::StreamAccessor::wrapStream(reinterpret_cast<cudaStream_t>(cudaStreamMemoryAddress));
-#endif
-}
-
 /////////////////////////////////////////////////////////////
 /// StackAllocator
 
@@ -820,7 +811,7 @@ Event cv::cuda::EventAccessor::wrapEvent(cudaEvent_t event)
 
 #endif
 
-cv::cuda::Event::Event(const Event::CreateFlags flags)
+cv::cuda::Event::Event(CreateFlags flags)
 {
 #ifndef HAVE_CUDA
     CV_UNUSED(flags);

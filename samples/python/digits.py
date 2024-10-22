@@ -191,4 +191,3 @@ if __name__ == '__main__':
     model.save('digits_svm.dat')
 
     cv.waitKey(0)
-    cv.destroyAllWindows()

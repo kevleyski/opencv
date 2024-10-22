@@ -6,26 +6,28 @@
 
 #ifndef GAPI_STREAMING_ONEVPL_ACCELERATORS_ACCEL_POLICY_DX11_HPP
 #define GAPI_STREAMING_ONEVPL_ACCELERATORS_ACCEL_POLICY_DX11_HPP
-#include <map>
 
 #include "opencv2/gapi/own/exports.hpp" // GAPI_EXPORTS
+//TODO Remove the next MACRO right after DX11 implementation
+#define  CPU_ACCEL_ADAPTER
 
 #ifdef HAVE_ONEVPL
+#include <vpl/mfxvideo.h>
 #include "streaming/onevpl/accelerators/accel_policy_interface.hpp"
-#include "streaming/onevpl/accelerators/surface/surface_pool.hpp"
-#include "streaming/onevpl/accelerators/dx11_alloc_resource.hpp"
 
-#if defined(HAVE_DIRECTX) && defined(HAVE_D3D11)
+#ifdef CPU_ACCEL_ADAPTER
+#include "streaming/onevpl/accelerators/accel_policy_cpu.hpp"
+#endif
+
+#ifdef HAVE_DIRECTX
+#ifdef HAVE_D3D11
 #define D3D11_NO_HELPERS
-#define NOMINMAX
 #include <d3d11.h>
 #include <codecvt>
 #include "opencv2/core/directx.hpp"
 #ifdef HAVE_OPENCL
 #include <CL/cl_d3d11.h>
-#endif // HAVE_OPENCL
-#undef NOMINMAX
-#endif // HAVE_DIRECTX && HAVE_D3D11
+#endif
 
 namespace cv {
 namespace gapi {
@@ -36,55 +38,32 @@ namespace onevpl {
 struct GAPI_EXPORTS VPLDX11AccelerationPolicy final: public VPLAccelerationPolicy
 {
     // GAPI_EXPORTS for tests
-    VPLDX11AccelerationPolicy(device_selector_ptr_t selector);
+    VPLDX11AccelerationPolicy();
     ~VPLDX11AccelerationPolicy();
-
-    using pool_t = CachedPool;
 
     void init(session_t session) override;
     void deinit(session_t session) override;
-    pool_key_t create_surface_pool(const mfxFrameAllocRequest& alloc_request,
-                                   mfxFrameInfo& info) override;
+    pool_key_t create_surface_pool(size_t pool_size, size_t surface_size_bytes, surface_ptr_ctr_t creator) override;
     surface_weak_ptr_t get_free_surface(pool_key_t key) override;
     size_t get_free_surface_count(pool_key_t key) const override;
     size_t get_surface_count(pool_key_t key) const override;
 
     cv::MediaFrame::AdapterPtr create_frame_adapter(pool_key_t key,
-                                                    const FrameConstructorArgs &params) override;
+                                                                 mfxFrameSurface1* surface) override;
+
 private:
-#ifdef HAVE_DIRECTX
-#ifdef HAVE_D3D11
     ID3D11Device *hw_handle;
-    ID3D11DeviceContext* device_context;
 
-    mfxFrameAllocator allocator;
-    static mfxStatus MFX_CDECL alloc_cb(mfxHDL pthis,
-                                        mfxFrameAllocRequest *request,
-                                        mfxFrameAllocResponse *response);
-    static mfxStatus MFX_CDECL lock_cb(mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
-    static mfxStatus MFX_CDECL unlock_cb(mfxHDL pthis, mfxMemId mid, mfxFrameData *ptr);
-    static mfxStatus MFX_CDECL get_hdl_cb(mfxHDL pthis, mfxMemId mid, mfxHDL *handle);
-    static mfxStatus MFX_CDECL free_cb(mfxHDL pthis, mfxFrameAllocResponse *response);
-
-    virtual mfxStatus on_alloc(const mfxFrameAllocRequest *request,
-                               mfxFrameAllocResponse *response);
-    static mfxStatus on_lock(mfxMemId mid, mfxFrameData *ptr);
-    static mfxStatus on_unlock(mfxMemId mid, mfxFrameData *ptr);
-    static mfxStatus on_get_hdl(mfxMemId mid, mfxHDL *handle);
-    virtual mfxStatus on_free(mfxFrameAllocResponse *response);
-
-    using alloc_id_t = mfxU32;
-    using allocation_t = std::shared_ptr<DX11AllocationRecord>;
-    std::map<alloc_id_t, allocation_t> allocation_table;
-
-    std::map<pool_key_t, pool_t> pool_table;
-#endif // HAVE_D3D11
-#endif // HAVE_DIRECTX
+#ifdef CPU_ACCEL_ADAPTER
+    std::unique_ptr<VPLCPUAccelerationPolicy> adapter;
+#endif
 };
 } // namespace onevpl
 } // namespace wip
 } // namespace gapi
 } // namespace cv
+#endif // HAVE_D3D11
+#endif // HAVE_DIRECTX
 
 #endif // HAVE_ONEVPL
 #endif // GAPI_STREAMING_ONEVPL_ACCELERATORS_ACCEL_POLICY_DX11_HPP

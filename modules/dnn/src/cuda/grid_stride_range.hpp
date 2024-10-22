@@ -36,7 +36,7 @@ public:
         __device__ bool operator!=(const iterator& other) const {
             /* NOTE HACK
                 * 'pos' can move in large steps (see operator++)
-                * expansion of range for loop uses != as the loop condition
+                * expansion of range for loop uses != as the loop conditioion
                 * => operator!= must return false if 'pos' crosses the end
                 */
             return pos < other.pos;

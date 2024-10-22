@@ -51,7 +51,6 @@ struct GAPI_EXPORTS GKernel
     GShapes     outShapes;  // types (shapes) kernel's outputs
     GKinds      inKinds;    // kinds of kernel's inputs (fixme: below)
     GCtors      outCtors;   // captured constructors for template output types
-    GKinds      outKinds;   // kinds of kernel's outputs (fixme: below)
 };
 // TODO: It's questionable if inKinds should really be here. Instead,
 // this information could come from meta.
@@ -228,8 +227,7 @@ public:
                               , &K::getOutMeta
                               , {detail::GTypeTraits<R>::shape...}
                               , {detail::GTypeTraits<Args>::op_kind...}
-                              , {detail::GObtainCtor<R>::get()...}
-                              , {detail::GTypeTraits<R>::op_kind...}});
+                              , {detail::GObtainCtor<R>::get()...}});
         call.pass(args...); // TODO: std::forward() here?
         return yield(call, typename detail::MkSeq<sizeof...(R)>::type());
     }
@@ -253,8 +251,7 @@ public:
                               , &K::getOutMeta
                               , {detail::GTypeTraits<R>::shape}
                               , {detail::GTypeTraits<Args>::op_kind...}
-                              , {detail::GObtainCtor<R>::get()}
-                              , {detail::GTypeTraits<R>::op_kind}});
+                              , {detail::GObtainCtor<R>::get()}});
         call.pass(args...);
         return detail::Yield<R>::yield(call, 0);
     }
@@ -413,13 +410,9 @@ namespace std
     };
 } // namespace std
 
+
 namespace cv {
-    class GAPI_EXPORTS_W_SIMPLE GKernelPackage;
-
 namespace gapi {
-    GAPI_EXPORTS_W cv::GKernelPackage combine(const cv::GKernelPackage  &lhs,
-                                              const cv::GKernelPackage  &rhs);
-
     /// @private
     class GFunctor
     {
@@ -430,11 +423,10 @@ namespace gapi {
 
         virtual ~GFunctor() = default;
     protected:
-        GFunctor(const char* id) : m_id(id) { }
+        GFunctor(const char* id) : m_id(id) { };
     private:
         const char* m_id;
     };
-} // namespace gapi
 
     /** \addtogroup gapi_compile_args
      * @{
@@ -471,7 +463,7 @@ namespace gapi {
     {
 
         /// @private
-        using M = std::unordered_map<std::string, std::pair<cv::gapi::GBackend, cv::GKernelImpl>>;
+        using M = std::unordered_map<std::string, std::pair<GBackend, GKernelImpl>>;
 
         /// @private
         M m_id_kernels;
@@ -508,15 +500,17 @@ namespace gapi {
         }
 
     public:
-        void include(const cv::gapi::GFunctor& functor);
-
+        void include(const GFunctor& functor)
+        {
+            m_id_kernels[functor.id()] = std::make_pair(functor.backend(), functor.impl());
+        }
         /**
          * @brief Returns total number of kernels
          * in the package (across all backends included)
          *
          * @return a number of kernels in the package
          */
-        GAPI_WRAP std::size_t size() const;
+        std::size_t size() const;
 
         /**
          * @brief Returns vector of transformations included in the package
@@ -561,7 +555,7 @@ namespace gapi {
          *
          * @param backend backend which kernels to remove
          */
-        void remove(const cv::gapi::GBackend& backend);
+        void remove(const GBackend& backend);
 
         /**
          * @brief Remove all kernels implementing the given API from
@@ -601,7 +595,7 @@ namespace gapi {
          *
          */
         template<typename KAPI>
-        cv::gapi::GBackend lookup() const
+        GBackend lookup() const
         {
             return lookup(KAPI::id()).first;
         }
@@ -627,14 +621,18 @@ namespace gapi {
          * @param backend backend associated with the kernel
          * @param kernel_id a name/id of the kernel
          */
-        void include(const cv::gapi::GBackend& backend, const std::string& kernel_id);
+        void include(const cv::gapi::GBackend& backend, const std::string& kernel_id)
+        {
+            removeAPI(kernel_id);
+            m_id_kernels[kernel_id] = std::make_pair(backend, GKernelImpl{{}, {}});
+        }
 
         /**
          * @brief Lists all backends which are included into package
          *
          * @return vector of backends
          */
-        std::vector<cv::gapi::GBackend> backends() const;
+        std::vector<GBackend> backends() const;
 
         // TODO: Doxygen bug -- it wants me to place this comment
         // here, not below.
@@ -645,17 +643,9 @@ namespace gapi {
          * @param rhs "Right-hand-side" package in the process
          * @return a new kernel package.
          */
-        friend GAPI_EXPORTS GKernelPackage cv::gapi::combine(const GKernelPackage  &lhs,
-                                                             const GKernelPackage  &rhs);
+        friend GAPI_EXPORTS GKernelPackage combine(const GKernelPackage  &lhs,
+                                                   const GKernelPackage  &rhs);
     };
-    /** @} */
-
-namespace gapi {
-    using GKernelPackage = cv::GKernelPackage; // Keep backward compatibility
-
-    /** \addtogroup gapi_compile_args
-     * @{
-     */
 
     /**
      * @brief Create a kernel package object containing kernels
@@ -669,7 +659,7 @@ namespace gapi {
      * Use this function to pass kernel implementations (defined in
      * either way) and transformations to the system. Example:
      *
-     * @snippet samples/cpp/tutorial_code/gapi/doc_snippets/api_ref_snippets.cpp kernels_snippet
+     * @snippet modules/gapi/samples/api_ref_snippets.cpp kernels_snippet
      *
      * Note that kernels() itself is a function returning object, not
      * a type, so having `()` at the end is important -- it must be a
@@ -692,7 +682,7 @@ namespace gapi {
         int unused[] = { 0, (pkg.include<KK>(), 0)... };
         cv::util::suppress_unused_warning(unused);
         return pkg;
-    }
+    };
 
     template<typename... FF>
     GKernelPackage kernels(FF&... functors)
@@ -701,9 +691,13 @@ namespace gapi {
         int unused[] = { 0, (pkg.include(functors), 0)... };
         cv::util::suppress_unused_warning(unused);
         return pkg;
-    }
+    };
 
     /** @} */
+
+    // FYI - this function is already commented above
+    GAPI_EXPORTS GKernelPackage combine(const GKernelPackage  &lhs,
+                                        const GKernelPackage  &rhs);
 
     /**
      * @brief Combines multiple G-API kernel packages into one
@@ -716,18 +710,16 @@ namespace gapi {
      * @return The resulting kernel package
      */
     template<typename... Ps>
-    cv::GKernelPackage combine(const cv::GKernelPackage &a, const cv::GKernelPackage &b, Ps&&... rest)
+    GKernelPackage combine(const GKernelPackage &a, const GKernelPackage &b, Ps&&... rest)
     {
         return combine(a, combine(b, rest...));
     }
-    // NB(DM): Variadic-arg version in Python may require the same
-    // approach as used in GComputation::compile/apply.
 
     /** \addtogroup gapi_compile_args
      * @{
      */
     /**
-     * @brief cv::gapi::use_only() is a special combinator which hints G-API to use only
+     * @brief cv::use_only() is a special combinator which hints G-API to use only
      * kernels specified in cv::GComputation::compile() (and not to extend kernels available by
      * default with that package).
      */
@@ -741,7 +733,7 @@ namespace gapi {
 
 namespace detail
 {
-    template<> struct CompileArgTag<cv::GKernelPackage>
+    template<> struct CompileArgTag<cv::gapi::GKernelPackage>
     {
         static const char* tag() { return "gapi.kernel_package"; }
     };

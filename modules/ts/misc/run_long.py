@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-""" Utility package for run.py
-"""
-
 from __future__ import print_function
 import xml.etree.ElementTree as ET
 from glob import glob

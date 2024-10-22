@@ -23,11 +23,11 @@ namespace ade {
     }
 }
 
-// Forward declarations - internal
 namespace cv {
-    class GKernelPackage;
 
+// Forward declarations - internal
 namespace gapi {
+    class GKernelPackage;
     struct GNetPackage;
 }  // namespace gapi
 
@@ -52,20 +52,20 @@ void inferMeta(ade::passes::PassContext &ctx, bool meta_is_initialized);
 void storeResultingMeta(ade::passes::PassContext &ctx);
 
 void expandKernels(ade::passes::PassContext &ctx,
-                   const GKernelPackage& kernels);
+                   const gapi::GKernelPackage& kernels);
 
 void bindNetParams(ade::passes::PassContext   &ctx,
                    const gapi::GNetPackage    &networks);
 
 void resolveKernels(ade::passes::PassContext   &ctx,
-                    const GKernelPackage &kernels);
+                    const gapi::GKernelPackage &kernels);
 
 void fuseIslands(ade::passes::PassContext &ctx);
 void syncIslandTags(ade::passes::PassContext &ctx);
 void topoSortIslands(ade::passes::PassContext &ctx);
 
 void applyTransformations(ade::passes::PassContext &ctx,
-                          const GKernelPackage &pkg,
+                          const gapi::GKernelPackage &pkg,
                           const std::vector<std::unique_ptr<ade::Graph>> &preGeneratedPatterns);
 
 void addStreaming(ade::passes::PassContext &ctx);

@@ -7,20 +7,18 @@
 
 #include <opencv2/core.hpp>
 
+/** @defgroup dnn_face DNN-based face detection and recognition
+ */
+
 namespace cv
 {
 
-//! @addtogroup objdetect_dnn_face
-//! @{
-
-/** @brief DNN-based face detector
-
-model download link: https://github.com/opencv/opencv_zoo/tree/master/models/face_detection_yunet
+/** @brief DNN-based face detector, model download link: https://github.com/ShiqiYu/libfacedetection.train/tree/master/tasks/task1/onnx.
  */
 class CV_EXPORTS_W FaceDetectorYN
 {
 public:
-    virtual ~FaceDetectorYN() {}
+    virtual ~FaceDetectorYN() {};
 
     /** @brief Set the size for the network input, which overwrites the input size of creating model. Call this method when the size of input image does not match the input size when creating model
      *
@@ -54,20 +52,10 @@ public:
 
     CV_WRAP virtual int getTopK() = 0;
 
-    /** @brief Detects faces in the input image. Following is an example output.
-
-     * ![image](pics/lena-face-detection.jpg)
-
+    /** @brief A simple interface to detect face from given image
+     *
      *  @param image an image to detect
-     *  @param faces detection results stored in a 2D cv::Mat of shape [num_faces, 15]
-     *  - 0-1: x, y of bbox top left corner
-     *  - 2-3: width, height of bbox
-     *  - 4-5: x, y of right eye (blue point in the example image)
-     *  - 6-7: x, y of left eye (red point in the example image)
-     *  - 8-9: x, y of nose tip (green point in the example image)
-     *  - 10-11: x, y of right corner of mouth (pink point in the example image)
-     *  - 12-13: x, y of left corner of mouth (yellow point in the example image)
-     *  - 14: face score
+     *  @param faces detection results stored in a cv::Mat
      */
     CV_WRAP virtual int detect(InputArray image, OutputArray faces) = 0;
 
@@ -92,14 +80,12 @@ public:
                                               int target_id = 0);
 };
 
-/** @brief DNN-based face recognizer
-
-model download link: https://github.com/opencv/opencv_zoo/tree/master/models/face_recognition_sface
+/** @brief DNN-based face recognizer, model download link: https://drive.google.com/file/d/1ClK9WiB492c5OZFKveF3XiHCejoOxINW/view.
  */
 class CV_EXPORTS_W FaceRecognizerSF
 {
 public:
-    virtual ~FaceRecognizerSF() {}
+    virtual ~FaceRecognizerSF() {};
 
     /** @brief Definition of distance used for calculating the distance between two face features
      */
@@ -119,11 +105,11 @@ public:
     CV_WRAP virtual void feature(InputArray aligned_img, OutputArray face_feature) = 0;
 
     /** @brief Calculating the distance between two face features
-     *  @param face_feature1 the first input feature
-     *  @param face_feature2 the second input feature of the same size and the same type as face_feature1
+     *  @param _face_feature1 the first input feature
+     *  @param _face_feature2 the second input feature of the same size and the same type as _face_feature1
      *  @param dis_type defining the similarity with optional values "FR_OSINE" or "FR_NORM_L2"
      */
-    CV_WRAP virtual double match(InputArray face_feature1, InputArray face_feature2, int dis_type = FaceRecognizerSF::FR_COSINE) const = 0;
+    CV_WRAP virtual double match(InputArray _face_feature1, InputArray _face_feature2, int dis_type = FaceRecognizerSF::FR_COSINE) const = 0;
 
     /** @brief Creates an instance of this class with given parameters
      *  @param model the path of the onnx model used for face recognition
@@ -134,7 +120,6 @@ public:
     CV_WRAP static Ptr<FaceRecognizerSF> create(const String& model, const String& config, int backend_id = 0, int target_id = 0);
 };
 
-//! @}
 } // namespace cv
 
 #endif

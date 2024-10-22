@@ -176,23 +176,27 @@ public:
     }
 };
 
-static
-MatAllocator*& getDefaultAllocatorMatRef()
+namespace
 {
-    static MatAllocator* g_matAllocator = Mat::getStdAllocator();
-    return g_matAllocator;
+    MatAllocator* volatile g_matAllocator = NULL;
 }
 
 MatAllocator* Mat::getDefaultAllocator()
 {
-    return getDefaultAllocatorMatRef();
+    if (g_matAllocator == NULL)
+    {
+        cv::AutoLock lock(cv::getInitializationMutex());
+        if (g_matAllocator == NULL)
+        {
+            g_matAllocator = getStdAllocator();
+        }
+    }
+    return g_matAllocator;
 }
-
 void Mat::setDefaultAllocator(MatAllocator* allocator)
 {
-    getDefaultAllocatorMatRef() = allocator;
+    g_matAllocator = allocator;
 }
-
 MatAllocator* Mat::getStdAllocator()
 {
     CV_SINGLETON_LAZY_INIT(MatAllocator, new StdMatAllocator())
@@ -265,7 +269,7 @@ void setSize( Mat& m, int _dims, const int* _sz, const size_t* _steps, bool auto
         else if( autoSteps )
         {
             m.step.p[i] = total;
-            uint64 total1 = (uint64)total*s;
+            int64 total1 = (int64)total*s;
             if( (uint64)total1 != (size_t)total1 )
                 CV_Error( CV_StsOutOfRange, "The total matrix size does not fit to \"size_t\" type" );
             total = (size_t)total1;
@@ -459,7 +463,7 @@ Mat::Mat(Size _sz, int _type, void* _data, size_t _step)
     }
     else
     {
-        CV_CheckGE(_step, minstep, "");
+        CV_Assert(_step >= minstep);
 
         if (_step % esz1 != 0)
         {
@@ -664,8 +668,6 @@ void Mat::create(int d, const int* _sizes, int _type)
 
     if( data && (d == dims || (d == 1 && dims <= 2)) && _type == type() )
     {
-        if ( dims == 1 && (d == 1 && _sizes[0] == size[0]) )
-            return;
         if( d == 2 && rows == _sizes[0] && cols == _sizes[1] )
             return;
         for( i = 0; i < d; i++ )
@@ -1128,7 +1130,7 @@ Mat& Mat::adjustROI( int dtop, int dbottom, int dleft, int dright )
     if(col1 > col2)
         std::swap(col1, col2);
 
-    data += (row1 - ofs.y)*(std::ptrdiff_t)step + (col1 - ofs.x)*(std::ptrdiff_t)esz;
+    data += (row1 - ofs.y)*step + (col1 - ofs.x)*esz;
     rows = row2 - row1; cols = col2 - col1;
     size.p[0] = rows; size.p[1] = cols;
     updateContinuityFlag();

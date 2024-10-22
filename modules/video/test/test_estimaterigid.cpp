@@ -83,7 +83,7 @@ struct WrapAff2D
 
 bool CV_RigidTransform_Test::testNPoints(int from)
 {
-    cv::RNG rng = cv::theRNG();
+    cv::RNG rng = ts->get_rng();
 
     int progress = 0;
     int k, ntests = 10000;

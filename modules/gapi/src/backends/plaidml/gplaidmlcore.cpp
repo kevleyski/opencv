@@ -47,7 +47,7 @@ GAPI_PLAIDML_LOGICAL_OP(GPlaidMLOr , cv::gapi::core::GOr , |)
 GAPI_PLAIDML_ARITHMETIC_OP(GPlaidMLAdd, cv::gapi::core::GAdd, +);
 GAPI_PLAIDML_ARITHMETIC_OP(GPlaidMLSub, cv::gapi::core::GSub, -);
 
-cv::GKernelPackage cv::gapi::core::plaidml::kernels()
+cv::gapi::GKernelPackage cv::gapi::core::plaidml::kernels()
 {
     static auto pkg = cv::gapi::kernels<GPlaidMLAdd, GPlaidMLSub, GPlaidMLAnd, GPlaidMLXor, GPlaidMLOr>();
     return pkg;
@@ -55,7 +55,7 @@ cv::GKernelPackage cv::gapi::core::plaidml::kernels()
 
 #else // HAVE_PLAIDML
 
-cv::GKernelPackage cv::gapi::core::plaidml::kernels()
+cv::gapi::GKernelPackage cv::gapi::core::plaidml::kernels()
 {
     // Still provide this symbol to avoid linking issues
     util::throw_error(std::runtime_error("G-API has been compiled without PlaidML2 support"));

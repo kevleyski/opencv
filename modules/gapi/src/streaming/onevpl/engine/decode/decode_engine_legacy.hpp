@@ -12,7 +12,10 @@
 #include "streaming/onevpl/engine/processing_engine_base.hpp"
 
 #ifdef HAVE_ONEVPL
-#include "streaming/onevpl/onevpl_export.hpp"
+#if (MFX_VERSION >= 2000)
+    #include <vpl/mfxdispatcher.h>
+#endif
+#include <vpl/mfx.h>
 
 namespace cv {
 namespace gapi {
@@ -24,30 +27,18 @@ struct DecoderParams;
 struct IDataProvider;
 struct VPLAccelerationPolicy;
 
-class GAPI_EXPORTS VPLLegacyDecodeEngine : public ProcessingEngineBase {
+class VPLLegacyDecodeEngine : public ProcessingEngineBase {
 public:
 
     VPLLegacyDecodeEngine(std::unique_ptr<VPLAccelerationPolicy>&& accel);
-    virtual session_ptr initialize_session(mfxSession mfx_session,
-                                           const std::vector<CfgParam>& cfg_params,
-                                           std::shared_ptr<IDataProvider> provider) override;
-protected:
-    struct SessionParam {
-        void* decode_pool_key;
-        DecoderParams decoder_params;
-    };
+    void initialize_session(mfxSession mfx_session, DecoderParams&& decoder_param,
+                            std::shared_ptr<IDataProvider> provider) override;
 
-    SessionParam prepare_session_param(mfxSession mfx_session,
-                                       const std::vector<CfgParam>& cfg_params,
-                                       std::shared_ptr<IDataProvider> provider);
-
+private:
+    ExecutionStatus execute_op(operation_t& op, EngineSession& sess) override;
     ExecutionStatus process_error(mfxStatus status, LegacyDecodeSession& sess);
 
-    void on_frame_ready(LegacyDecodeSession& sess,
-                        mfxFrameSurface1* ready_surface);
-    static void try_modify_pool_size_request_param(const char* param_name,
-                                                   size_t new_frames_count,
-                                                   mfxFrameAllocRequest& request);
+    void on_frame_ready(LegacyDecodeSession& sess);
 };
 } // namespace onevpl
 } // namespace wip

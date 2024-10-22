@@ -99,7 +99,7 @@ bool tryToSubstitute(ade::Graph& main,
 }  // anonymous namespace
 
 void applyTransformations(ade::passes::PassContext& ctx,
-                          const GKernelPackage& pkg,
+                          const gapi::GKernelPackage& pkg,
                           const std::vector<std::unique_ptr<ade::Graph>>& patterns)
 {
     const auto& transforms = pkg.get_transformations();

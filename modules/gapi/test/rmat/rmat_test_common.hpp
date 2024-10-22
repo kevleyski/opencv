@@ -11,7 +11,7 @@
 #include <opencv2/gapi/rmat.hpp>
 
 namespace opencv_test {
-class RMatAdapterRef : public RMat::IAdapter {
+class RMatAdapterRef : public RMat::Adapter {
     cv::Mat& m_mat;
     bool& m_callbackCalled;
 public:
@@ -36,7 +36,7 @@ public:
     virtual cv::GMatDesc desc() const override { return cv::descr_of(m_mat); }
 };
 
-class RMatAdapterCopy : public RMat::IAdapter {
+class RMatAdapterCopy : public RMat::Adapter {
     cv::Mat& m_deviceMat;
     cv::Mat  m_hostMat;
     bool& m_callbackCalled;

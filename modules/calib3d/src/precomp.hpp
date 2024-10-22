@@ -53,8 +53,6 @@
 
 #include "opencv2/core/ocl.hpp"
 
-#include <set>
-
 #define GET_OPTIMIZED(func) (func)
 
 
@@ -69,7 +67,7 @@ namespace cv
  * @param ep outlier ratio
  * @param modelPoints number of model points required for estimation
  * @param maxIters maximum number of iterations
- * @return The number of iterations according to the formula
+ * @return
  * \f[
  * \frac{\ln(1-p)}{\ln\left(1-(1-ep)^\mathrm{modelPoints}\right)}
  * \f]

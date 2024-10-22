@@ -177,7 +177,7 @@ namespace render
 {
 namespace ocv
 {
-    GAPI_EXPORTS_W cv::GKernelPackage kernels();
+    GAPI_EXPORTS_W cv::gapi::GKernelPackage kernels();
 
 } // namespace ocv
 } // namespace render

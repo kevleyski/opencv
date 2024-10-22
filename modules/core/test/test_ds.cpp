@@ -33,7 +33,7 @@ static void cvTsReleaseSimpleSeq( CvTsSimpleSeq** seq )
 
 static schar*  cvTsSimpleSeqElem( CvTsSimpleSeq* seq, int index )
 {
-    CV_Assert( 0 <= index && index < seq->count );
+    assert( 0 <= index && index < seq->count );
     return seq->array + index * seq->elem_size;
 }
 
@@ -50,11 +50,7 @@ static void cvTsSimpleSeqShiftAndCopy( CvTsSimpleSeq* seq, int from_idx, int to_
 
     if( from_idx == to_idx )
         return;
-
-    if (elem)
-        CV_Assert(from_idx < to_idx);
-    else
-        CV_Assert(from_idx > to_idx);
+    assert( (from_idx > to_idx && !elem) || (from_idx < to_idx && elem) );
 
     if( from_idx < seq->count )
     {
@@ -132,7 +128,7 @@ static void cvTsReleaseSimpleSet( CvTsSimpleSet** set_header )
 static schar*  cvTsSimpleSetFind( CvTsSimpleSet* set_header, int index )
 {
     int idx = index * set_header->elem_size;
-    CV_Assert( 0 <= index && index < set_header->max_count );
+    assert( 0 <= index && index < set_header->max_count );
     return set_header->array[idx] ? set_header->array + idx + 1 : 0;
 }
 
@@ -140,11 +136,11 @@ static schar*  cvTsSimpleSetFind( CvTsSimpleSet* set_header, int index )
 static int  cvTsSimpleSetAdd( CvTsSimpleSet* set_header, void* elem )
 {
     int idx, idx2;
-    CV_Assert( set_header->free_count > 0 );
+    assert( set_header->free_count > 0 );
 
     idx = set_header->free_stack[--set_header->free_count];
     idx2 = idx * set_header->elem_size;
-    CV_Assert( set_header->array[idx2] == 0 );
+    assert( set_header->array[idx2] == 0 );
     set_header->array[idx2] = 1;
     if( set_header->elem_size > 1 )
         memcpy( set_header->array + idx2 + 1, elem, set_header->elem_size - 1 );
@@ -156,9 +152,9 @@ static int  cvTsSimpleSetAdd( CvTsSimpleSet* set_header, void* elem )
 
 static void  cvTsSimpleSetRemove( CvTsSimpleSet* set_header, int index )
 {
-    CV_Assert( set_header->free_count < set_header->max_count &&
-               0 <= index && index < set_header->max_count );
-    CV_Assert( set_header->array[index * set_header->elem_size] == 1 );
+    assert( set_header->free_count < set_header->max_count &&
+           0 <= index && index < set_header->max_count );
+    assert( set_header->array[index * set_header->elem_size] == 1 );
 
     set_header->free_stack[set_header->free_count++] = index;
     set_header->array[index * set_header->elem_size] = 0;
@@ -191,7 +187,7 @@ static CvTsSimpleGraph*  cvTsCreateSimpleGraph( int max_vtx_count, int vtx_size,
 {
     CvTsSimpleGraph* graph;
 
-    CV_Assert( max_vtx_count > 1 && vtx_size >= 0 && edge_size >= 0 );
+    assert( max_vtx_count > 1 && vtx_size >= 0 && edge_size >= 0 );
     graph = (CvTsSimpleGraph*)cvAlloc( sizeof(*graph) +
                                       max_vtx_count * max_vtx_count * (edge_size + 1));
     graph->vtx = cvTsCreateSimpleSet( max_vtx_count, vtx_size );
@@ -239,13 +235,13 @@ static void cvTsSimpleGraphAddEdge( CvTsSimpleGraph* graph, int idx1, int idx2, 
 {
     int i, t, n = graph->oriented ? 1 : 2;
 
-    CV_Assert( cvTsSimpleSetFind( graph->vtx, idx1 ) &&
-               cvTsSimpleSetFind( graph->vtx, idx2 ));
+    assert( cvTsSimpleSetFind( graph->vtx, idx1 ) &&
+           cvTsSimpleSetFind( graph->vtx, idx2 ));
 
     for( i = 0; i < n; i++ )
     {
         int ofs = (idx1*graph->vtx->max_count + idx2)*graph->edge_size;
-        CV_Assert( graph->matrix[ofs] == 0 );
+        assert( graph->matrix[ofs] == 0 );
         graph->matrix[ofs] = 1;
         if( graph->edge_size > 1 )
             memcpy( graph->matrix + ofs + 1, edge, graph->edge_size - 1 );
@@ -259,13 +255,13 @@ static void  cvTsSimpleGraphRemoveEdge( CvTsSimpleGraph* graph, int idx1, int id
 {
     int i, t, n = graph->oriented ? 1 : 2;
 
-    CV_Assert( cvTsSimpleSetFind( graph->vtx, idx1 ) &&
+    assert( cvTsSimpleSetFind( graph->vtx, idx1 ) &&
            cvTsSimpleSetFind( graph->vtx, idx2 ));
 
     for( i = 0; i < n; i++ )
     {
         int ofs = (idx1*graph->vtx->max_count + idx2)*graph->edge_size;
-        CV_Assert( graph->matrix[ofs] == 1 );
+        assert( graph->matrix[ofs] == 1 );
         graph->matrix[ofs] = 0;
         CV_SWAP( idx1, idx2, t );
     }
@@ -295,7 +291,7 @@ static int  cvTsSimpleGraphVertexDegree( CvTsSimpleGraph* graph, int index )
     int i, count = 0;
     int edge_size = graph->edge_size;
     int max_vtx_count = graph->vtx->max_count;
-    CV_Assert( cvTsSimpleGraphFindVertex( graph, index ) != 0 );
+    assert( cvTsSimpleGraphFindVertex( graph, index ) != 0 );
 
     for( i = 0; i < max_vtx_count; i++ )
     {
@@ -305,7 +301,7 @@ static int  cvTsSimpleGraphVertexDegree( CvTsSimpleGraph* graph, int index )
 
     if( !graph->oriented )
     {
-        CV_Assert( count % 2 == 0 );
+        assert( count % 2 == 0 );
         count /= 2;
     }
     return count;
@@ -613,7 +609,7 @@ int  Core_SeqBaseTest::test_get_seq_elem( int _struct_idx, int iters )
     CvTsSimpleSeq* sseq = (CvTsSimpleSeq*)simple_struct[_struct_idx];
     struct_idx = _struct_idx;
 
-    CV_Assert( seq->total == sseq->count );
+    assert( seq->total == sseq->count );
 
     if( sseq->count == 0 )
         return 0;
@@ -660,7 +656,7 @@ int  Core_SeqBaseTest::test_get_seq_reading( int _struct_idx, int iters )
     vector<schar> _elem(sseq->elem_size);
     schar* elem = &_elem[0];
 
-    CV_Assert( total == sseq->count );
+    assert( total == sseq->count );
     this->struct_idx = _struct_idx;
 
     int pos = cvtest::randInt(rng) % 2;
@@ -968,7 +964,7 @@ int  Core_SeqBaseTest::test_seq_ops( int iters )
                                           "The sequence doesn't become empty after clear" );
                 break;
             default:
-                CV_Assert(0);
+                assert(0);
                 return -1;
         }
 
@@ -1907,7 +1903,7 @@ int Core_GraphScanTest::create_random_graph( int _struct_idx )
     for( i = 0; i < vtx_count; i++ )
          cvGraphAddVtx( graph );
 
-    CV_Assert( graph->active_count == vtx_count );
+    assert( graph->active_count == vtx_count );
 
     for( i = 0; i < edge_count; i++ )
     {
@@ -1918,7 +1914,7 @@ int Core_GraphScanTest::create_random_graph( int _struct_idx )
              cvGraphAddEdge( graph, j, k );
     }
 
-    CV_Assert( graph->active_count == vtx_count && graph->edges->active_count <= edge_count );
+    assert( graph->active_count == vtx_count && graph->edges->active_count <= edge_count );
 
     return 0;
 }

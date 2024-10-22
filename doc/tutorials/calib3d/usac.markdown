@@ -244,9 +244,9 @@ Samples:
 There are three new sample files in opencv/samples directory.
 
 1.  `epipolar_lines.cpp` – input arguments of `main` function are two
-    paths to images. Then correspondences are found using
+    pathes to images. Then correspondences are found using
     SIFT detector. Fundamental matrix is found using RANSAC from
-    tentative correspondences and epipolar lines are plot.
+    tentaive correspondences and epipolar lines are plot.
 
 2.  `essential_mat_reconstr.cpp` – input arguments are path to data file
     containing image names and single intrinsic matrix and directory

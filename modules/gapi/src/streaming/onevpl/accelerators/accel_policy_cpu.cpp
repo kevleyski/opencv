@@ -11,7 +11,6 @@
 #include "streaming/onevpl/accelerators/accel_policy_cpu.hpp"
 #include "streaming/onevpl/accelerators/surface/cpu_frame_adapter.hpp"
 #include "streaming/onevpl/accelerators/surface/surface.hpp"
-#include "streaming/onevpl/utils.hpp"
 #include "logger.hpp"
 
 #ifdef _WIN32
@@ -22,100 +21,8 @@ namespace cv {
 namespace gapi {
 namespace wip {
 namespace onevpl {
-namespace utils {
-static mfxU32 GetSurfaceSize_(mfxU32 FourCC, mfxU32 width, mfxU32 height) {
-    mfxU32 nbytes = 0;
 
-    mfxU32 half_width = width / 2;
-    mfxU32 half_height = height / 2;
-    switch (FourCC) {
-        case MFX_FOURCC_I420:
-        case MFX_FOURCC_NV12:
-            nbytes = width * height + 2 * half_width * half_height;
-            break;
-        case MFX_FOURCC_I010:
-        case MFX_FOURCC_P010:
-            nbytes = width * height + 2 * half_width * half_height;
-            nbytes *= 2;
-            break;
-        case MFX_FOURCC_RGB4:
-            nbytes = width * height * 4;
-            break;
-        default:
-            break;
-    }
-
-    return nbytes;
-}
-
-static surface_ptr_t create_surface_RGB4_(mfxFrameInfo frameInfo,
-                                          std::shared_ptr<void> out_buf_ptr,
-                                          size_t out_buf_ptr_offset,
-                                          size_t out_buf_size)
-{
-    mfxU8* buf = reinterpret_cast<mfxU8*>(out_buf_ptr.get());
-    mfxU16 surfW = frameInfo.Width * 4;
-    mfxU16 surfH = frameInfo.Height;
-    (void)surfH;
-
-    // TODO more intelligent check
-    if (out_buf_size <= out_buf_ptr_offset) {
-        GAPI_LOG_WARNING(nullptr, "Not enough buffer, ptr: " << out_buf_ptr <<
-                                  ", size: " << out_buf_size <<
-                                  ", offset: " << out_buf_ptr_offset <<
-                                  ", W: " << surfW <<
-                                  ", H: " << surfH);
-        GAPI_Error("Invalid offset");
-    }
-
-    std::unique_ptr<mfxFrameSurface1> handle(new mfxFrameSurface1);
-    memset(handle.get(), 0, sizeof(mfxFrameSurface1));
-
-    handle->Info = frameInfo;
-    handle->Data.B = buf + out_buf_ptr_offset;
-    handle->Data.G = handle->Data.B + 1;
-    handle->Data.R = handle->Data.B + 2;
-    handle->Data.A = handle->Data.B + 3;
-    handle->Data.Pitch = surfW;
-
-    return Surface::create_surface(std::move(handle), out_buf_ptr);
-}
-
-static surface_ptr_t create_surface_other_(mfxFrameInfo frameInfo,
-                                           std::shared_ptr<void> out_buf_ptr,
-                                           size_t out_buf_ptr_offset,
-                                           size_t out_buf_size)
-{
-    mfxU8* buf = reinterpret_cast<mfxU8*>(out_buf_ptr.get());
-    mfxU16 surfH = frameInfo.Height;
-    mfxU16 surfW = (frameInfo.FourCC == MFX_FOURCC_P010) ? frameInfo.Width * 2 : frameInfo.Width;
-
-    // TODO more intelligent check
-    if (out_buf_size <=
-        out_buf_ptr_offset + (surfW * surfH) + ((surfW / 2) * (surfH / 2))) {
-        GAPI_LOG_WARNING(nullptr, "Not enough buffer, ptr: " << out_buf_ptr <<
-                                  ", size: " << out_buf_size <<
-                                  ", offset: " << out_buf_ptr_offset <<
-                                  ", W: " << surfW <<
-                                  ", H: " << surfH);
-        GAPI_Error("Invalid offset");
-    }
-
-    std::unique_ptr<mfxFrameSurface1> handle(new mfxFrameSurface1);
-    memset(handle.get(), 0, sizeof(mfxFrameSurface1));
-
-    handle->Info = frameInfo;
-    handle->Data.Y     = buf + out_buf_ptr_offset;
-    handle->Data.U     = buf + out_buf_ptr_offset + (surfW * surfH);
-    handle->Data.V     = handle->Data.U + ((surfW / 2) * (surfH / 2));
-    handle->Data.Pitch = surfW;
-
-    return Surface::create_surface(std::move(handle), out_buf_ptr);
-}
-} // namespace utils
-
-VPLCPUAccelerationPolicy::VPLCPUAccelerationPolicy(device_selector_ptr_t selector) :
-    VPLAccelerationPolicy(selector) {
+VPLCPUAccelerationPolicy::VPLCPUAccelerationPolicy() {
     GAPI_LOG_INFO(nullptr, "created");
 }
 
@@ -140,8 +47,9 @@ VPLCPUAccelerationPolicy::create_surface_pool(size_t pool_size, size_t surface_s
                                               surface_ptr_ctr_t creator) {
     GAPI_LOG_DEBUG(nullptr, "pool size: " << pool_size << ", surface size bytes: " << surface_size_bytes);
 
-    // NB: create empty pool with reservation
-    pool_t pool(pool_size);
+    // create empty pool
+    pool_t pool;
+    pool.reserve(pool_size);
 
     // allocate workplace memory area
     size_t preallocated_raw_bytes = pool_size * surface_size_bytes;
@@ -156,12 +64,8 @@ VPLCPUAccelerationPolicy::create_surface_pool(size_t pool_size, size_t surface_s
     GAPI_LOG_DEBUG(nullptr, "page size: " << page_size_bytes << ", preallocated_raw_bytes: " << preallocated_raw_bytes);
     preallocated_pool_memory_ptr = _aligned_malloc(preallocated_raw_bytes, page_size_bytes);
 #else
-    int err = posix_memalign(&preallocated_pool_memory_ptr, page_size_bytes, preallocated_raw_bytes);
-    if (err) {
-        GAPI_LOG_WARNING(nullptr, "Cannot allocate aligned memory, size: " << preallocated_raw_bytes <<
-                                  ", alignment: " << page_size_bytes << ", error: " <<
-                                  strerror(err));
-    }
+    GAPI_Assert(false && "Compatibility is not tested for systems differ than \"_WIN32\". "
+                         "Please feel free to set it up under OPENCV contribution policy");
 #endif
 
     if (!preallocated_pool_memory_ptr) {
@@ -178,9 +82,8 @@ VPLCPUAccelerationPolicy::create_surface_pool(size_t pool_size, size_t surface_s
         GAPI_LOG_INFO(nullptr, "Released workspace memory: " << ptr);
         ptr = nullptr;
 #else
-        GAPI_LOG_INFO(nullptr, "Workspace memory to release: " << ptr);
-        free(ptr);
-        ptr = nullptr;
+        GAPI_Assert(false && "Not implemented for systems differ than \"_WIN32\". "
+                             "Please feel free to set it up under OPENCV contribution policy");
 #endif
 
         });
@@ -204,55 +107,47 @@ VPLCPUAccelerationPolicy::create_surface_pool(size_t pool_size, size_t surface_s
 
     // remember pool by key
     GAPI_LOG_INFO(nullptr, "New pool allocated, key: " << preallocated_pool_memory_ptr <<
-                           ", surface count: " << pool.total_size() <<
+                           ", surface count: " << pool.size() <<
                            ", surface size bytes: " << surface_size_bytes);
     if (!pool_table.emplace(preallocated_pool_memory_ptr, std::move(pool)).second) {
         GAPI_LOG_WARNING(nullptr, "Cannot insert pool, table size: " + std::to_string(pool_table.size()) <<
                                   ", key: " << preallocated_pool_memory_ptr << " exists");
-        GAPI_Error("Cannot create pool in VPLCPUAccelerationPolicy");
+        GAPI_Assert(false && "Cannot create pool in VPLCPUAccelerationPolicy");
     }
 
     return preallocated_pool_memory_ptr;
 }
 
-VPLCPUAccelerationPolicy::pool_key_t
-VPLCPUAccelerationPolicy::create_surface_pool(const mfxFrameAllocRequest& alloc_request, mfxFrameInfo& info) {
-
-    // External (application) allocation of decode surfaces
-    GAPI_LOG_DEBUG(nullptr, "Query mfxFrameAllocRequest.NumFrameSuggested: " << alloc_request.NumFrameSuggested <<
-                            ", mfxFrameAllocRequest.Type: " << alloc_request.Type);
-
-    mfxU32 singleSurfaceSize = utils::GetSurfaceSize_(info.FourCC,
-                                                      info.Width,
-                                                      info.Height);
-    if (!singleSurfaceSize) {
-        throw std::runtime_error("Cannot determine surface size from frame: " +
-                                 mfx_frame_info_to_string(info));
-    }
-
-    auto surface_creator =
-            [&info] (std::shared_ptr<void> out_buf_ptr, size_t out_buf_ptr_offset,
-                          size_t out_buf_size) -> surface_ptr_t {
-                return (info.FourCC == MFX_FOURCC_RGB4) ?
-                        utils::create_surface_RGB4_(info, out_buf_ptr, out_buf_ptr_offset,
-                                                    out_buf_size) :
-                        utils::create_surface_other_(info, out_buf_ptr, out_buf_ptr_offset,
-                                                     out_buf_size);};
-
-    return create_surface_pool(alloc_request.NumFrameSuggested,
-                               singleSurfaceSize, surface_creator);
-}
-
 VPLCPUAccelerationPolicy::surface_weak_ptr_t VPLCPUAccelerationPolicy::get_free_surface(pool_key_t key) {
     auto pool_it = pool_table.find(key);
     if (pool_it == pool_table.end()) {
-        GAPI_LOG_WARNING(nullptr, "key is not found, table size: " <<
-                                  pool_table.size());
-        GAPI_Error("Invalid surface key requested in VPLCPUAccelerationPolicy");
+        throw std::runtime_error("VPLCPUAccelerationPolicy::get_free_surface - "
+                                 "key is not found, table size: " +
+                                 std::to_string(pool_table.size()));
     }
 
     pool_t& requested_pool = pool_it->second;
+#ifdef TEST_PERF
     return requested_pool.find_free();
+#else // TEST_PERF
+    auto it =
+        std::find_if(requested_pool.begin(), requested_pool.end(),
+                     [](const surface_ptr_t& val) {
+            GAPI_DbgAssert(val && "Pool contains empty surface");
+            return !val->get_locks_count();
+        });
+
+    // Limitation realloc pool might be a future extension
+    if (it == requested_pool.end()) {
+        std::stringstream ss;
+        ss << "cannot get free surface from pool, key: " << key << ", size: " << requested_pool.size();
+        const std::string& str = ss.str();
+        GAPI_LOG_WARNING(nullptr, str);
+        throw std::runtime_error(std::string(__FUNCTION__) + " - " + str);
+    }
+
+    return *it;
+#endif // TEST_PERF
 }
 
 size_t VPLCPUAccelerationPolicy::get_free_surface_count(pool_key_t key) const {
@@ -262,8 +157,18 @@ size_t VPLCPUAccelerationPolicy::get_free_surface_count(pool_key_t key) const {
                                   ", table size: " << pool_table.size());
         return 0;
     }
+#ifdef TEST_PERF
+    return 0;
+#else // TEST_PERF
     const pool_t& requested_pool = pool_it->second;
-    return requested_pool.available_size();
+    size_t free_surf_count =
+        std::count_if(requested_pool.begin(), requested_pool.end(),
+                     [](const surface_ptr_t& val) {
+            GAPI_Assert(val && "Pool contains empty surface");
+            return !val->get_locks_count();
+        });
+    return free_surf_count;
+#endif // TEST_PERF
 }
 
 size_t VPLCPUAccelerationPolicy::get_surface_count(pool_key_t key) const {
@@ -273,11 +178,15 @@ size_t VPLCPUAccelerationPolicy::get_surface_count(pool_key_t key) const {
                                 ", table size: " << pool_table.size());
         return 0;
     }
-    return pool_it->second.total_size();
+#ifdef TEST_PERF
+    return 0;
+#else // TEST_PERF
+    return pool_it->second.size();
+#endif // TEST_PERF
 }
 
 cv::MediaFrame::AdapterPtr VPLCPUAccelerationPolicy::create_frame_adapter(pool_key_t key,
-                                                                          const FrameConstructorArgs &params) {
+                                                                          mfxFrameSurface1* surface) {
     auto pool_it = pool_table.find(key);
     if (pool_it == pool_table.end()) {
         std::stringstream ss;
@@ -288,8 +197,28 @@ cv::MediaFrame::AdapterPtr VPLCPUAccelerationPolicy::create_frame_adapter(pool_k
     }
 
     pool_t& requested_pool = pool_it->second;
-    return cv::MediaFrame::AdapterPtr{new VPLMediaFrameCPUAdapter(requested_pool.find_by_handle(params.assoc_surface),
-                                                                  params.assoc_handle)};
+#ifdef TEST_PERF
+    return cv::MediaFrame::AdapterPtr{new VPLMediaFrameCPUAdapter(requested_pool.find_by_handle(surface))};
+#else // TEST_PERF
+    auto it =
+        std::find_if(requested_pool.begin(), requested_pool.end(),
+                     [surface](const surface_ptr_t& val) {
+            GAPI_DbgAssert(val && "Pool contains empty surface");
+            return val->get_handle() == surface;
+        });
+
+    // Limitation realloc pool might be a future extension
+    if (it == requested_pool.end()) {
+        std::stringstream ss;
+        ss << "cannot get requested surface from pool, key: " << key << ", surf: "
+           << surface << ", pool size: " << requested_pool.size();
+        const std::string& str = ss.str();
+        GAPI_LOG_WARNING(nullptr, str);
+        throw std::runtime_error(std::string(__FUNCTION__) + " - " + str);
+    }
+
+    return cv::MediaFrame::AdapterPtr{new VPLMediaFrameCPUAdapter(*it)};
+#endif // TEST_PERF
 }
 } // namespace onevpl
 } // namespace wip

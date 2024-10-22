@@ -113,6 +113,6 @@ struct InGraphMetaKernel final: public cv::detail::KernelTag {
 
 } // anonymous namespace
 
-cv::GKernelPackage cv::gimpl::meta::kernels() {
+cv::gapi::GKernelPackage cv::gimpl::meta::kernels() {
     return cv::gapi::kernels<InGraphMetaKernel>();
 }

@@ -6,12 +6,6 @@
 
 #include "opencv2/core/hal/intrin.hpp"
 
-#if defined(__GNUC__) && __GNUC__ == 12
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wuninitialized"
-#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
-#endif
-
 namespace cv { namespace hal {
 CV_CPU_OPTIMIZATION_NAMESPACE_BEGIN
 
@@ -26,7 +20,7 @@ template<size_t num_channels> class IntegralCalculator;
 template<size_t num_channels>
 class IntegralCalculator  {
 public:
-    IntegralCalculator() {}
+    IntegralCalculator() {};
 
 
     void calculate_integral_avx512(const uchar *src, size_t _srcstep,
@@ -471,7 +465,3 @@ void calculate_integral_avx512(const uchar *src,   size_t _srcstep,
 
 CV_CPU_OPTIMIZATION_NAMESPACE_END
 }} // end namespace cv::hal
-
-#if defined(__GNUC__) && __GNUC__ == 12
-#pragma GCC diagnostic pop
-#endif

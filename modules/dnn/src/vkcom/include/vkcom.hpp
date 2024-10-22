@@ -24,17 +24,19 @@ enum Format{
 };
 
 enum OpType {
-    kOpTypeNull = -1,
     kOpTypeConv,
-    kOpTypeMatMul,
+    kOpTypePool,
+    kOpTypeDWConv,
+    kOpTypeLRN,
+    kOpTypeConcat,
+    kOpTypeSoftmax,
+    kOpTypeReLU,
+    kOpTypePriorBox,
+    kOpTypePermute,
+    kOpTypeNum
 };
-
-enum FusedActivationType {
-    kFusedActivUnsupport = -1,
-    kFusedActivNone = 0,
-    kFusedActivRelu = 1,
-    kFusedActivRelu6 = 2,
-};
+enum PaddingMode { kPaddingModeSame, kPaddingModeValid, kPaddingModeCaffe, kPaddingModeNum };
+enum FusedActivationType { kNone, kRelu, kRelu1, kRelu6, kActivationNum };
 typedef std::vector<int> Shape;
 
 bool isAvailable();
@@ -43,13 +45,16 @@ bool isAvailable();
 
 }}} // namespace cv::dnn::vkcom
 
-#include "buffer.hpp"
 #include "tensor.hpp"
-#include "context.hpp"
-
-// layer
+#include "buffer.hpp"
 #include "op_base.hpp"
+#include "op_concat.hpp"
 #include "op_conv.hpp"
-#include "op_matmul.hpp"
+#include "op_lrn.hpp"
+#include "op_softmax.hpp"
+#include "op_relu.hpp"
+#include "op_pool.hpp"
+#include "op_prior_box.hpp"
+#include "op_permute.hpp"
 
 #endif // OPENCV_DNN_VKCOM_HPP

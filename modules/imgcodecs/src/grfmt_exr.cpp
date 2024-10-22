@@ -44,9 +44,6 @@
 
 #ifdef HAVE_OPENEXR
 
-#include <opencv2/core/utils/configuration.private.hpp>
-#include <opencv2/core/utils/logger.hpp>
-
 #if defined _MSC_VER && _MSC_VER >= 1200
 #  pragma warning( disable: 4100 4244 4267 )
 #endif
@@ -82,27 +79,6 @@
 
 namespace cv
 {
-
-static bool isOpenEXREnabled()
-{
-    static const bool PARAM_ENABLE_OPENEXR = utils::getConfigurationParameterBool("OPENCV_IO_ENABLE_OPENEXR",
-#ifdef OPENCV_IMGCODECS_USE_OPENEXR
-        true
-#else
-        false
-#endif
-    );
-    return PARAM_ENABLE_OPENEXR;
-}
-static void initOpenEXR()
-{
-    if (!isOpenEXREnabled())
-    {
-        const char* message = "imgcodecs: OpenEXR codec is disabled. You can enable it via 'OPENCV_IO_ENABLE_OPENEXR' option. Refer for details and cautions here: https://github.com/opencv/opencv/issues/21326";
-        CV_LOG_WARNING(NULL, message);
-        CV_Error(Error::StsNotImplemented, message);
-    }
-}
 
 /////////////////////// ExrDecoder ///////////////////
 
@@ -601,7 +577,6 @@ void  ExrDecoder::RGBToGray( float *in, float *out )
 
 ImageDecoder ExrDecoder::newDecoder() const
 {
-    initOpenEXR();
     return makePtr<ExrDecoder>();
 }
 
@@ -637,7 +612,7 @@ bool  ExrEncoder::write( const Mat& img, const std::vector<int>& params )
 
     for( size_t i = 0; i < params.size(); i += 2 )
     {
-        if( params[i] == IMWRITE_EXR_TYPE )
+        if( params[i] == CV_IMWRITE_EXR_TYPE )
         {
             switch( params[i+1] )
             {
@@ -690,14 +665,6 @@ bool  ExrEncoder::write( const Mat& img, const std::vector<int>& params )
             default:
                 CV_Error(Error::StsBadArg, "IMWRITE_EXR_COMPRESSION is invalid or not supported");
             }
-        }
-        if (params[i] == IMWRITE_EXR_DWA_COMPRESSION_LEVEL)
-        {
-#if OPENEXR_VERSION_MAJOR >= 3
-            header.dwaCompressionLevel() = params[i + 1];
-#else
-            CV_LOG_ONCE_WARNING(NULL, "Setting `IMWRITE_EXR_DWA_COMPRESSION_LEVEL` not supported in OpenEXR version " + std::to_string(OPENEXR_VERSION_MAJOR) + " (version 3 is required)");
-#endif
         }
     }
 
@@ -773,7 +740,6 @@ bool  ExrEncoder::write( const Mat& img, const std::vector<int>& params )
 
 ImageEncoder ExrEncoder::newEncoder() const
 {
-    initOpenEXR();
     return makePtr<ExrEncoder>();
 }
 

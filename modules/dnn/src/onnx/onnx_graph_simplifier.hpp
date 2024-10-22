@@ -7,7 +7,8 @@
 
 #ifndef __OPENCV_DNN_ONNX_SIMPLIFIER_HPP__
 #define __OPENCV_DNN_ONNX_SIMPLIFIER_HPP__
-#ifdef HAVE_PROTOBUF
+
+#include "../precomp.hpp"
 
 #if defined(__GNUC__) && __GNUC__ >= 5
 #pragma GCC diagnostic push
@@ -32,10 +33,9 @@ void convertInt64ToInt32(const T1& src, T2& dst, int size)
     }
 }
 
-Mat getMatFromTensor(const opencv_onnx::TensorProto& tensor_proto);
+Mat getMatFromTensor(opencv_onnx::TensorProto& tensor_proto);
 
 CV__DNN_INLINE_NS_END
 }}  // namespace dnn, namespace cv
 
-#endif  // HAVE_PROTOBUF
 #endif  // __OPENCV_DNN_ONNX_SIMPLIFIER_HPP__

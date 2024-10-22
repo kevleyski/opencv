@@ -122,7 +122,10 @@
                     "}",
                     "\n"
                 ]
-            }
+            },
+            "checkHardwareSupport" : {"j_code" : [""], "jn_code" : [""], "cpp_code" : [""] },
+            "setUseOptimized"      : {"j_code" : [""], "jn_code" : [""], "cpp_code" : [""] },
+            "useOptimized"         : {"j_code" : [""], "jn_code" : [""], "cpp_code" : [""] }
         }
     },
     "func_arg_fix" : {

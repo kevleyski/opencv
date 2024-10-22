@@ -44,15 +44,12 @@
 
 #include "opencv2/core/hal/interface.h"
 
-#if defined(__clang__)  // clang or MSVC clang
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-parameter"
-#elif defined(_MSC_VER)
-#pragma warning(push)
-#pragma warning(disable : 4100)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
+#if defined __GNUC__
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wunused-parameter"
+#elif defined _MSC_VER
+#  pragma warning( push )
+#  pragma warning( disable: 4100 )
 #endif
 
 //! @addtogroup features2d_hal_interface
@@ -64,12 +61,9 @@
 //! @{
 /**
    @brief Detects corners using the FAST algorithm, returns mask.
-   @param src_data Source image data
-   @param src_step Source image step
-   @param dst_data Destination mask data
-   @param dst_step Destination mask step
-   @param width Source image width
-   @param height Source image height
+   @param src_data,src_step Source image
+   @param dst_data,dst_step Destination mask
+   @param width,height Source image dimensions
    @param type FAST type
 */
 inline int hal_ni_FAST_dense(const uchar* src_data, size_t src_step, uchar* dst_data, size_t dst_step, int width, int height, cv::FastFeatureDetector::DetectorType type) { return CV_HAL_ERROR_NOT_IMPLEMENTED; }
@@ -92,10 +86,8 @@ inline int hal_ni_FAST_NMS(const uchar* src_data, size_t src_step, uchar* dst_da
 
 /**
    @brief Detects corners using the FAST algorithm.
-   @param src_data Source image data
-   @param src_step Source image step
-   @param width Source image width
-   @param height Source image height
+   @param src_data,src_step Source image
+   @param width,height Source image dimensions
    @param keypoints_data Pointer to keypoints
    @param keypoints_count Count of keypoints
    @param threshold Threshold for keypoint
@@ -111,12 +103,10 @@ inline int hal_ni_FAST(const uchar* src_data, size_t src_step, int width, int he
 //! @}
 
 
-#if defined(__clang__)
-#pragma clang diagnostic pop
-#elif defined(_MSC_VER)
-#pragma warning(pop)
-#elif defined(__GNUC__)
-#pragma GCC diagnostic pop
+#if defined __GNUC__
+#  pragma GCC diagnostic pop
+#elif defined _MSC_VER
+#  pragma warning( pop )
 #endif
 
 #include "custom_hal.hpp"

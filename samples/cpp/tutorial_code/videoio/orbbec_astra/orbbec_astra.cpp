@@ -4,17 +4,6 @@
 
 #include <list>
 #include <iostream>
-
-
-#if !defined(HAVE_THREADS)
-int main()
-{
-    std::cout << "This sample is built without threading support. Sample code is disabled." << std::endl;
-    return 0;
-}
-#else
-
-
 #include <thread>
 #include <mutex>
 #include <condition_variable>
@@ -211,5 +200,3 @@ int main()
 
     return 0;
 }
-
-#endif

@@ -63,6 +63,15 @@ namespace details {
 #pragma warning(disable:4065) // switch statement contains 'default' but no 'case' labels
 #endif
 
+static int64 g_zero_timestamp = 0;
+
+static int64 getTimestamp()
+{
+    int64 t = getTickCount();
+    static double tick_to_ns = 1e9 / getTickFrequency();
+    return (int64)((t - g_zero_timestamp) * tick_to_ns);
+}
+
 static bool getParameterTraceEnable()
 {
     static bool param_traceEnable = utils::getConfigurationParameterBool("OPENCV_TRACE", false);
@@ -476,7 +485,7 @@ Region::Region(const LocationStaticStorage& location) :
         }
     }
 
-    int64 beginTimestamp = getTimestampNS();
+    int64 beginTimestamp = getTimestamp();
 
     int currentDepth = ctx.getCurrentDepth() + 1;
     switch (location.flags & REGION_FLAG_IMPL_MASK)
@@ -626,7 +635,7 @@ void Region::destroy()
         }
     }
 
-    int64 endTimestamp = getTimestampNS();
+    int64 endTimestamp = getTimestamp();
     int64 duration = endTimestamp - ctx.stackTopBeginTimestamp();
 
     bool active = isActive();
@@ -835,7 +844,7 @@ static bool isInitialized = false;
 
 TraceManager::TraceManager()
 {
-    (void)cv::getTimestampNS();
+    g_zero_timestamp = cv::getTickCount();
 
     isInitialized = true;
     CV_LOG("TraceManager ctor: " << (void*)this);
@@ -981,13 +990,14 @@ void parallelForFinalize(const Region& rootRegion)
 {
     TraceManagerThreadLocal& ctx = getTraceManager().tls.getRef();
 
-    int64 endTimestamp = getTimestampNS();
+    int64 endTimestamp = getTimestamp();
     int64 duration = endTimestamp - ctx.stackTopBeginTimestamp();
     CV_LOG_PARALLEL(NULL, "parallel_for duration: " << duration << " " << &rootRegion);
 
     std::vector<TraceManagerThreadLocal*> threads_ctx;
     getTraceManager().tls.gather(threads_ctx);
     RegionStatistics parallel_for_stat;
+    int threads = 0;
     for (size_t i = 0; i < threads_ctx.size(); i++)
     {
         TraceManagerThreadLocal* child_ctx = threads_ctx[i];
@@ -995,6 +1005,7 @@ void parallelForFinalize(const Region& rootRegion)
         if (child_ctx && child_ctx->stackTopRegion() == &rootRegion)
         {
             CV_LOG_PARALLEL(NULL, "Thread=" << child_ctx->threadID << " " << child_ctx->stat);
+            threads++;
             RegionStatistics child_stat;
             child_ctx->stat.grab(child_stat);
             parallel_for_stat.append(child_stat);
@@ -1010,7 +1021,6 @@ void parallelForFinalize(const Region& rootRegion)
             }
         }
     }
-
     float parallel_coeff = std::min(1.0f, duration / (float)(parallel_for_stat.duration));
     CV_LOG_PARALLEL(NULL, "parallel_coeff=" << 1.0f / parallel_coeff);
     CV_LOG_PARALLEL(NULL, parallel_for_stat);

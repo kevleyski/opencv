@@ -64,9 +64,10 @@ void CV_OptFlowPyrLKTest::run( int )
     const int bad_points_max = 8;
 
     /* test parameters */
-    double  max_err = 0.;
+    double  max_err = 0., sum_err = 0;
+    int     pt_cmpd = 0;
     int     pt_exceed = 0;
-    int     merr_i = 0, merr_nan = 0;
+    int     merr_i = 0, merr_j = 0, merr_k = 0, merr_nan = 0;
     char    filename[1000];
 
     cv::Point2f *v = 0, *v2 = 0;
@@ -78,7 +79,7 @@ void CV_OptFlowPyrLKTest::run( int )
 
     for(;;)
     {
-    snprintf( filename, sizeof(filename), "%soptflow/%s", ts->get_data_path().c_str(), "lk_prev.dat" );
+    sprintf( filename, "%soptflow/%s", ts->get_data_path().c_str(), "lk_prev.dat" );
 
     {
         FileStorage fs(filename, FileStorage::READ);
@@ -91,7 +92,7 @@ void CV_OptFlowPyrLKTest::run( int )
         }
     }
 
-    snprintf( filename, sizeof(filename), "%soptflow/%s", ts->get_data_path().c_str(), "lk_next.dat" );
+    sprintf( filename, "%soptflow/%s", ts->get_data_path().c_str(), "lk_next.dat" );
 
     {
         FileStorage fs(filename, FileStorage::READ);
@@ -115,7 +116,7 @@ void CV_OptFlowPyrLKTest::run( int )
     }
 
     /* read first image */
-    snprintf( filename, sizeof(filename), "%soptflow/%s", ts->get_data_path().c_str(), "rock_1.bmp" );
+    sprintf( filename, "%soptflow/%s", ts->get_data_path().c_str(), "rock_1.bmp" );
     imgI = cv::imread( filename, cv::IMREAD_UNCHANGED );
 
     if( imgI.empty() )
@@ -126,7 +127,7 @@ void CV_OptFlowPyrLKTest::run( int )
     }
 
     /* read second image */
-    snprintf( filename, sizeof(filename), "%soptflow/%s", ts->get_data_path().c_str(), "rock_2.bmp" );
+    sprintf( filename, "%soptflow/%s", ts->get_data_path().c_str(), "rock_2.bmp" );
     imgJ = cv::imread( filename, cv::IMREAD_UNCHANGED );
 
     if( imgJ.empty() )
@@ -154,6 +155,7 @@ void CV_OptFlowPyrLKTest::run( int )
             double err;
             if( cvIsNaN(v[i].x) || cvIsNaN(v[i].y) )
             {
+                merr_j++;
                 continue;
             }
 
@@ -171,12 +173,15 @@ void CV_OptFlowPyrLKTest::run( int )
             }
 
             pt_exceed += err > success_error_level;
+            sum_err += err;
+            pt_cmpd++;
         }
         else
         {
             if( !cvIsNaN( v[i].x ))
             {
                 merr_i = i;
+                merr_k++;
                 ts->printf( cvtest::TS::LOG, "The algorithm lost the point #%d\n", i );
                 code = cvtest::TS::FAIL_BAD_ACCURACY;
                 break;

@@ -50,6 +50,12 @@
 namespace cv
 {
 
+enum HdrCompression
+{
+    HDR_NONE = 0,
+    HDR_RLE = 1
+};
+
 // Radiance rgbe (.hdr) reader
 class HdrDecoder CV_FINAL : public BaseImageDecoder
 {

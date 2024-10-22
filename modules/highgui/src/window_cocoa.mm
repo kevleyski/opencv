@@ -92,7 +92,6 @@ static bool wasInitialized = false;
 @interface CVSlider : NSView {
     NSSlider *slider;
     NSTextField *name;
-    NSString *initialName;
     int *value;
     void *userData;
     CvTrackbarCallback callback;
@@ -100,7 +99,6 @@ static bool wasInitialized = false;
 }
 @property(retain) NSSlider *slider;
 @property(retain) NSTextField *name;
-@property(retain) NSString *initialName;
 @property(assign) int *value;
 @property(assign) void *userData;
 @property(assign) CvTrackbarCallback callback;
@@ -109,7 +107,6 @@ static bool wasInitialized = false;
 
 @interface CVWindow : NSWindow {
     NSMutableDictionary *sliders;
-    NSMutableArray *slidersKeys;
     CvMouseCallback mouseCallback;
     void *mouseParam;
     BOOL autosize;
@@ -124,7 +121,6 @@ static bool wasInitialized = false;
 @property(assign) int x0;
 @property(assign) int y0;
 @property(retain) NSMutableDictionary *sliders;
-@property(retain) NSMutableArray *slidersKeys;
 @property(readwrite) int status;
 - (CVView *)contentView;
 - (void)cvSendMouseEvent:(NSEvent *)event type:(int)type flags:(int)flags;
@@ -195,9 +191,6 @@ CV_IMPL void cvDestroyWindow( const char* name)
     //cout << "cvDestroyWindow" << endl;
     CVWindow *window = cvGetWindow(name);
     if(window) {
-        if ([window styleMask] & NSFullScreenWindowMask) {
-            [window toggleFullScreen:nil];
-        }
         [window close];
         [windows removeObjectForKey:[NSString stringWithFormat:@"%s", name]];
     }
@@ -454,9 +447,6 @@ CV_IMPL void cvSetTrackbarPos(const char* trackbar_name, const char* window_name
         slider = [[window sliders] valueForKey:[NSString stringWithFormat:@"%s", trackbar_name]];
         if(slider) {
             [[slider slider] setIntValue:pos];
-            if([slider respondsToSelector:@selector(handleSlider)]) {
-                [slider performSelector:@selector(handleSlider)];
-            }
         }
     }
     [localpool5 drain];
@@ -590,8 +580,6 @@ CV_IMPL int cvNamedWindow( const char* name, int flags )
 
     [window setContentView:[[CVView alloc] init]];
 
-    [NSApp activateIgnoringOtherApps:YES];
-
     [window setHasShadow:YES];
     [window setAcceptsMouseMovedEvents:YES];
     [window useOptimizedDrawing:YES];
@@ -629,7 +617,7 @@ CV_IMPL int cvWaitKey (int maxWait)
          inMode:NSDefaultRunLoopMode
          dequeue:YES];
 
-        if([event type] == NSKeyDown && [[event characters] length]) {
+        if([event type] == NSKeyDown) {
             returnCode = [[event characters] characterAtIndex:0];
             break;
         }
@@ -704,11 +692,7 @@ double cvGetModeWindow_COCOA( const char* name )
 void cvSetModeWindow_COCOA( const char* name, double prop_value )
 {
     CVWindow *window = nil;
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_7
     NSDictionary *fullscreenOptions = nil;
-#endif
-
     NSAutoreleasePool* localpool = nil;
 
     CV_FUNCNAME( "cvSetModeWindow_COCOA" );
@@ -732,31 +716,6 @@ void cvSetModeWindow_COCOA( const char* name, double prop_value )
 
     localpool = [[NSAutoreleasePool alloc] init];
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED > MAC_OS_X_VERSION_10_6
-    if ( ([window styleMask] & NSFullScreenWindowMask) && prop_value==CV_WINDOW_NORMAL )
-    {
-        [window toggleFullScreen:nil];
-
-        window.status=CV_WINDOW_NORMAL;
-    }
-    else if( !([window styleMask] & NSFullScreenWindowMask) && prop_value==CV_WINDOW_FULLSCREEN )
-    {
-        [window setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-
-        NSScreen* screen = [window screen];
-
-        NSRect frame = [screen frame];
-        [window setFrame:frame display:YES];
-
-        [window setContentSize:frame.size];
-
-        [window toggleFullScreen:nil];
-
-        [window setFrameTopLeftPoint: frame.origin];
-
-        window.status=CV_WINDOW_FULLSCREEN;
-    }
-#else
     fullscreenOptions = [NSDictionary dictionaryWithObject:[NSNumber numberWithBool:YES] forKey:NSFullScreenModeSetting];
     if ( [[window contentView] isInFullScreenMode] && prop_value==CV_WINDOW_NORMAL )
     {
@@ -768,35 +727,10 @@ void cvSetModeWindow_COCOA( const char* name, double prop_value )
         [[window contentView] enterFullScreenMode:[NSScreen mainScreen] withOptions:fullscreenOptions];
         window.status=CV_WINDOW_FULLSCREEN;
     }
-#endif
+
     [localpool drain];
 
     __END__;
-}
-
-double cvGetPropVisible_COCOA(const char* name)
-{
-    double    result = -1;
-    CVWindow* window = nil;
-
-    CV_FUNCNAME("cvGetPropVisible_COCOA");
-
-    __BEGIN__;
-    if (name == NULL)
-    {
-        CV_ERROR(CV_StsNullPtr, "NULL name string");
-    }
-
-    window = cvGetWindow(name);
-    if (window == NULL)
-    {
-        CV_ERROR(CV_StsNullPtr, "NULL window");
-    }
-
-    result = window.isVisible ? 1 : 0;
-
-    __END__;
-    return result;
 }
 
 double cvGetPropTopmost_COCOA(const char* name)
@@ -842,7 +776,7 @@ void cvSetPropTopmost_COCOA( const char* name, const bool topmost )
         CV_ERROR( CV_StsNullPtr, "NULL window" );
     }
 
-    if (([window styleMask] & NSFullScreenWindowMask))
+    if ([[window contentView] isInFullScreenMode])
     {
         EXIT;
     }
@@ -908,7 +842,6 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
 @synthesize x0;
 @synthesize y0;
 @synthesize sliders;
-@synthesize slidersKeys;
 @synthesize status;
 
 - (void)cvSendMouseEvent:(NSEvent *)event type:(int)type flags:(int)flags {
@@ -931,22 +864,8 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
     mp.y *= (imageSize.height / std::max(viewSize.height, 1.));
     mp.x *= (imageSize.width / std::max(viewSize.width, 1.));
 
-    if( [event type] == NSEventTypeScrollWheel ) {
-      if( event.hasPreciseScrollingDeltas ) {
-        mp.x = int(event.scrollingDeltaX);
-        mp.y = int(event.scrollingDeltaY);
-      } else {
-        mp.x = int(event.scrollingDeltaX / 0.100006);
-        mp.y = int(event.scrollingDeltaY / 0.100006);
-      }
-      if( mp.x && !mp.y && CV_EVENT_MOUSEWHEEL == type ) {
-        type = CV_EVENT_MOUSEHWHEEL;
-      }
-      mouseCallback(type, mp.x, mp.y, flags, mouseParam);
-    } else if( mp.x >= 0 && mp.y >= 0 && mp.x < imageSize.width && mp.y < imageSize.height ) {
-      mouseCallback(type, mp.x, mp.y, flags, mouseParam);
-    }
-
+    if( mp.x >= 0 && mp.y >= 0 && mp.x < imageSize.width && mp.y < imageSize.height )
+        mouseCallback(type, mp.x, mp.y, flags, mouseParam);
 }
 
 - (void)cvMouseEvent:(NSEvent *)event {
@@ -969,11 +888,6 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
     if([event type] == NSLeftMouseDragged) {[self cvSendMouseEvent:event type:CV_EVENT_MOUSEMOVE   flags:flags | CV_EVENT_FLAG_LBUTTON];}
     if([event type] == NSRightMouseDragged)	{[self cvSendMouseEvent:event type:CV_EVENT_MOUSEMOVE   flags:flags | CV_EVENT_FLAG_RBUTTON];}
     if([event type] == NSOtherMouseDragged)	{[self cvSendMouseEvent:event type:CV_EVENT_MOUSEMOVE   flags:flags | CV_EVENT_FLAG_MBUTTON];}
-    if([event type] == NSEventTypeScrollWheel) {[self cvSendMouseEvent:event type:CV_EVENT_MOUSEWHEEL   flags:flags ];}
-}
-
--(void)scrollWheel:(NSEvent *)theEvent {
-    [self cvMouseEvent:theEvent];
 }
 - (void)keyDown:(NSEvent *)theEvent {
     //cout << "keyDown" << endl;
@@ -1019,9 +933,6 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
     if(sliders == nil)
         sliders = [[NSMutableDictionary alloc] init];
 
-    if(slidersKeys == nil)
-        slidersKeys = [[NSMutableArray alloc] init];
-
     NSString *cvname = [NSString stringWithFormat:@"%s", name];
 
     // Avoid overwriting slider
@@ -1031,23 +942,20 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
     // Create slider
     CVSlider *slider = [[CVSlider alloc] init];
     [[slider name] setStringValue:cvname];
-    slider.initialName = [NSString stringWithFormat:@"%s", name];
     [[slider slider] setMaxValue:max];
     [[slider slider] setMinValue:0];
+    [[slider slider] setNumberOfTickMarks:(max+1)];
+    [[slider slider] setAllowsTickMarkValuesOnly:YES];
     if(value)
     {
         [[slider slider] setIntValue:*value];
         [slider setValue:value];
-        NSString *temp = [slider initialName];
-        NSString *text = [NSString stringWithFormat:@"%@ %d", temp, *value];
-        [[slider name] setStringValue: text];
     }
     if(callback)
         [slider setCallback:callback];
 
     // Save slider
     [sliders setValue:slider forKey:cvname];
-    [slidersKeys addObject:cvname];
     [[self contentView] addSubview:slider];
 
 
@@ -1186,7 +1094,7 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
 
     CVWindow *cvwindow = (CVWindow *)[self window];
     if ([cvwindow respondsToSelector:@selector(sliders)]) {
-        for(NSString *key in [cvwindow slidersKeys]) {
+        for(NSString *key in [cvwindow sliders]) {
             CVSlider *slider = [[cvwindow sliders] valueForKey:key];
             NSRect r = [slider frame];
             r.origin.y = height - r.size.height;
@@ -1238,7 +1146,6 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
 
 @synthesize slider;
 @synthesize name;
-@synthesize initialName;
 @synthesize value;
 @synthesize userData;
 @synthesize callback;
@@ -1268,7 +1175,7 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
     [slider setMaxValue:100];
     [slider setContinuous:YES];
     [slider setTarget:self];
-    [slider setAction:@selector(handleSliderNotification:)];
+    [slider setAction:@selector(sliderChanged:)];
     [self addSubview:slider];
 
     [self setAutoresizingMask:NSViewWidthSizable];
@@ -1278,16 +1185,9 @@ static NSSize constrainAspectRatio(NSSize base, NSSize constraint) {
     return self;
 }
 
-- (void)handleSliderNotification:(NSNotification *)notification {
+- (void)sliderChanged:(NSNotification *)notification {
     (void)notification;
-    [self handleSlider];
-}
-
-- (void)handleSlider {
     int pos = [slider intValue];
-    NSString *temp = [self initialName];
-    NSString *text = [NSString stringWithFormat:@"%@ %d", temp, pos];
-    [name setStringValue: text];
     if(value)
         *value = pos;
     if(callback)

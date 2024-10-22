@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION ${MIN_VER_CMAKE})
+cmake_minimum_required(VERSION 3.1)
 
 if(" ${HALIDE_ROOT_DIR}" STREQUAL " ")
   unset(HALIDE_ROOT_DIR CACHE)

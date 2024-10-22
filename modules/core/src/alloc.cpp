@@ -53,6 +53,7 @@
 #undef CV__ALLOCATOR_STATS_LOG
 
 //#define OPENCV_ALLOC_ENABLE_STATISTICS
+#define OPENCV_ALLOC_STATISTICS_LIMIT 4096  // don't track buffers less than N bytes
 
 
 #ifdef HAVE_POSIX_MEMALIGN
@@ -62,7 +63,6 @@
 #endif
 
 #ifdef OPENCV_ALLOC_ENABLE_STATISTICS
-#define OPENCV_ALLOC_STATISTICS_LIMIT 4096  // don't track buffers less than N bytes
 #include <map>
 #endif
 

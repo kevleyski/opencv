@@ -1,10 +1,4 @@
 {
-    "ManualFuncs" : {
-        "SimpleBlobDetector": {
-            "setParams": { "declaration" : [""], "implementation" : [""] },
-            "getParams": { "declaration" : [""], "implementation" : [""] }
-        }
-    },
     "enum_fix" : {
         "FastFeatureDetector" : { "DetectorType": "FastDetectorType" },
         "AgastFeatureDetector" : { "DetectorType": "AgastDetectorType" }

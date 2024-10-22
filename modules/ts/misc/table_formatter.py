@@ -1,8 +1,4 @@
 #!/usr/bin/env python
-""" Prints data in a table format.
-
-This module serves as utility for other scripts.
-"""
 
 from __future__ import print_function
 import sys, re, os.path, stat, math

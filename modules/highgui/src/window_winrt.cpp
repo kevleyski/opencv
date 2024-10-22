@@ -30,6 +30,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <assert.h>
 #include <opencv2\highgui.hpp>
 #include <opencv2\highgui\highgui_winrt.hpp>
 #include "window_winrt_bridge.hpp"

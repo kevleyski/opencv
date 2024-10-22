@@ -283,7 +283,7 @@ floodFillGrad_CnIR( Mat& image, Mat& msk,
                    Diff diff, ConnectedComp* region, int flags,
                    std::vector<FFillSegment>* buffer )
 {
-    size_t step = image.step, maskStep = msk.step;
+    int step = (int)image.step, maskStep = (int)msk.step;
     uchar* pImage = image.ptr();
     _Tp* img = (_Tp*)(pImage + step*seed.y);
     uchar* pMask = msk.ptr() + maskStep + sizeof(_MTp);
@@ -477,10 +477,11 @@ int cv::floodFill( InputOutputArray _image, InputOutputArray _mask,
     nv_buf._[0] = nv_buf._[1] = nv_buf._[2] = nv_buf._[3] = 0;
 
     struct { Vec3b b; Vec3i i; Vec3f f; } ld_buf, ud_buf;
-
     Mat img = _image.getMat(), mask;
-
+    if( !_mask.empty() )
+        mask = _mask.getMat();
     Size size = img.size();
+
     int type = img.type();
     int depth = img.depth();
     int cn = img.channels();
@@ -493,20 +494,6 @@ int cv::floodFill( InputOutputArray _image, InputOutputArray _mask,
     const int connectivity = flags & 255;
     if( connectivity != 0 && connectivity != 4 && connectivity != 8 )
         CV_Error( CV_StsBadFlag, "Connectivity must be 4, 0(=4) or 8" );
-
-    if( _mask.empty() )
-    {
-        _mask.create( size.height + 2, size.width + 2, CV_8UC1 );
-        _mask.setTo(0);
-    }
-
-    mask = _mask.getMat();
-    CV_CheckTypeEQ( mask.type(), CV_8U, "" );
-    CV_CheckEQ( mask.rows, size.height + 2, "" );
-    CV_CheckEQ( mask.cols, size.width + 2, "" );
-
-    Mat mask_inner = mask( Rect(1, 1, mask.cols - 2, mask.rows - 2) );
-    copyMakeBorder( mask_inner, mask, 1, 1, 1, 1, BORDER_ISOLATED | BORDER_CONSTANT, Scalar(1) );
 
     bool is_simple = mask.empty() && (flags & FLOODFILL_MASK_ONLY) == 0;
 
@@ -557,18 +544,31 @@ int cv::floodFill( InputOutputArray _image, InputOutputArray _mask,
         }
     }
 
+    if( mask.empty() )
+    {
+        Mat tempMask( size.height + 2, size.width + 2, CV_8UC1 );
+        tempMask.setTo(Scalar::all(0));
+        mask = tempMask;
+    }
+    else
+    {
+        CV_Assert( mask.rows == size.height+2 && mask.cols == size.width+2 );
+        CV_Assert( mask.type() == CV_8U );
+    }
+
+    memset( mask.ptr(), 1, mask.cols );
+    memset( mask.ptr(mask.rows-1), 1, mask.cols );
+
+    for( i = 1; i <= size.height; i++ )
+    {
+        mask.at<uchar>(i, 0) = mask.at<uchar>(i, mask.cols-1) = (uchar)1;
+    }
+
     if( depth == CV_8U )
         for( i = 0; i < cn; i++ )
         {
-#if defined(__GNUC__) && (__GNUC__ == 12)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-overflow"
-#endif
             ld_buf.b[i] = saturate_cast<uchar>(cvFloor(loDiff[i]));
             ud_buf.b[i] = saturate_cast<uchar>(cvFloor(upDiff[i]));
-#if defined(__GNUC__) && (__GNUC__ == 12)
-#pragma GCC diagnostic pop
-#endif
         }
     else if( depth == CV_32S )
         for( i = 0; i < cn; i++ )
@@ -632,8 +632,7 @@ int cv::floodFill( InputOutputArray _image, Point seedPoint,
 {
     CV_INSTRUMENT_REGION();
 
-    Mat mask;
-    return floodFill(_image, mask, seedPoint, newVal, rect, loDiff, upDiff, flags);
+    return floodFill(_image, Mat(), seedPoint, newVal, rect, loDiff, upDiff, flags);
 }
 
 

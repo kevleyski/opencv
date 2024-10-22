@@ -163,7 +163,6 @@ namespace cv
         void write(FileStorage& fs) const CV_OVERRIDE
         {
             writeFormat(fs);
-            fs << "name" << getDefaultName();
             fs << "extended" << (int)extended;
             fs << "upright" << (int)upright;
             fs << "threshold" << threshold;
@@ -174,19 +173,12 @@ namespace cv
 
         void read(const FileNode& fn) CV_OVERRIDE
         {
-            // if node is empty, keep previous value
-            if (!fn["extended"].empty())
-                extended = (int)fn["extended"] != 0;
-            if (!fn["upright"].empty())
-                upright = (int)fn["upright"] != 0;
-            if (!fn["threshold"].empty())
-                threshold = (float)fn["threshold"];
-            if (!fn["octaves"].empty())
-                octaves = (int)fn["octaves"];
-            if (!fn["sublevels"].empty())
-                sublevels = (int)fn["sublevels"];
-            if (!fn["diffusivity"].empty())
-                diffusivity = static_cast<KAZE::DiffusivityType>((int)fn["diffusivity"]);
+            extended = (int)fn["extended"] != 0;
+            upright = (int)fn["upright"] != 0;
+            threshold = (float)fn["threshold"];
+            octaves = (int)fn["octaves"];
+            sublevels = (int)fn["sublevels"];
+            diffusivity = static_cast<KAZE::DiffusivityType>((int)fn["diffusivity"]);
         }
 
         bool extended;
