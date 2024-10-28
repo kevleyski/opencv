@@ -40,6 +40,12 @@
 
 // Author : Rijubrata Bhaumik, Intel Corporation. rijubrata.bhaumik[at]intel[dot]com
 
+if (typeof module !== 'undefined' && module.exports) {
+    // The environment is Node.js
+    var cv = require('./opencv.js'); // eslint-disable-line no-var
+}
+
+
 QUnit.module('Photo', {});
 
 QUnit.test('test_photo', function(assert) {

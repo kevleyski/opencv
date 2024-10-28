@@ -135,7 +135,6 @@ namespace
 
     DefaultAllocator cudaDefaultAllocator;
     GpuMat::Allocator* g_defaultAllocator = &cudaDefaultAllocator;
-    GpuMat::Allocator* g_stdAllocator = &cudaDefaultAllocator;
 }
 
 GpuMat::Allocator* cv::cuda::GpuMat::defaultAllocator()
@@ -148,12 +147,6 @@ void cv::cuda::GpuMat::setDefaultAllocator(Allocator* allocator)
     CV_Assert( allocator != 0 );
     g_defaultAllocator = allocator;
 }
-
-GpuMat::Allocator* cv::cuda::GpuMat::getStdAllocator()
-{
-    return g_stdAllocator;
-}
-
 
 /////////////////////////////////////////////////////
 /// create

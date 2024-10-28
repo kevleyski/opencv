@@ -103,3 +103,6 @@ Additional Resources
 --------------------
 
 -#  [Hough Transform on Wikipedia](http://en.wikipedia.org/wiki/Hough_transform)
+
+Exercises
+---------

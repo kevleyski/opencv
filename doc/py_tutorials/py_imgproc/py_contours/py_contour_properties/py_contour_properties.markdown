@@ -114,6 +114,9 @@ For eg, if I apply it to an Indian map, I get the following result :
 
 ![image](images/extremepoints.jpg)
 
+Additional Resources
+--------------------
+
 Exercises
 ---------
 

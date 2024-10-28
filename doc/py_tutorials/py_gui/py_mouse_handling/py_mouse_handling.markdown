@@ -101,6 +101,8 @@ while(1):
 
 cv.destroyAllWindows()
 @endcode
+Additional Resources
+--------------------
 
 Exercises
 ---------

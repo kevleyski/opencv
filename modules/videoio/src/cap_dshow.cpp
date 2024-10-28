@@ -41,8 +41,6 @@
 
 #include "precomp.hpp"
 
-using namespace cv;
-
 #if defined _WIN32 && defined HAVE_DSHOW
 #include "cap_dshow.hpp"
 
@@ -546,7 +544,7 @@ class videoInput{
         //number of devices available
         int  devicesFound;
 
-        // mapping from OpenCV CAP_PROP to videoinput/dshow properties
+        // mapping from OpenCV CV_CAP_PROP to videoinput/dshow properties
         int getVideoPropertyFromCV(int cv_property);
         int getCameraPropertyFromCV(int cv_property);
 
@@ -1384,11 +1382,14 @@ int videoInput::listDevices(bool silent){
                  // Find the description or friendly name.
                 VARIANT varName;
                 VariantInit(&varName);
-                hr = pPropBag->Read(L"FriendlyName", &varName, 0);
+                hr = pPropBag->Read(L"Description", &varName, 0);
 
-                if (FAILED(hr)) hr = pPropBag->Read(L"Description", &varName, 0);
+                if (FAILED(hr)) hr = pPropBag->Read(L"FriendlyName", &varName, 0);
 
                 if (SUCCEEDED(hr)){
+
+                    hr = pPropBag->Read(L"FriendlyName", &varName, 0);
+
                     int count = 0;
                     int maxLen = sizeof(deviceNames[0])/sizeof(deviceNames[0][0]) - 2;
                     while( varName.bstrVal[count] != 0x00 && count < maxLen) {
@@ -1399,8 +1400,6 @@ int videoInput::listDevices(bool silent){
 
                     if(!silent) DebugPrintOut("SETUP: %i) %s\n",deviceCounter, deviceNames[deviceCounter]);
                 }
-
-                VariantClear(&varName);
 
                 pPropBag->Release();
                 pPropBag = NULL;
@@ -2381,37 +2380,37 @@ void videoInput::getVideoPropertyAsString(int prop, char * propertyAsString){
 int videoInput::getVideoPropertyFromCV(int cv_property){
     // see VideoProcAmpProperty in strmif.h
     switch (cv_property) {
-        case CAP_PROP_BRIGHTNESS:
+        case CV_CAP_PROP_BRIGHTNESS:
             return VideoProcAmp_Brightness;
 
-        case CAP_PROP_CONTRAST:
+        case CV_CAP_PROP_CONTRAST:
             return VideoProcAmp_Contrast;
 
-        case CAP_PROP_HUE:
+        case CV_CAP_PROP_HUE:
             return VideoProcAmp_Hue;
 
-        case CAP_PROP_SATURATION:
+        case CV_CAP_PROP_SATURATION:
             return VideoProcAmp_Saturation;
 
-        case CAP_PROP_SHARPNESS:
+        case CV_CAP_PROP_SHARPNESS:
             return VideoProcAmp_Sharpness;
 
-        case CAP_PROP_GAMMA:
+        case CV_CAP_PROP_GAMMA:
             return VideoProcAmp_Gamma;
 
-        case CAP_PROP_MONOCHROME:
+        case CV_CAP_PROP_MONOCHROME:
             return VideoProcAmp_ColorEnable;
 
-        case CAP_PROP_WHITE_BALANCE_BLUE_U:
+        case CV_CAP_PROP_WHITE_BALANCE_BLUE_U:
             return VideoProcAmp_WhiteBalance;
 
         case cv::VideoCaptureProperties::CAP_PROP_AUTO_WB:
             return VideoProcAmp_WhiteBalance;
 
-        case  CAP_PROP_BACKLIGHT:
+        case  CV_CAP_PROP_BACKLIGHT:
             return VideoProcAmp_BacklightCompensation;
 
-        case CAP_PROP_GAIN:
+        case CV_CAP_PROP_GAIN:
             return VideoProcAmp_Gain;
     }
     return -1;
@@ -2421,29 +2420,26 @@ int videoInput::getCameraPropertyFromCV(int cv_property){
 
     // see CameraControlProperty in strmif.h
     switch (cv_property) {
-        case CAP_PROP_PAN:
+        case CV_CAP_PROP_PAN:
             return CameraControl_Pan;
 
-        case CAP_PROP_TILT:
+        case CV_CAP_PROP_TILT:
             return CameraControl_Tilt;
 
-        case CAP_PROP_ROLL:
+        case CV_CAP_PROP_ROLL:
             return CameraControl_Roll;
 
-        case CAP_PROP_ZOOM:
+        case CV_CAP_PROP_ZOOM:
             return CameraControl_Zoom;
 
-        case CAP_PROP_EXPOSURE:
+        case CV_CAP_PROP_EXPOSURE:
             return CameraControl_Exposure;
 
-        case CAP_PROP_IRIS:
+        case CV_CAP_PROP_IRIS:
             return CameraControl_Iris;
 
-        case CAP_PROP_FOCUS:
+        case CV_CAP_PROP_FOCUS:
             return CameraControl_Focus;
-
-        default:
-            break;
     }
     return -1;
 }
@@ -3394,35 +3390,35 @@ double VideoCapture_DShow::getProperty(int propIdx) const
     switch (propIdx)
     {
     // image format properties
-    case CAP_PROP_FRAME_WIDTH:
+    case CV_CAP_PROP_FRAME_WIDTH:
         return g_VI.getWidth(m_index);
-    case CAP_PROP_FRAME_HEIGHT:
+    case CV_CAP_PROP_FRAME_HEIGHT:
         return g_VI.getHeight(m_index);
-    case CAP_PROP_FOURCC:
+    case CV_CAP_PROP_FOURCC:
         return g_VI.getFourcc(m_index);
-    case CAP_PROP_FPS:
+    case CV_CAP_PROP_FPS:
         return g_VI.getFPS(m_index);
-    case CAP_PROP_CONVERT_RGB:
+    case CV_CAP_PROP_CONVERT_RGB:
         return g_VI.getConvertRGB(m_index);
     case CAP_PROP_CHANNEL:
         return g_VI.getChannel(m_index);
-    case CAP_PROP_AUTOFOCUS:
+    case CV_CAP_PROP_AUTOFOCUS:
       // Flags indicate whether or not autofocus is enabled
       if (g_VI.getVideoSettingCamera(m_index, CameraControl_Focus, min_value, max_value, stepping_delta, current_value, flags, defaultValue))
         return (double)flags;
       break;
 
     // video filter properties
-    case CAP_PROP_BRIGHTNESS:
-    case CAP_PROP_CONTRAST:
-    case CAP_PROP_HUE:
-    case CAP_PROP_SATURATION:
-    case CAP_PROP_SHARPNESS:
-    case CAP_PROP_GAMMA:
-    case CAP_PROP_MONOCHROME:
-    case CAP_PROP_WHITE_BALANCE_BLUE_U:
-    case CAP_PROP_BACKLIGHT:
-    case CAP_PROP_GAIN:
+    case CV_CAP_PROP_BRIGHTNESS:
+    case CV_CAP_PROP_CONTRAST:
+    case CV_CAP_PROP_HUE:
+    case CV_CAP_PROP_SATURATION:
+    case CV_CAP_PROP_SHARPNESS:
+    case CV_CAP_PROP_GAMMA:
+    case CV_CAP_PROP_MONOCHROME:
+    case CV_CAP_PROP_WHITE_BALANCE_BLUE_U:
+    case CV_CAP_PROP_BACKLIGHT:
+    case CV_CAP_PROP_GAIN:
         if (g_VI.getVideoSettingFilter(m_index, g_VI.getVideoPropertyFromCV(propIdx), min_value, max_value, stepping_delta, current_value, flags, defaultValue))
             return (double)current_value;
         break;
@@ -3433,17 +3429,17 @@ double VideoCapture_DShow::getProperty(int propIdx) const
         break;
 
     // camera properties
-    case CAP_PROP_PAN:
-    case CAP_PROP_TILT:
-    case CAP_PROP_ROLL:
-    case CAP_PROP_ZOOM:
-    case CAP_PROP_EXPOSURE:
-    case CAP_PROP_IRIS:
-    case CAP_PROP_FOCUS:
+    case CV_CAP_PROP_PAN:
+    case CV_CAP_PROP_TILT:
+    case CV_CAP_PROP_ROLL:
+    case CV_CAP_PROP_ZOOM:
+    case CV_CAP_PROP_EXPOSURE:
+    case CV_CAP_PROP_IRIS:
+    case CV_CAP_PROP_FOCUS:
         if (g_VI.getVideoSettingCamera(m_index, g_VI.getCameraPropertyFromCV(propIdx), min_value, max_value, stepping_delta, current_value, flags, defaultValue))
             return (double)current_value;
         break;
-    case CAP_PROP_SETTINGS:
+    case CV_CAP_PROP_SETTINGS:
         return g_VI.property_window_count(m_index);
     default:
         break;
@@ -3457,17 +3453,17 @@ bool VideoCapture_DShow::setProperty(int propIdx, double propVal)
     bool handled = false;
     switch (propIdx)
     {
-    case CAP_PROP_FRAME_WIDTH:
+    case CV_CAP_PROP_FRAME_WIDTH:
         m_width = cvRound(propVal);
         handled = true;
         break;
 
-    case CAP_PROP_FRAME_HEIGHT:
+    case CV_CAP_PROP_FRAME_HEIGHT:
         m_height = cvRound(propVal);
         handled = true;
         break;
 
-    case CAP_PROP_FOURCC:
+    case CV_CAP_PROP_FOURCC:
         m_fourcc = (int)(unsigned long)(propVal);
         m_width = (int)getProperty(CAP_PROP_FRAME_WIDTH);
         m_height = (int)getProperty(CAP_PROP_FRAME_HEIGHT);
@@ -3493,7 +3489,7 @@ bool VideoCapture_DShow::setProperty(int propIdx, double propVal)
         g_VI.setConvertRGB(m_index, m_convertRGBSet);
         break;
 
-    case CAP_PROP_FPS:
+    case CV_CAP_PROP_FPS:
     {
         int fps = cvRound(propVal);
         if (fps != g_VI.getFPS(m_index))
@@ -3509,7 +3505,7 @@ bool VideoCapture_DShow::setProperty(int propIdx, double propVal)
         return g_VI.isDeviceSetup(m_index);
     }
 
-    case CAP_PROP_AUTO_EXPOSURE:
+    case CV_CAP_PROP_AUTO_EXPOSURE:
     {
         // Flags are required to toggle auto exposure or not, but the setProperty interface does not support multiple parameters
         bool enabled = cvRound(propVal) == 1;
@@ -3521,7 +3517,7 @@ bool VideoCapture_DShow::setProperty(int propIdx, double propVal)
         return g_VI.setVideoSettingCamera(m_index, CameraControl_Exposure, currentExposure, enabled ? CameraControl_Flags_Auto | CameraControl_Flags_Manual : CameraControl_Flags_Manual, enabled ? true : false);
     }
 
-    case CAP_PROP_AUTOFOCUS:
+    case CV_CAP_PROP_AUTOFOCUS:
     {
         // Flags are required to toggle autofocus or not, but the setProperty interface does not support multiple parameters
         bool enabled = cvRound(propVal) == 1;
@@ -3533,7 +3529,7 @@ bool VideoCapture_DShow::setProperty(int propIdx, double propVal)
         return g_VI.setVideoSettingCamera(m_index, CameraControl_Focus, currentFocus, enabled ? CameraControl_Flags_Auto | CameraControl_Flags_Manual : CameraControl_Flags_Manual, enabled ? true : false);
     }
 
-    case CAP_PROP_CONVERT_RGB:
+    case CV_CAP_PROP_CONVERT_RGB:
     {
         const bool convertRgb = cvRound(propVal) == 1;
         const bool success = g_VI.setConvertRGB(m_index, convertRgb);
@@ -3580,14 +3576,14 @@ bool VideoCapture_DShow::setProperty(int propIdx, double propVal)
     switch (propIdx)
     {
         case cv::VideoCaptureProperties::CAP_PROP_AUTO_WB:
-        case CAP_PROP_AUTO_EXPOSURE:
+        case CV_CAP_PROP_AUTO_EXPOSURE:
             useDefaultValue = true;
             if (cvRound(propVal) == 1)
                 flags = VideoProcAmp_Flags_Auto;
             else
                 flags = VideoProcAmp_Flags_Manual;
             break;
-        case CAP_PROP_WHITE_BALANCE_BLUE_U:
+        case CV_CAP_PROP_WHITE_BALANCE_BLUE_U:
             flags = VideoProcAmp_Flags_Manual;
             break;
     }
@@ -3595,33 +3591,33 @@ bool VideoCapture_DShow::setProperty(int propIdx, double propVal)
     //video Filter properties
     switch (propIdx)
     {
-    case CAP_PROP_BRIGHTNESS:
-    case CAP_PROP_CONTRAST:
-    case CAP_PROP_HUE:
-    case CAP_PROP_SATURATION:
-    case CAP_PROP_SHARPNESS:
-    case CAP_PROP_GAMMA:
-    case CAP_PROP_MONOCHROME:
-    case CAP_PROP_WHITE_BALANCE_BLUE_U:
+    case CV_CAP_PROP_BRIGHTNESS:
+    case CV_CAP_PROP_CONTRAST:
+    case CV_CAP_PROP_HUE:
+    case CV_CAP_PROP_SATURATION:
+    case CV_CAP_PROP_SHARPNESS:
+    case CV_CAP_PROP_GAMMA:
+    case CV_CAP_PROP_MONOCHROME:
+    case CV_CAP_PROP_WHITE_BALANCE_BLUE_U:
     case cv::VideoCaptureProperties::CAP_PROP_AUTO_WB:
-    case CAP_PROP_BACKLIGHT:
-    case CAP_PROP_GAIN:
+    case CV_CAP_PROP_BACKLIGHT:
+    case CV_CAP_PROP_GAIN:
         return g_VI.setVideoSettingFilter(m_index, g_VI.getVideoPropertyFromCV(propIdx), (long)propVal, flags, useDefaultValue);
     }
 
     //camera properties
     switch (propIdx)
     {
-    case CAP_PROP_PAN:
-    case CAP_PROP_TILT:
-    case CAP_PROP_ROLL:
-    case CAP_PROP_ZOOM:
-    case CAP_PROP_EXPOSURE:
-    case CAP_PROP_IRIS:
-    case CAP_PROP_FOCUS:
+    case CV_CAP_PROP_PAN:
+    case CV_CAP_PROP_TILT:
+    case CV_CAP_PROP_ROLL:
+    case CV_CAP_PROP_ZOOM:
+    case CV_CAP_PROP_EXPOSURE:
+    case CV_CAP_PROP_IRIS:
+    case CV_CAP_PROP_FOCUS:
         return g_VI.setVideoSettingCamera(m_index, g_VI.getCameraPropertyFromCV(propIdx), (long)propVal);
     // show video/camera filter dialog
-    case CAP_PROP_SETTINGS:
+    case CV_CAP_PROP_SETTINGS:
         return g_VI.showSettingsWindow(m_index);
     }
 
@@ -3651,7 +3647,7 @@ bool VideoCapture_DShow::retrieveFrame(int, OutputArray frame)
 }
 int VideoCapture_DShow::getCaptureDomain()
 {
-    return CAP_DSHOW;
+    return CV_CAP_DSHOW;
 }
 bool VideoCapture_DShow::isOpened() const
 {

@@ -237,6 +237,9 @@ make doxygen
 @endcode
 Then open opencv/build/doc/doxygen/html/index.html and bookmark it in the browser.
 
+Additional Resources
+--------------------
+
 Exercises
 ---------
 

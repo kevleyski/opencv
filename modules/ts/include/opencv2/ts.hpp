@@ -611,7 +611,7 @@ public:
     };
 
     // get RNG to generate random input data for a test
-    RNG& get_rng() { return cv::theRNG(); }
+    RNG& get_rng() { return rng; }
 
     // returns the current error code
     TS::FailureCode get_err_code() { return TS::FailureCode(current_test_info.code); }
@@ -629,6 +629,7 @@ public:
 protected:
 
     // these are allocated within a test to try to keep them valid in case of stack corruption
+    RNG rng;
 
     // information about the current test
     TestInfo current_test_info;

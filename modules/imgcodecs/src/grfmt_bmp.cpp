@@ -544,11 +544,6 @@ decode_rle8_bad: ;
         throw;
     }
 
-    if (m_use_rgb && color && img.channels() == 3)
-    {
-        cv::cvtColor(img, img, cv::COLOR_BGR2RGB);
-    }
-
     return result;
 }
 
@@ -635,40 +630,38 @@ bool  BmpEncoder::write( const Mat& img, const std::vector<int>& )
         m_buf->reserve( alignSize(fileSize + 16, 256) );
 
     // write signature 'BM'
-    CHECK_WRITE(strm.putBytes( fmtSignBmp, (int)strlen(fmtSignBmp) ));
+    strm.putBytes( fmtSignBmp, (int)strlen(fmtSignBmp) );
 
     // write file header
-    CHECK_WRITE(strm.putDWord( validateToInt(fileSize) )); // file size
-    CHECK_WRITE(strm.putDWord( 0 ));
-    CHECK_WRITE(strm.putDWord( headerSize ));
+    strm.putDWord( validateToInt(fileSize) ); // file size
+    strm.putDWord( 0 );
+    strm.putDWord( headerSize );
 
     // write bitmap header
-    CHECK_WRITE(strm.putDWord( bitmapHeaderSize ));
-    CHECK_WRITE(strm.putDWord( width ));
-    CHECK_WRITE(strm.putDWord( height ));
-    CHECK_WRITE(strm.putWord( 1 ));
-    CHECK_WRITE(strm.putWord( channels << 3 ));
-    CHECK_WRITE(strm.putDWord( BMP_RGB ));
-    CHECK_WRITE(strm.putDWord( 0 ));
-    CHECK_WRITE(strm.putDWord( 0 ));
-    CHECK_WRITE(strm.putDWord( 0 ));
-    CHECK_WRITE(strm.putDWord( 0 ));
-    CHECK_WRITE(strm.putDWord( 0 ));
+    strm.putDWord( bitmapHeaderSize );
+    strm.putDWord( width );
+    strm.putDWord( height );
+    strm.putWord( 1 );
+    strm.putWord( channels << 3 );
+    strm.putDWord( BMP_RGB );
+    strm.putDWord( 0 );
+    strm.putDWord( 0 );
+    strm.putDWord( 0 );
+    strm.putDWord( 0 );
+    strm.putDWord( 0 );
 
     if( channels == 1 )
     {
         FillGrayPalette( palette, 8 );
-        CHECK_WRITE(strm.putBytes( palette, sizeof(palette)));
+        strm.putBytes( palette, sizeof(palette));
     }
 
     width *= channels;
     for( int y = height - 1; y >= 0; y-- )
     {
-        CHECK_WRITE(strm.putBytes( img.ptr(y), width ));
+        strm.putBytes( img.ptr(y), width );
         if( fileStep > width )
-        {
-            CHECK_WRITE(strm.putBytes( zeropad, fileStep - width ));
-        }
+            strm.putBytes( zeropad, fileStep - width );
     }
 
     strm.close();

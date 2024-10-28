@@ -45,7 +45,6 @@
 #define CV_CAP_MODE_GRAY CV_FOURCC_MACRO('G','R','E','Y')
 #define CV_CAP_MODE_YUYV CV_FOURCC_MACRO('Y', 'U', 'Y', 'V')
 
-
 /********************** Declaration of class headers ************************/
 
 /*****************************************************************************
@@ -55,7 +54,7 @@
  * CaptureDelegate is notified on a separate thread by the OS whenever there
  *   is a new frame. When "updateImage" is called from the main thread, it
  *   copies this new frame into an IplImage, but only if this frame has not
- *   been copied before. When "getImage" is called from the main thread,
+ *   been copied before. When "getOutput" is called from the main thread,
  *   it gives the last copied IplImage.
  *
  *****************************************************************************/
@@ -68,8 +67,11 @@
 {
     int newFrame;
     CVImageBufferRef  mCurrentImageBuffer;
-    cv::Mat bgr_image;
-    cv::Mat bgr_image_r90;
+    char* imagedata;
+    IplImage* image;
+    char* bgr_imagedata;
+    IplImage* bgr_image;
+    IplImage* bgr_image_r90;
     size_t currSize;
 }
 
@@ -78,8 +80,8 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
 fromConnection:(AVCaptureConnection *)connection;
 
 
-- (bool)updateImage;
-- (cv::Mat)getImage;
+- (int)updateImage;
+- (IplImage*)getOutput;
 
 @end
 
@@ -91,17 +93,18 @@ fromConnection:(AVCaptureConnection *)connection;
  *
  *****************************************************************************/
 
-class CvCaptureCAM : public cv::IVideoCapture {
+class CvCaptureCAM : public CvCapture {
     public:
         CvCaptureCAM(int cameraNum = -1) ;
         ~CvCaptureCAM();
         bool grabFrame() CV_OVERRIDE;
-        bool retrieveFrame(int, cv::OutputArray) CV_OVERRIDE;
+        IplImage* retrieveFrame(int) CV_OVERRIDE;
         double getProperty(int property_id) const CV_OVERRIDE;
         bool setProperty(int property_id, double value) CV_OVERRIDE;
         int getCaptureDomain() /*const*/ CV_OVERRIDE { return cv::CAP_AVFOUNDATION; }
-        bool isOpened() const CV_OVERRIDE { return started; }
 
+        virtual IplImage* queryFrame();
+        virtual int didStart();
     private:
         AVCaptureSession            *mCaptureSession;
         AVCaptureDeviceInput        *mCaptureDeviceInput;
@@ -134,17 +137,17 @@ class CvCaptureCAM : public cv::IVideoCapture {
  *
  *****************************************************************************/
 
-class CvCaptureFile : public cv::IVideoCapture {
+class CvCaptureFile : public CvCapture {
 public:
     CvCaptureFile(const char* filename) ;
     ~CvCaptureFile();
     bool grabFrame() CV_OVERRIDE;
-    bool retrieveFrame(int, cv::OutputArray) CV_OVERRIDE;
+    IplImage* retrieveFrame(int) CV_OVERRIDE;
     double getProperty(int property_id) const CV_OVERRIDE;
     bool setProperty(int property_id, double value) CV_OVERRIDE;
     int getCaptureDomain() /*const*/ CV_OVERRIDE { return cv::CAP_AVFOUNDATION; }
-    bool isOpened() const CV_OVERRIDE { return started; }
 
+    virtual int didStart();
 private:
     AVAsset                  *mAsset;
     AVAssetTrack             *mAssetTrack;
@@ -153,14 +156,16 @@ private:
 
     CMSampleBufferRef mCurrentSampleBuffer;
     CVImageBufferRef  mGrabbedPixels;
-    cv::Mat mOutImage;
+    IplImage *mDeviceImage;
+    uint8_t  *mOutImagedata;
+    IplImage *mOutImage;
     size_t    currSize;
     uint32_t  mMode;
     int       mFormat;
 
     void handleTracks(NSArray<AVAssetTrack *>* tracks, const char* filename);
     bool setupReadingAt(CMTime position);
-    cv::Mat retrieveFramePixelBuffer();
+    IplImage* retrieveFramePixelBuffer();
     int getPreferredOrientationDegrees() const;
 
     CMTime mFrameTimestamp;
@@ -172,23 +177,22 @@ private:
 
 /*****************************************************************************
  *
- * CvVideoWriter_AVFoundation Declaration.
+ * CvCaptureFile Declaration.
  *
- * CvVideoWriter_AVFoundation is the instantiation of a video output class.
+ * CvCaptureFile is the instantiation of a capture source for video files.
  *
  *****************************************************************************/
 
-class CvVideoWriter_AVFoundation : public cv::IVideoWriter{
+class CvVideoWriter_AVFoundation : public CvVideoWriter{
     public:
         CvVideoWriter_AVFoundation(const char* filename, int fourcc,
-                double fps, const cv::Size& frame_size,
+                double fps, CvSize frame_size,
                 int is_color=1);
         ~CvVideoWriter_AVFoundation();
-        bool isOpened() const CV_OVERRIDE { return mMovieWriter != NULL && mMovieWriter.status != AVAssetWriterStatusFailed; }
-        void write(cv::InputArray image) CV_OVERRIDE;
+        bool writeFrame(const IplImage* image) CV_OVERRIDE;
         int getCaptureDomain() const CV_OVERRIDE { return cv::CAP_AVFOUNDATION; }
     private:
-        cv::Mat argbimage;
+        IplImage* argbimage;
 
         AVAssetWriter *mMovieWriter;
         AVAssetWriterInput* mMovieWriterInput;
@@ -198,7 +202,7 @@ class CvVideoWriter_AVFoundation : public cv::IVideoWriter{
         NSString* codec;
         NSString* fileType;
         double movieFPS;
-        cv::Size movieSize;
+        CvSize movieSize;
         int movieColor;
         unsigned long frameCount;
 };
@@ -209,21 +213,24 @@ class CvVideoWriter_AVFoundation : public cv::IVideoWriter{
 
 cv::Ptr<cv::IVideoCapture> cv::create_AVFoundation_capture_file(const std::string &filename)
 {
-    cv::Ptr<CvCaptureFile> retval = cv::makePtr<CvCaptureFile>(filename.c_str());
-    if(retval->isOpened())
-        return retval;
+    CvCaptureFile *retval = new CvCaptureFile(filename.c_str());
+    if(retval->didStart())
+        return makePtr<LegacyCapture>(retval);
+    delete retval;
     return NULL;
+
 }
 
 
 cv::Ptr<cv::IVideoCapture> cv::create_AVFoundation_capture_cam(int index)
 {
 #if !TARGET_OS_VISION
-    cv::Ptr<CvCaptureCAM> retval = cv::makePtr<CvCaptureCAM>(index);
-    if (retval->isOpened())
-        return retval;
+    CvCaptureCAM* retval = new CvCaptureCAM(index);
+    if (retval->didStart())
+        return cv::makePtr<cv::LegacyCapture>(retval);
+    delete retval;
 #endif
-    return NULL;
+    return 0;
 }
 
 
@@ -231,11 +238,10 @@ cv::Ptr<cv::IVideoWriter> cv::create_AVFoundation_writer(const std::string& file
                                                          double fps, const cv::Size &frameSize,
                                                          const cv::VideoWriterParameters& params)
 {
+    CvSize sz = { frameSize.width, frameSize.height };
     const bool isColor = params.get(VIDEOWRITER_PROP_IS_COLOR, true);
-    cv::Ptr<CvVideoWriter_AVFoundation> wrt = cv::makePtr<CvVideoWriter_AVFoundation>(filename.c_str(), fourcc, fps, frameSize, isColor);
-    if (wrt->isOpened())
-        return wrt;
-    return NULL;
+    CvVideoWriter_AVFoundation* wrt = new CvVideoWriter_AVFoundation(filename.c_str(), fourcc, fps, sz, isColor);
+    return cv::makePtr<cv::LegacyWriter>(wrt);
 }
 
 /********************** Implementation of Classes ****************************/
@@ -277,6 +283,11 @@ CvCaptureCAM::~CvCaptureCAM() {
     //cout << "Cleaned up camera." << endl;
 }
 
+int CvCaptureCAM::didStart() {
+    return started;
+}
+
+
 bool CvCaptureCAM::grabFrame() {
     return grabFrame(5);
 }
@@ -298,12 +309,20 @@ bool CvCaptureCAM::grabFrame(double timeOut) {
     return total <= timeOut;
 }
 
-bool CvCaptureCAM::retrieveFrame(int, cv::OutputArray arr) {
-    cv::Mat img = [capture getImage];
-    if (img.empty())
-        return false;
-    img.copyTo(arr);
-    return true;
+IplImage* CvCaptureCAM::retrieveFrame(int) {
+    return [capture getOutput];
+}
+
+IplImage* CvCaptureCAM::queryFrame() {
+    while (!grabFrame()) {
+        std::cout << "WARNING: Couldn't grab new frame from camera!!!" << std::endl;
+        /*
+             cout << "Attempting to restart camera; set capture property DISABLE_AUTO_RESTART to disable." << endl;
+             stopCaptureDevice();
+             startCaptureDevice(camNum);
+         */
+    }
+    return retrieveFrame(0);
 }
 
 void CvCaptureCAM::stopCaptureDevice() {
@@ -439,11 +458,11 @@ void CvCaptureCAM::setWidthHeight() {
 
 //added macros into headers in videoio_c.h
 /*
-#define CAP_PROP_IOS_DEVICE_FOCUS 9001
-#define CAP_PROP_IOS_DEVICE_EXPOSURE 9002
-#define CAP_PROP_IOS_DEVICE_FLASH 9003
-#define CAP_PROP_IOS_DEVICE_WHITEBALANCE 9004
-#define CAP_PROP_IOS_DEVICE_TORCH 9005
+#define CV_CAP_PROP_IOS_DEVICE_FOCUS 9001
+#define CV_CAP_PROP_IOS_DEVICE_EXPOSURE 9002
+#define CV_CAP_PROP_IOS_DEVICE_FLASH 9003
+#define CV_CAP_PROP_IOS_DEVICE_WHITEBALANCE 9004
+#define CV_CAP_PROP_IOS_DEVICE_TORCH 9005
 */
 
 
@@ -504,20 +523,20 @@ double CvCaptureCAM::getProperty(int property_id) const{
     [localpool drain];
 
     switch (property_id) {
-        case cv::CAP_PROP_FRAME_WIDTH:
+        case CV_CAP_PROP_FRAME_WIDTH:
             return w;
-        case cv::CAP_PROP_FRAME_HEIGHT:
+        case CV_CAP_PROP_FRAME_HEIGHT:
             return h;
 
-        case cv::CAP_PROP_IOS_DEVICE_FOCUS:
+        case CV_CAP_PROP_IOS_DEVICE_FOCUS:
             return mCaptureDevice.focusMode;
-        case cv::CAP_PROP_IOS_DEVICE_EXPOSURE:
+        case CV_CAP_PROP_IOS_DEVICE_EXPOSURE:
             return mCaptureDevice.exposureMode;
-        case cv::CAP_PROP_IOS_DEVICE_FLASH:
+        case CV_CAP_PROP_IOS_DEVICE_FLASH:
             return mCaptureDevice.flashMode;
-        case cv::CAP_PROP_IOS_DEVICE_WHITEBALANCE:
+        case CV_CAP_PROP_IOS_DEVICE_WHITEBALANCE:
             return mCaptureDevice.whiteBalanceMode;
-        case cv::CAP_PROP_IOS_DEVICE_TORCH:
+        case CV_CAP_PROP_IOS_DEVICE_TORCH:
             return mCaptureDevice.torchMode;
 
         default:
@@ -529,7 +548,7 @@ double CvCaptureCAM::getProperty(int property_id) const{
 
 bool CvCaptureCAM::setProperty(int property_id, double value) {
     switch (property_id) {
-        case cv::CAP_PROP_FRAME_WIDTH:
+        case CV_CAP_PROP_FRAME_WIDTH:
             width = value;
             settingWidth = 1;
             if (settingWidth && settingHeight) {
@@ -539,7 +558,7 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
             }
             return true;
 
-        case cv::CAP_PROP_FRAME_HEIGHT:
+        case CV_CAP_PROP_FRAME_HEIGHT:
             height = value;
             settingHeight = 1;
             if (settingWidth && settingHeight) {
@@ -549,7 +568,7 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
             }
             return true;
 
-        case cv::CAP_PROP_IOS_DEVICE_FOCUS:
+        case CV_CAP_PROP_IOS_DEVICE_FOCUS:
             if ([mCaptureDevice isFocusModeSupported:(AVCaptureFocusMode)value]){
                 NSError* error = nil;
                 [mCaptureDevice lockForConfiguration:&error];
@@ -562,7 +581,7 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
                 return false;
             }
 
-        case cv::CAP_PROP_IOS_DEVICE_EXPOSURE:
+        case CV_CAP_PROP_IOS_DEVICE_EXPOSURE:
             if ([mCaptureDevice isExposureModeSupported:(AVCaptureExposureMode)value]){
                 NSError* error = nil;
                 [mCaptureDevice lockForConfiguration:&error];
@@ -575,7 +594,7 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
                 return false;
             }
 
-        case cv::CAP_PROP_IOS_DEVICE_FLASH:
+        case CV_CAP_PROP_IOS_DEVICE_FLASH:
             if ( [mCaptureDevice hasFlash] && [mCaptureDevice isFlashModeSupported:(AVCaptureFlashMode)value]){
                 NSError* error = nil;
                 [mCaptureDevice lockForConfiguration:&error];
@@ -588,7 +607,7 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
                 return false;
             }
 
-        case cv::CAP_PROP_IOS_DEVICE_WHITEBALANCE:
+        case CV_CAP_PROP_IOS_DEVICE_WHITEBALANCE:
             if ([mCaptureDevice isWhiteBalanceModeSupported:(AVCaptureWhiteBalanceMode)value]){
                 NSError* error = nil;
                 [mCaptureDevice lockForConfiguration:&error];
@@ -601,7 +620,7 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
                 return false;
             }
 
-        case cv::CAP_PROP_IOS_DEVICE_TORCH:
+        case CV_CAP_PROP_IOS_DEVICE_TORCH:
             if ([mCaptureDevice hasFlash] && [mCaptureDevice isTorchModeSupported:(AVCaptureTorchMode)value]){
                 NSError* error = nil;
                 [mCaptureDevice lockForConfiguration:&error];
@@ -630,7 +649,7 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
  * CaptureDelegate is notified on a separate thread by the OS whenever there
  *   is a new frame. When "updateImage" is called from the main thread, it
  *   copies this new frame into an IplImage, but only if this frame has not
- *   been copied before. When "getImage" is called from the main thread,
+ *   been copied before. When "getOutput" is called from the main thread,
  *   it gives the last copied IplImage.
  *
  *****************************************************************************/
@@ -641,14 +660,22 @@ bool CvCaptureCAM::setProperty(int property_id, double value) {
 - (id)init {
     [super init];
     newFrame = 0;
+    imagedata = NULL;
+    bgr_imagedata = NULL;
     currSize = 0;
+    image = NULL;
+    bgr_image = NULL;
+    bgr_image_r90 = NULL;
     return self;
 }
 
 
 -(void)dealloc {
-    bgr_image.release();
-    bgr_image_r90.release();
+    if (imagedata != NULL) free(imagedata);
+    if (bgr_imagedata != NULL) free(bgr_imagedata);
+    cvReleaseImage(&image);
+    cvReleaseImage(&bgr_image);
+    cvReleaseImage(&bgr_image_r90);
     [super dealloc];
 }
 
@@ -678,7 +705,13 @@ fromConnection:(AVCaptureConnection *)connection{
 
 }
 
--(bool) updateImage {
+
+-(IplImage*) getOutput {
+    //return bgr_image;
+    return bgr_image_r90;
+}
+
+-(int) updateImage {
     if (newFrame==0) return 0;
     CVPixelBufferRef pixels;
 
@@ -688,40 +721,64 @@ fromConnection:(AVCaptureConnection *)connection{
     }
 
     CVPixelBufferLockBaseAddress(pixels, 0);
-    uchar* baseaddress = reinterpret_cast<uchar*>(CVPixelBufferGetBaseAddress(pixels));
+    uint32_t* baseaddress = (uint32_t*)CVPixelBufferGetBaseAddress(pixels);
 
-    cv::Size sz { (int)CVPixelBufferGetWidth(pixels), (int)CVPixelBufferGetHeight(pixels) };
+    size_t width = CVPixelBufferGetWidth(pixels);
+    size_t height = CVPixelBufferGetHeight(pixels);
     size_t rowBytes = CVPixelBufferGetBytesPerRow(pixels);
-    OSType pixelFormat = CVPixelBufferGetPixelFormatType(pixels);
 
-    bool res = false;
-    if (rowBytes != 0 && pixelFormat == kCVPixelFormatType_32BGRA) {
-        bgr_image.create(sz, CV_8UC3);
-        cv::Mat devImage(sz, CV_8UC4, baseaddress, rowBytes);
-        cv::cvtColor(devImage, bgr_image, cv::COLOR_BGRA2BGR);
+    if (rowBytes != 0) {
+
+        if (currSize != rowBytes*height*sizeof(char)) {
+            currSize = rowBytes*height*sizeof(char);
+            if (imagedata != NULL) free(imagedata);
+            if (bgr_imagedata != NULL) free(bgr_imagedata);
+            imagedata = (char*)malloc(currSize);
+            bgr_imagedata = (char*)malloc(currSize);
+        }
+
+        memcpy(imagedata, baseaddress, currSize);
+
+        if (image == NULL) {
+            image = cvCreateImageHeader(cvSize((int)width,(int)height), IPL_DEPTH_8U, 4);
+        }
+        image->width = (int)width;
+        image->height = (int)height;
+        image->nChannels = 4;
+        image->depth = IPL_DEPTH_8U;
+        image->widthStep = (int)rowBytes;
+        image->imageData = imagedata;
+        image->imageSize = (int)currSize;
+
+        if (bgr_image == NULL) {
+            bgr_image = cvCreateImageHeader(cvSize((int)width,(int)height), IPL_DEPTH_8U, 3);
+        }
+        bgr_image->width = (int)width;
+        bgr_image->height = (int)height;
+        bgr_image->nChannels = 3;
+        bgr_image->depth = IPL_DEPTH_8U;
+        bgr_image->widthStep = (int)rowBytes;
+        bgr_image->imageData = bgr_imagedata;
+        bgr_image->imageSize = (int)currSize;
+
+        cv::cvtColor(cv::cvarrToMat(image), cv::cvarrToMat(bgr_image), cv::COLOR_BGRA2BGR);
 
         // image taken from the buffer is incorrected rotated. I'm using cvTranspose + cvFlip.
         // There should be an option in iOS API to rotate the buffer output orientation.
         // iOS provides hardware accelerated rotation through AVCaptureConnection class
         // I can't get it work.
-        bgr_image_r90.create(sz, CV_8UC3);
-        cv::transpose(bgr_image, bgr_image_r90);
-        cv::flip(bgr_image_r90, bgr_image_r90, 1);
-        res = true;
-    } else {
-        fprintf(stderr, "OpenCV: rowBytes == 0 or unknown pixel format 0x%08X\n", pixelFormat);
-        bgr_image.create(cv::Size(0, 0), bgr_image.type());
-        bgr_image_r90.create(cv::Size(0, 0), bgr_image_r90.type());
+        if (bgr_image_r90 == NULL){
+            bgr_image_r90 = cvCreateImage(cvSize((int)height, (int)width), IPL_DEPTH_8U, 3);
+        }
+        cvTranspose(bgr_image, bgr_image_r90);
+        cvFlip(bgr_image_r90, NULL, 1);
+
     }
 
     CVPixelBufferUnlockBaseAddress(pixels, 0);
     CVBufferRelease(pixels);
 
-    return res;
-}
-
--(cv::Mat) getImage {
-    return bgr_image_r90;
+    return 1;
 }
 
 @end
@@ -743,6 +800,9 @@ CvCaptureFile::CvCaptureFile(const char* filename) {
     mAssetTrack = nil;
     mAssetReader = nil;
     mTrackOutput = nil;
+    mDeviceImage = NULL;
+    mOutImage = NULL;
+    mOutImagedata = NULL;
     currSize = 0;
     mMode = CV_CAP_MODE_BGR;
     mFormat = CV_8UC3;
@@ -788,7 +848,9 @@ CvCaptureFile::CvCaptureFile(const char* filename) {
 CvCaptureFile::~CvCaptureFile() {
     NSAutoreleasePool *localpool = [[NSAutoreleasePool alloc] init];
 
-    mOutImage.release();
+    free(mOutImagedata);
+    cvReleaseImage(&mOutImage);
+    cvReleaseImage(&mDeviceImage);
     [mAssetReader release];
     [mTrackOutput release];
     [mAssetTrack release];
@@ -876,6 +938,10 @@ bool CvCaptureFile::setupReadingAt(CMTime position) {
     return [mAssetReader startReading];
 }
 
+int CvCaptureFile::didStart() {
+    return started;
+}
+
 bool CvCaptureFile::grabFrame() {
     NSAutoreleasePool *localpool = [[NSAutoreleasePool alloc] init];
 
@@ -894,29 +960,28 @@ bool CvCaptureFile::grabFrame() {
     return isReading;
 }
 
-cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
+IplImage* CvCaptureFile::retrieveFramePixelBuffer() {
     if ( ! mGrabbedPixels ) {
-        return cv::Mat();
+        return 0;
     }
 
     NSAutoreleasePool *localpool = [[NSAutoreleasePool alloc] init];
 
     CVPixelBufferLockBaseAddress(mGrabbedPixels, 0);
     void *baseaddress;
-    size_t rowBytes;
-    cv::Size sz;
+    size_t width, height, rowBytes;
 
     OSType pixelFormat = CVPixelBufferGetPixelFormatType(mGrabbedPixels);
 
     if (CVPixelBufferIsPlanar(mGrabbedPixels)) {
         baseaddress = CVPixelBufferGetBaseAddressOfPlane(mGrabbedPixels, 0);
-        sz.width = CVPixelBufferGetWidthOfPlane(mGrabbedPixels, 0);
-        sz.height = CVPixelBufferGetHeightOfPlane(mGrabbedPixels, 0);
+        width = CVPixelBufferGetWidthOfPlane(mGrabbedPixels, 0);
+        height = CVPixelBufferGetHeightOfPlane(mGrabbedPixels, 0);
         rowBytes = CVPixelBufferGetBytesPerRowOfPlane(mGrabbedPixels, 0);
     } else {
         baseaddress = CVPixelBufferGetBaseAddress(mGrabbedPixels);
-        sz.width = CVPixelBufferGetWidth(mGrabbedPixels);
-        sz.height = CVPixelBufferGetHeight(mGrabbedPixels);
+        width = CVPixelBufferGetWidth(mGrabbedPixels);
+        height = CVPixelBufferGetHeight(mGrabbedPixels);
         rowBytes = CVPixelBufferGetBytesPerRow(mGrabbedPixels);
     }
 
@@ -925,7 +990,7 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         CVPixelBufferUnlockBaseAddress(mGrabbedPixels, 0);
         CVBufferRelease(mGrabbedPixels);
         mGrabbedPixels = NULL;
-        return cv::Mat();
+        return 0;
     }
 
     int outChannels;
@@ -940,8 +1005,25 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         CVPixelBufferUnlockBaseAddress(mGrabbedPixels, 0);
         CVBufferRelease(mGrabbedPixels);
         mGrabbedPixels = NULL;
-        return cv::Mat();
+        return 0;
     }
+
+    if ( currSize != width*outChannels*height ) {
+        currSize = width*outChannels*height;
+        free(mOutImagedata);
+        mOutImagedata = reinterpret_cast<uint8_t*>(malloc(currSize));
+    }
+
+    if (mOutImage == NULL) {
+        mOutImage = cvCreateImageHeader(cvSize((int)width,(int)height), IPL_DEPTH_8U, outChannels);
+    }
+    mOutImage->width = int(width);
+    mOutImage->height = int(height);
+    mOutImage->nChannels = outChannels;
+    mOutImage->depth = IPL_DEPTH_8U;
+    mOutImage->widthStep = int(width*outChannels);
+    mOutImage->imageData = reinterpret_cast<char *>(mOutImagedata);
+    mOutImage->imageSize = int(currSize);
 
     int deviceChannels;
     int cvtCode;
@@ -960,7 +1042,7 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
             CVBufferRelease(mGrabbedPixels);
             mGrabbedPixels = NULL;
             fprintf(stderr, "OpenCV: unsupported pixel conversion mode\n");
-            return cv::Mat();
+            return 0;
         }
     } else if ( pixelFormat == kCVPixelFormatType_24RGB ) {
         deviceChannels = 3;
@@ -968,7 +1050,7 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         if (mMode == CV_CAP_MODE_BGR) {
             cvtCode = cv::COLOR_RGB2BGR;
         } else if (mMode == CV_CAP_MODE_RGB) {
-            cvtCode = -1;
+            cvtCode = 0;
         } else if (mMode == CV_CAP_MODE_GRAY) {
             cvtCode = cv::COLOR_RGB2GRAY;
         } else {
@@ -976,7 +1058,7 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
             CVBufferRelease(mGrabbedPixels);
             mGrabbedPixels = NULL;
             fprintf(stderr, "OpenCV: unsupported pixel conversion mode\n");
-            return cv::Mat();
+            return 0;
         }
     } else if ( pixelFormat == kCVPixelFormatType_422YpCbCr8 ) {    // 422 (2vuy, UYVY)
         deviceChannels = 2;
@@ -994,11 +1076,11 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
             CVBufferRelease(mGrabbedPixels);
             mGrabbedPixels = NULL;
             fprintf(stderr, "OpenCV: unsupported pixel conversion mode\n");
-            return cv::Mat();
+            return 0;
         }
     } else if ( pixelFormat == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange ||   // 420v
                pixelFormat == kCVPixelFormatType_420YpCbCr8BiPlanarFullRange ) {   // 420f
-        sz.height = sz.height * 3 / 2;
+        height = height * 3 / 2;
         deviceChannels = 1;
 
         if (mMode == CV_CAP_MODE_BGR) {
@@ -1012,7 +1094,7 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
             CVBufferRelease(mGrabbedPixels);
             mGrabbedPixels = NULL;
             fprintf(stderr, "OpenCV: unsupported pixel conversion mode\n");
-            return cv::Mat();
+            return 0;
         }
     } else {
         char pfBuf[] = { (char)pixelFormat, (char)(pixelFormat >> 8),
@@ -1021,15 +1103,24 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         CVPixelBufferUnlockBaseAddress(mGrabbedPixels, 0);
         CVBufferRelease(mGrabbedPixels);
         mGrabbedPixels = NULL;
-        return cv::Mat();
+        return 0;
     }
 
-    mOutImage.create(sz, CV_MAKE_TYPE(CV_8U, outChannels));
-    cv::Mat devImage(sz, CV_MAKE_TYPE(CV_8U, deviceChannels), baseaddress, rowBytes);
+    if (mDeviceImage == NULL) {
+        mDeviceImage = cvCreateImageHeader(cvSize(int(width),int(height)), IPL_DEPTH_8U, deviceChannels);
+    }
+    mDeviceImage->width = int(width);
+    mDeviceImage->height = int(height);
+    mDeviceImage->nChannels = deviceChannels;
+    mDeviceImage->depth = IPL_DEPTH_8U;
+    mDeviceImage->widthStep = int(rowBytes);
+    mDeviceImage->imageData = reinterpret_cast<char *>(baseaddress);
+    mDeviceImage->imageSize = int(rowBytes*height);
+
     if (cvtCode == -1) {
-        devImage.copyTo(mOutImage);
+        cv::cvarrToMat(mDeviceImage).copyTo(cv::cvarrToMat(mOutImage));
     } else {
-        cv::cvtColor(devImage, mOutImage, cvtCode);
+        cv::cvtColor(cv::cvarrToMat(mDeviceImage), cv::cvarrToMat(mOutImage), cvtCode);
     }
 
     CVPixelBufferUnlockBaseAddress(mGrabbedPixels, 0);
@@ -1047,12 +1138,8 @@ int CvCaptureFile::getPreferredOrientationDegrees() const {
     return static_cast<int>(round(radians * 180 / M_PI));
 }
 
-bool CvCaptureFile::retrieveFrame(int, cv::OutputArray arr) {
-    cv::Mat res = retrieveFramePixelBuffer();
-    if (res.empty())
-        return false;
-    res.copyTo(arr);
-    return true;
+IplImage* CvCaptureFile::retrieveFrame(int) {
+    return retrieveFramePixelBuffer();
 }
 
 double CvCaptureFile::getProperty(int property_id) const{
@@ -1061,25 +1148,25 @@ double CvCaptureFile::getProperty(int property_id) const{
     CMTime t;
 
     switch (property_id) {
-        case cv::CAP_PROP_POS_MSEC:
+        case CV_CAP_PROP_POS_MSEC:
             return mFrameTimestamp.value * 1000.0 / mFrameTimestamp.timescale;
-        case cv::CAP_PROP_POS_FRAMES:
+        case CV_CAP_PROP_POS_FRAMES:
             return mAssetTrack.nominalFrameRate > 0 ? mFrameNum : 0;
-        case cv::CAP_PROP_POS_AVI_RATIO:
+        case CV_CAP_PROP_POS_AVI_RATIO:
             t = [mAsset duration];
             return (mFrameTimestamp.value * t.timescale) / double(mFrameTimestamp.timescale * t.value);
-        case cv::CAP_PROP_FRAME_WIDTH:
+        case CV_CAP_PROP_FRAME_WIDTH:
             return mAssetTrack.naturalSize.width;
-        case cv::CAP_PROP_FRAME_HEIGHT:
+        case CV_CAP_PROP_FRAME_HEIGHT:
             return mAssetTrack.naturalSize.height;
-        case cv::CAP_PROP_FPS:
+        case CV_CAP_PROP_FPS:
             return mAssetTrack.nominalFrameRate;
-        case cv::CAP_PROP_FRAME_COUNT:
+        case CV_CAP_PROP_FRAME_COUNT:
             t = [mAsset duration];
             return round((t.value * mAssetTrack.nominalFrameRate) / double(t.timescale));
-        case cv::CAP_PROP_FORMAT:
+        case CV_CAP_PROP_FORMAT:
             return mFormat;
-        case cv::CAP_PROP_FOURCC:
+        case CV_CAP_PROP_FOURCC:
             return mMode;
         case cv::CAP_PROP_ORIENTATION_META:
             return getPreferredOrientationDegrees();
@@ -1099,20 +1186,20 @@ bool CvCaptureFile::setProperty(int property_id, double value) {
     CMTime t;
 
     switch (property_id) {
-        case cv::CAP_PROP_POS_MSEC:
+        case CV_CAP_PROP_POS_MSEC:
             t = mAsset.duration;
             t.value = value * t.timescale / 1000;
             retval = setupReadingAt(t);
             break;
-        case cv::CAP_PROP_POS_FRAMES:
+        case CV_CAP_PROP_POS_FRAMES:
             retval = mAssetTrack.nominalFrameRate > 0 ? setupReadingAt(CMTimeMake(value, mAssetTrack.nominalFrameRate)) : false;
             break;
-        case cv::CAP_PROP_POS_AVI_RATIO:
+        case CV_CAP_PROP_POS_AVI_RATIO:
             t = mAsset.duration;
             t.value = round(t.value * value);
             retval = setupReadingAt(t);
             break;
-        case cv::CAP_PROP_FOURCC:
+        case CV_CAP_PROP_FOURCC:
             uint32_t mode;
             mode = cvRound(value);
             if (mMode == mode) {
@@ -1152,7 +1239,7 @@ bool CvCaptureFile::setProperty(int property_id, double value) {
 
 
 CvVideoWriter_AVFoundation::CvVideoWriter_AVFoundation(const char* filename, int fourcc,
-        double fps, const cv::Size& frame_size,
+        double fps, CvSize frame_size,
         int is_color) {
 
     NSAutoreleasePool* localpool = [[NSAutoreleasePool alloc] init];
@@ -1162,7 +1249,7 @@ CvVideoWriter_AVFoundation::CvVideoWriter_AVFoundation(const char* filename, int
     movieFPS = fps;
     movieSize = frame_size;
     movieColor = is_color;
-    argbimage = cv::Mat(movieSize, CV_8UC4);
+    argbimage = cvCreateImage(movieSize, IPL_DEPTH_8U, 4);
     path = [[[NSString stringWithCString:filename encoding:NSASCIIStringEncoding] stringByExpandingTildeInPath] retain];
 
 
@@ -1300,13 +1387,13 @@ CvVideoWriter_AVFoundation::~CvVideoWriter_AVFoundation() {
         [path release];
         [codec release];
         [fileType release];
-        argbimage.release();
+        cvReleaseImage(&argbimage);
 
         [localpool drain];
     }];
 }
 
-void CvVideoWriter_AVFoundation::write(cv::InputArray image) {
+bool CvVideoWriter_AVFoundation::writeFrame(const IplImage* iplimage) {
     NSAutoreleasePool* localpool = [[NSAutoreleasePool alloc] init];
 
     // writer status check
@@ -1314,30 +1401,30 @@ void CvVideoWriter_AVFoundation::write(cv::InputArray image) {
         NSLog(@"[mMovieWriterInput isReadyForMoreMediaData] Not ready for media data or ...");
         NSLog(@"mMovieWriter.status: %d. Error: %@", (int)mMovieWriter.status, [mMovieWriter.error localizedDescription]);
         [localpool drain];
-        return;
+        return false;
     }
 
     BOOL success = FALSE;
 
-    if (image.size().height!=movieSize.height || image.size().width!=movieSize.width){
+    if (iplimage->height!=movieSize.height || iplimage->width!=movieSize.width){
         std::cout<<"Frame size does not match video size."<<std::endl;
         [localpool drain];
-        return;
+        return false;
     }
 
     if (movieColor) {
-        //assert(image->nChannels == 3);
-        cv::cvtColor(image, argbimage, cv::COLOR_BGR2BGRA);
+        //assert(iplimage->nChannels == 3);
+        cv::cvtColor(cv::cvarrToMat(iplimage), cv::cvarrToMat(argbimage), cv::COLOR_BGR2BGRA);
     }else{
-        //assert(image->nChannels == 1);
-        cv::cvtColor(image, argbimage, cv::COLOR_GRAY2BGRA);
+        //assert(iplimage->nChannels == 1);
+        cv::cvtColor(cv::cvarrToMat(iplimage), cv::cvarrToMat(argbimage), cv::COLOR_GRAY2BGRA);
     }
     //IplImage -> CGImage conversion
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
-    NSData *nsData = [NSData dataWithBytes:argbimage.data length:argbimage.total() * argbimage.elemSize()];
+    NSData *nsData = [NSData dataWithBytes:argbimage->imageData length:argbimage->imageSize];
     CGDataProviderRef provider = CGDataProviderCreateWithCFData((CFDataRef)nsData);
-    CGImageRef cgImage = CGImageCreate(argbimage.size().width, argbimage.size().height,
-            8, 32, argbimage.step[0],
+    CGImageRef cgImage = CGImageCreate(argbimage->width, argbimage->height,
+            argbimage->depth, argbimage->depth * argbimage->nChannels, argbimage->widthStep,
             colorSpace, kCGImageAlphaLast|kCGBitmapByteOrderDefault,
             provider, NULL, false, kCGRenderingIntentDefault);
 
@@ -1371,10 +1458,10 @@ void CvVideoWriter_AVFoundation::write(cv::InputArray image) {
     if (success) {
         frameCount ++;
         //NSLog(@"Frame #%d", frameCount);
-        return;
+        return true;
     }else{
         NSLog(@"Frame appendPixelBuffer failed.");
-        return;
+        return false;
     }
 
 }

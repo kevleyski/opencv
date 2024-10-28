@@ -43,9 +43,8 @@ testrunner.options.maxBlockDuration = 20000; // cause opencv_js.js need time to 
 
 testrunner.run(
     {
-        code: {path: "opencv.js", namespace: "cv"},
-        tests: ['init_cv.js',
-                'test_mat.js',
+        code: 'opencv.js',
+        tests: ['test_mat.js',
                 'test_utils.js',
                 'test_core.js',
                 'test_imgproc.js',
@@ -58,10 +57,7 @@ testrunner.run(
     },
     function(err, report) {
         console.log(report.failed + ' failed, ' + report.passed + ' passed');
-        if (report.failed || err) {
-            if (err) {
-                console.log(err);
-            }
+        if (report.failed) {
             process.on('exit', function() {
                 process.exit(1);
             });

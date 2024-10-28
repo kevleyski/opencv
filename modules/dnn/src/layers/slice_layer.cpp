@@ -69,12 +69,10 @@ Range normalizeRange(const Range& input_range, int n)
 {
     Range range = input_range;
 
-    if (range.start != n){
-        range.start = std::min(std::max(range.start, -n), n - 1);
-        if (range.start < 0)
-        {
-            range.start += n;
-        }
+    range.start = std::min(std::max(range.start, -n), n - 1);
+    if (range.start < 0)
+    {
+        range.start += n;
     }
 
     range.end = std::min(std::max(range.end, -n), n);
@@ -612,9 +610,7 @@ public:
         {
             for (size_t i = 0; i < outputs.size(); i++)
             {
-                if (finalSliceRanges[i][0].start != finalSliceRanges[i][0].end){
-                    inpMat(finalSliceRanges[i]).copyTo(outputs[i]);
-                }
+                inpMat(finalSliceRanges[i]).copyTo(outputs[i]);
             }
         }
         else

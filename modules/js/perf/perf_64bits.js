@@ -1,4 +1,4 @@
-var isNodeJs = (typeof window) === 'undefined'? true : false;
+const isNodeJs = (typeof window) === 'undefined'? true : false;
 
 if (isNodeJs) {
   var Benchmark = require('benchmark');

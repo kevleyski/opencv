@@ -12,8 +12,8 @@ CV_ENUM(InterType, INTER_NEAREST, INTER_LINEAR)
 CV_ENUM(InterTypeExtended, INTER_NEAREST, INTER_LINEAR, WARP_RELATIVE_MAP)
 CV_ENUM(RemapMode, HALF_SIZE, UPSIDE_DOWN, REFLECTION_X, REFLECTION_BOTH)
 
-typedef TestBaseWithParam< tuple<MatType, Size, InterType, BorderMode> > TestWarpAffine;
-typedef TestBaseWithParam< tuple<Size, InterType, BorderMode, int> > TestWarpPerspective;
+typedef TestBaseWithParam< tuple<Size, InterType, BorderMode> > TestWarpAffine;
+typedef TestBaseWithParam< tuple<Size, InterType, BorderMode> > TestWarpPerspective;
 typedef TestBaseWithParam< tuple<Size, InterType, BorderMode, MatType> > TestWarpPerspectiveNear_t;
 typedef TestBaseWithParam< tuple<MatType, Size, InterTypeExtended, BorderMode, RemapMode> > TestRemap;
 
@@ -21,7 +21,6 @@ void update_map(const Mat& src, Mat& map_x, Mat& map_y, const int remapMode, boo
 
 PERF_TEST_P( TestWarpAffine, WarpAffine,
              Combine(
-                Values(CV_8UC1, CV_8UC4),
                 Values( szVGA, sz720p, sz1080p ),
                 InterType::all(),
                 BorderMode::all()
@@ -29,14 +28,13 @@ PERF_TEST_P( TestWarpAffine, WarpAffine,
 )
 {
     Size sz, szSrc(512, 512);
-    int borderMode, interType, dataType;
-    dataType   = get<0>(GetParam());
-    sz         = get<1>(GetParam());
-    interType  = get<2>(GetParam());
-    borderMode = get<3>(GetParam());
+    int borderMode, interType;
+    sz         = get<0>(GetParam());
+    interType  = get<1>(GetParam());
+    borderMode = get<2>(GetParam());
     Scalar borderColor = Scalar::all(150);
 
-    Mat src(szSrc, dataType), dst(sz, dataType);
+    Mat src(szSrc,CV_8UC4), dst(sz, CV_8UC4);
     cvtest::fillGradient(src);
     if(borderMode == BORDER_CONSTANT) cvtest::smoothBorder(src, borderColor, 1);
     Mat warpMat = getRotationMatrix2D(Point2f(src.cols/2.f, src.rows/2.f), 30., 2.2);
@@ -44,12 +42,15 @@ PERF_TEST_P( TestWarpAffine, WarpAffine,
 
     TEST_CYCLE() warpAffine( src, dst, warpMat, sz, interType, borderMode, borderColor );
 
+#ifdef __ANDROID__
+    SANITY_CHECK(dst, interType==INTER_LINEAR? 5 : 10);
+#else
     SANITY_CHECK(dst, 1);
+#endif
 }
 
 PERF_TEST_P(TestWarpAffine, DISABLED_WarpAffine_ovx,
     Combine(
-        Values(CV_8UC1, CV_8UC4),
         Values(szVGA, sz720p, sz1080p),
         InterType::all(),
         BorderMode::all()
@@ -57,16 +58,13 @@ PERF_TEST_P(TestWarpAffine, DISABLED_WarpAffine_ovx,
 )
 {
     Size sz, szSrc(512, 512);
-    int borderMode, interType, dataType;
-
-    dataType   = get<0>(GetParam());
-    sz         = get<1>(GetParam());
-    interType  = get<2>(GetParam());
-    borderMode = get<3>(GetParam());
-
+    int borderMode, interType;
+    sz = get<0>(GetParam());
+    interType = get<1>(GetParam());
+    borderMode = get<2>(GetParam());
     Scalar borderColor = Scalar::all(150);
 
-    Mat src(szSrc, dataType), dst(sz, dataType);
+    Mat src(szSrc, CV_8UC1), dst(sz, CV_8UC1);
     cvtest::fillGradient(src);
     if (borderMode == BORDER_CONSTANT) cvtest::smoothBorder(src, borderColor, 1);
     Mat warpMat = getRotationMatrix2D(Point2f(src.cols / 2.f, src.rows / 2.f), 30., 2.2);
@@ -74,28 +72,29 @@ PERF_TEST_P(TestWarpAffine, DISABLED_WarpAffine_ovx,
 
     TEST_CYCLE() warpAffine(src, dst, warpMat, sz, interType, borderMode, borderColor);
 
+#ifdef __ANDROID__
+    SANITY_CHECK(dst, interType == INTER_LINEAR ? 5 : 10);
+#else
     SANITY_CHECK(dst, 1);
+#endif
 }
 
 PERF_TEST_P( TestWarpPerspective, WarpPerspective,
              Combine(
                 Values( szVGA, sz720p, sz1080p ),
                 InterType::all(),
-                BorderMode::all(),
-                Values(1, 3, 4)
+                BorderMode::all()
              )
 )
 {
     Size sz, szSrc(512, 512);
-    int borderMode, interType, channels;
+    int borderMode, interType;
     sz         = get<0>(GetParam());
     interType  = get<1>(GetParam());
     borderMode = get<2>(GetParam());
-    channels   = get<3>(GetParam());
-
     Scalar borderColor = Scalar::all(150);
 
-    Mat src(szSrc, CV_8UC(channels)), dst(sz, CV_8UC(channels));
+    Mat src(szSrc,CV_8UC4), dst(sz, CV_8UC4);
     cvtest::fillGradient(src);
     if(borderMode == BORDER_CONSTANT) cvtest::smoothBorder(src, borderColor, 1);
     Mat rotMat = getRotationMatrix2D(Point2f(src.cols/2.f, src.rows/2.f), 30., 2.2);
@@ -111,27 +110,29 @@ PERF_TEST_P( TestWarpPerspective, WarpPerspective,
 
     TEST_CYCLE() warpPerspective( src, dst, warpMat, sz, interType, borderMode, borderColor );
 
+#ifdef __ANDROID__
+    SANITY_CHECK(dst, interType==INTER_LINEAR? 5 : 10);
+#else
     SANITY_CHECK(dst, 1);
+#endif
 }
 
 PERF_TEST_P(TestWarpPerspective, DISABLED_WarpPerspective_ovx,
     Combine(
         Values(szVGA, sz720p, sz1080p),
         InterType::all(),
-        BorderMode::all(),
-        Values(1)
+        BorderMode::all()
     )
 )
 {
     Size sz, szSrc(512, 512);
-    int borderMode, interType, channels;
+    int borderMode, interType;
     sz = get<0>(GetParam());
     interType = get<1>(GetParam());
     borderMode = get<2>(GetParam());
-    channels   = get<3>(GetParam());
     Scalar borderColor = Scalar::all(150);
 
-    Mat src(szSrc, CV_8UC(channels)), dst(sz, CV_8UC(channels));
+    Mat src(szSrc, CV_8UC1), dst(sz, CV_8UC1);
     cvtest::fillGradient(src);
     if (borderMode == BORDER_CONSTANT) cvtest::smoothBorder(src, borderColor, 1);
     Mat rotMat = getRotationMatrix2D(Point2f(src.cols / 2.f, src.rows / 2.f), 30., 2.2);
@@ -147,7 +148,11 @@ PERF_TEST_P(TestWarpPerspective, DISABLED_WarpPerspective_ovx,
 
     TEST_CYCLE() warpPerspective(src, dst, warpMat, sz, interType, borderMode, borderColor);
 
+#ifdef __ANDROID__
+    SANITY_CHECK(dst, interType == INTER_LINEAR ? 5 : 10);
+#else
     SANITY_CHECK(dst, 1);
+#endif
 }
 
 PERF_TEST_P( TestWarpPerspectiveNear_t, WarpPerspectiveNear,
@@ -189,7 +194,11 @@ PERF_TEST_P( TestWarpPerspectiveNear_t, WarpPerspectiveNear,
         warpPerspective( src, dst, warpMat, size, interType, borderMode, borderColor );
     }
 
+#ifdef __ANDROID__
+    SANITY_CHECK(dst, interType==INTER_LINEAR? 5 : 10);
+#else
     SANITY_CHECK(dst, 1);
+#endif
 }
 
 PERF_TEST_P( TestRemap, remap,

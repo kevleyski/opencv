@@ -124,6 +124,9 @@ See, even image rotation doesn't affect much on this comparison.
 moments invariant to translation, rotation and scale. Seventh one is skew-invariant. Those values
 can be found using **cv.HuMoments()** function.
 
+Additional Resources
+====================
+
 Exercises
 ---------
 

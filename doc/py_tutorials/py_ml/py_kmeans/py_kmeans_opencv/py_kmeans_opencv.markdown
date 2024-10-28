@@ -186,3 +186,9 @@ cv.destroyAllWindows()
 See the result below for K=8:
 
 ![image](images/oc_color_quantization.jpg)
+
+Additional Resources
+--------------------
+
+Exercises
+---------

@@ -50,7 +50,6 @@
 #endif
 
 #include "opencv2/core/openvx/ovx_defs.hpp"
-#include "hal_replacement.hpp"
 
 #define  CV_DESCALE(x,n)     (((x) + (1 << ((n)-1))) >> (n))
 
@@ -63,9 +62,6 @@ static void calcScharrDeriv(const cv::Mat& src, cv::Mat& dst)
     int rows = src.rows, cols = src.cols, cn = src.channels(), depth = src.depth();
     CV_Assert(depth == CV_8U);
     dst.create(rows, cols, CV_MAKETYPE(DataType<deriv_type>::depth, cn*2));
-
-    CALL_HAL(ScharrDeriv, cv_hal_ScharrDeriv, src.data, src.step, (short*)dst.data, dst.step, cols, rows, cn);
-
     parallel_for_(Range(0, rows), cv::detail::ScharrDerivInvoker(src, dst), cv::getNumThreads());
 }
 
@@ -188,16 +184,10 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
 {
     CV_INSTRUMENT_REGION();
 
-    const int W_BITS = 14, W_BITS1 = 14;
-    const float FLT_SCALE = 1.f/(1 << 20);
-
     Point2f halfWin((winSize.width-1)*0.5f, (winSize.height-1)*0.5f);
     const Mat& I = *prevImg;
     const Mat& J = *nextImg;
     const Mat& derivI = *prevDeriv;
-
-    cv::AutoBuffer<Point2f> prevPtsScaledData(range.end - range.start);
-    Point2f* prevPtsScaled = prevPtsScaledData.data();
 
     int j, cn = I.channels(), cn2 = cn*2;
     cv::AutoBuffer<deriv_type> _buf(winSize.area()*(cn + cn2));
@@ -220,23 +210,7 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
         else
             nextPt = nextPts[ptidx]*2.f;
         nextPts[ptidx] = nextPt;
-        prevPtsScaled[ptidx-range.start] = prevPt;
-    }
 
-    CALL_HAL(LKOpticalFlowLevel, cv_hal_LKOpticalFlowLevel,
-        I.data, I.step, (const short*)derivI.data, derivI.step, J.data, J.step,
-        I.cols, I.rows, I.channels(),
-        (float*)prevPtsScaled, (float*)(nextPts+range.start), range.end-range.start,
-        (level == 0) ? status+range.start: nullptr,
-        err != nullptr ? err+range.start: nullptr,
-        winSize.width, winSize.height, criteria.maxCount, criteria.epsilon,
-        (flags & OPTFLOW_LK_GET_MIN_EIGENVALS) != 0,
-        (float)minEigThreshold
-    );
-
-    for( int ptidx = range.start; ptidx < range.end; ptidx++ )
-    {
-        Point2f prevPt = prevPtsScaled[ptidx-range.start];
         Point2i iprevPt, inextPt;
         prevPt -= halfWin;
         iprevPt.x = cvFloor(prevPt.x);
@@ -247,7 +221,8 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
         {
             if( level == 0 )
             {
-                status[ptidx] = false;
+                if( status )
+                    status[ptidx] = false;
                 if( err )
                     err[ptidx] = 0;
             }
@@ -256,6 +231,8 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
 
         float a = prevPt.x - iprevPt.x;
         float b = prevPt.y - iprevPt.y;
+        const int W_BITS = 14, W_BITS1 = 14;
+        const float FLT_SCALE = 1.f/(1 << 20);
         int iw00 = cvRound((1.f - a)*(1.f - b)*(1 << W_BITS));
         int iw01 = cvRound(a*(1.f - b)*(1 << W_BITS));
         int iw10 = cvRound((1.f - a)*b*(1 << W_BITS));
@@ -502,14 +479,14 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
 
         if( minEig < minEigThreshold || D < FLT_EPSILON )
         {
-            if(level == 0)
+            if( level == 0 && status )
                 status[ptidx] = false;
             continue;
         }
 
         D = 1.f/D;
 
-        Point2f nextPt = nextPts[ptidx] - halfWin;
+        nextPt -= halfWin;
         Point2f prevDelta;
 
         for( j = 0; j < criteria.maxCount; j++ )
@@ -520,7 +497,7 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
             if( inextPt.x < -winSize.width || inextPt.x >= J.cols ||
                inextPt.y < -winSize.height || inextPt.y >= J.rows )
             {
-                if( level == 0 )
+                if( level == 0 && status )
                     status[ptidx] = false;
                 break;
             }
@@ -703,6 +680,7 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
             prevDelta = delta;
         }
 
+        CV_Assert(status != NULL);
         if( status[ptidx] && err && level == 0 && (flags & OPTFLOW_LK_GET_MIN_EIGENVALS) == 0 )
         {
             Point2f nextPoint = nextPts[ptidx] - halfWin;
@@ -714,7 +692,8 @@ void cv::detail::LKTrackerInvoker::operator()(const Range& range) const
             if( inextPoint.x < -winSize.width || inextPoint.x >= J.cols ||
                 inextPoint.y < -winSize.height || inextPoint.y >= J.rows )
             {
-                status[ptidx] = false;
+                if( status )
+                    status[ptidx] = false;
                 continue;
             }
 
@@ -1301,7 +1280,7 @@ void SparsePyrLKOpticalFlowImpl::calc( InputArray _prevImg, InputArray _nextImg,
     Mat statusMat = _status.getMat(), errMat;
     CV_Assert( statusMat.isContinuous() );
     uchar* status = statusMat.ptr();
-    float* err = nullptr;
+    float* err = 0;
 
     for( i = 0; i < npoints; i++ )
         status[i] = true;

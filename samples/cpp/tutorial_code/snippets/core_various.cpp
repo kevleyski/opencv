@@ -78,7 +78,6 @@ int main()
             tm.start();
             // do something ...
             tm.stop();
-            cout << "Last iteration: " << tm.getLastTimeSec() << endl;
         }
         cout << "Average time per iteration in seconds: " << tm.getAvgTimeSec() << endl;
         cout << "Average FPS: " << tm.getFPS() << endl;

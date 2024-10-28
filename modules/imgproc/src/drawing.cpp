@@ -64,7 +64,7 @@ CollectPolyEdges( Mat& img, const Point2l* v, int npts,
                   int shift, Point offset=Point() );
 
 static void
-FillEdgeCollection( Mat& img, std::vector<PolyEdge>& edges, const void* color );
+FillEdgeCollection( Mat& img, std::vector<PolyEdge>& edges, const void* color, int line_type);
 
 static void
 PolyLine( Mat& img, const Point2l* v, int npts, bool closed,
@@ -1051,7 +1051,7 @@ EllipseEx( Mat& img, Point2l center, Size2l axes,
         v.push_back(center);
         std::vector<PolyEdge> edges;
         CollectPolyEdges( img,  &v[0], (int)v.size(), edges, color, line_type, XY_SHIFT );
-        FillEdgeCollection( img, edges, color );
+        FillEdgeCollection( img, edges, color, line_type );
     }
 }
 
@@ -1299,11 +1299,15 @@ CollectPolyEdges( Mat& img, const Point2l* v, int count, std::vector<PolyEdge>& 
                 if (t0.y != t1.y)
                 {
                     pt0c.y = t0.y; pt1c.y = t1.y;
+                    pt0c.x = (int64)(t0.x) << XY_SHIFT;
+                    pt1c.x = (int64)(t1.x) << XY_SHIFT;
                 }
             }
-
-            pt0c.x = (int64)(t0.x) << XY_SHIFT;
-            pt1c.x = (int64)(t1.x) << XY_SHIFT;
+            else
+            {
+                pt0c.x += XY_ONE >> 1;
+                pt1c.x += XY_ONE >> 1;
+            }
         }
         else
         {
@@ -1345,7 +1349,7 @@ struct CmpEdges
 /**************** helper macros and functions for sequence/contour processing ***********/
 
 static void
-FillEdgeCollection( Mat& img, std::vector<PolyEdge>& edges, const void* color )
+FillEdgeCollection( Mat& img, std::vector<PolyEdge>& edges, const void* color, int line_type)
 {
     PolyEdge tmp;
     int i, y, total = (int)edges.size();
@@ -1354,7 +1358,12 @@ FillEdgeCollection( Mat& img, std::vector<PolyEdge>& edges, const void* color )
     int y_max = INT_MIN, y_min = INT_MAX;
     int64 x_max = 0xFFFFFFFFFFFFFFFF, x_min = 0x7FFFFFFFFFFFFFFF;
     int pix_size = (int)img.elemSize();
-    int delta = XY_ONE - 1;
+    int delta;
+
+    if (line_type < cv::LINE_AA)
+        delta = 0;
+    else
+        delta = XY_ONE - 1;
 
     if( total < 2 )
         return;
@@ -2035,14 +2044,11 @@ void fillPoly( InputOutputArray _img, const Point** pts, const int* npts, int nc
     edges.reserve( total + 1 );
     for (i = 0; i < ncontours; i++)
     {
-        if (npts[i] > 0 && pts[i])
-        {
-            std::vector<Point2l> _pts(pts[i], pts[i] + npts[i]);
-            CollectPolyEdges(img, _pts.data(), npts[i], edges, buf, line_type, shift, offset);
-        }
+        std::vector<Point2l> _pts(pts[i], pts[i] + npts[i]);
+        CollectPolyEdges(img, _pts.data(), npts[i], edges, buf, line_type, shift, offset);
     }
 
-    FillEdgeCollection(img, edges, buf);
+    FillEdgeCollection(img, edges, buf, line_type);
 }
 
 void polylines( InputOutputArray _img, const Point* const* pts, const int* npts, int ncontours, bool isClosed,
@@ -2424,7 +2430,7 @@ void cv::fillPoly(InputOutputArray img, InputArrayOfArrays pts,
     for( i = 0; i < ncontours; i++ )
     {
         Mat p = pts.getMat(manyContours ? i : -1);
-        CV_Assert(p.checkVector(2, CV_32S) > 0);
+        CV_Assert(p.checkVector(2, CV_32S) >= 0);
         ptsptr[i] = p.ptr<Point>();
         npts[i] = p.rows*p.cols*p.channels()/2;
     }
@@ -2681,7 +2687,7 @@ cvDrawContours( void* _img, CvSeq* contour,
     }
 
     if( thickness < 0 )
-        cv::FillEdgeCollection( img, edges, ext_buf );
+        cv::FillEdgeCollection( img, edges, ext_buf, line_type);
 
     if( h_next && contour0 )
         contour0->h_next = h_next;

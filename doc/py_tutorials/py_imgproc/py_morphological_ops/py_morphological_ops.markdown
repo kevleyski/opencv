@@ -152,3 +152,6 @@ Additional Resources
 --------------------
 
 -#  [Morphological Operations](http://homepages.inf.ed.ac.uk/rbf/HIPR2/morops.htm) at HIPR2
+
+Exercises
+---------

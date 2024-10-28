@@ -93,3 +93,6 @@ Additional Resources
 
 -#  Ethan Rublee, Vincent Rabaud, Kurt Konolige, Gary R. Bradski: ORB: An efficient alternative to
     SIFT or SURF. ICCV 2011: 2564-2571.
+
+Exercises
+---------

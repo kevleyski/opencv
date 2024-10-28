@@ -68,8 +68,7 @@ namespace cv
 enum ImreadModes {
        IMREAD_UNCHANGED            = -1, //!< If set, return the loaded image as is (with alpha channel, otherwise it gets cropped). Ignore EXIF orientation.
        IMREAD_GRAYSCALE            = 0,  //!< If set, always convert image to the single channel grayscale image (codec internal conversion).
-       IMREAD_COLOR_BGR            = 1,  //!< If set, always convert image to the 3 channel BGR color image.
-       IMREAD_COLOR                = 1,  //!< Same as IMREAD_COLOR_BGR.
+       IMREAD_COLOR                = 1,  //!< If set, always convert image to the 3 channel BGR color image.
        IMREAD_ANYDEPTH             = 2,  //!< If set, return 16-bit/32-bit image when the input has the corresponding depth, otherwise convert it to 8-bit.
        IMREAD_ANYCOLOR             = 4,  //!< If set, the image is read in any possible color format.
        IMREAD_LOAD_GDAL            = 8,  //!< If set, use the gdal driver for loading the image.
@@ -79,8 +78,7 @@ enum ImreadModes {
        IMREAD_REDUCED_COLOR_4      = 33, //!< If set, always convert image to the 3 channel BGR color image and the image size reduced 1/4.
        IMREAD_REDUCED_GRAYSCALE_8  = 64, //!< If set, always convert image to the single channel grayscale image and the image size reduced 1/8.
        IMREAD_REDUCED_COLOR_8      = 65, //!< If set, always convert image to the 3 channel BGR color image and the image size reduced 1/8.
-       IMREAD_IGNORE_ORIENTATION   = 128, //!< If set, do not rotate the image according to EXIF's orientation flag.
-       IMREAD_COLOR_RGB            = 256, //!< If set, always convert image to the 3 channel RGB color image.
+       IMREAD_IGNORE_ORIENTATION   = 128 //!< If set, do not rotate the image according to EXIF's orientation flag.
      };
 
 //! Imwrite flags
@@ -222,9 +220,9 @@ enum ImwriteHDRCompressionFlags {
 
 @anchor imread
 
-The `imread` function loads an image from the specified file and returns OpenCV matrix. If the image cannot be
-read (because of a missing file, improper permissions, or unsupported/invalid format), the function
-returns an empty matrix.
+The function imread loads an image from the specified file and returns it. If the image cannot be
+read (because of missing file, improper permissions, unsupported or invalid format), the function
+returns an empty matrix ( Mat::data==NULL ).
 
 Currently, the following file formats are supported:
 
@@ -234,7 +232,7 @@ Currently, the following file formats are supported:
 -   Portable Network Graphics - \*.png (see the *Note* section)
 -   WebP - \*.webp (see the *Note* section)
 -   AVIF - \*.avif (see the *Note* section)
--   Portable image format - \*.pbm, \*.pgm, \*.ppm, \*.pxm, \*.pnm (always supported)
+-   Portable image format - \*.pbm, \*.pgm, \*.ppm \*.pxm, \*.pnm (always supported)
 -   PFM files - \*.pfm (see the *Note* section)
 -   Sun rasters - \*.sr, \*.ras (always supported)
 -   TIFF files - \*.tiff, \*.tif (see the *Note* section)
@@ -243,33 +241,34 @@ Currently, the following file formats are supported:
 -   Raster and Vector geospatial data supported by GDAL (see the *Note* section)
 
 @note
--   The function determines the type of an image by its content, not by the file extension.
+-   The function determines the type of an image by the content, not by the file extension.
 -   In the case of color images, the decoded images will have the channels stored in **B G R** order.
 -   When using IMREAD_GRAYSCALE, the codec's internal grayscale conversion will be used, if available.
-    Results may differ from the output of cvtColor().
--   On Microsoft Windows\* and Mac OS\*, the codecs shipped with OpenCV (libjpeg, libpng, libtiff,
-    and libjasper) are used by default. So, OpenCV can always read JPEGs, PNGs, and TIFFs. On Mac OS,
-    there is also an option to use native Mac OS image readers. However, beware that currently these
-    native image loaders give images with different pixel values because of the color management embedded
-    into Mac OS.
--   On Linux\*, BSD flavors, and other Unix-like open-source operating systems, OpenCV looks for
-    codecs supplied with the OS. Ensure the relevant packages are installed (including development
-    files, such as "libjpeg-dev" in Debian\* and Ubuntu\*) to get codec support, or turn
+    Results may differ to the output of cvtColor()
+-   On Microsoft Windows\* OS and MacOSX\*, the codecs shipped with an OpenCV image (libjpeg,
+    libpng, libtiff, and libjasper) are used by default. So, OpenCV can always read JPEGs, PNGs,
+    and TIFFs. On MacOSX, there is also an option to use native MacOSX image readers. But beware
+    that currently these native image loaders give images with different pixel values because of
+    the color management embedded into MacOSX.
+-   On Linux\*, BSD flavors and other Unix-like open-source operating systems, OpenCV looks for
+    codecs supplied with an OS image. Install the relevant packages (do not forget the development
+    files, for example, "libjpeg-dev", in Debian\* and Ubuntu\*) to get the codec support or turn
     on the OPENCV_BUILD_3RDPARTY_LIBS flag in CMake.
--   If the *WITH_GDAL* flag is set to true in CMake and @ref IMREAD_LOAD_GDAL is used to load the image,
-    the [GDAL](http://www.gdal.org) driver will be used to decode the image, supporting
-    [Raster](http://www.gdal.org/formats_list.html) and [Vector](http://www.gdal.org/ogr_formats.html) formats.
--   If EXIF information is embedded in the image file, the EXIF orientation will be taken into account,
-    and thus the image will be rotated accordingly unless the flags @ref IMREAD_IGNORE_ORIENTATION
+-   In the case you set *WITH_GDAL* flag to true in CMake and @ref IMREAD_LOAD_GDAL to load the image,
+    then the [GDAL](http://www.gdal.org) driver will be used in order to decode the image, supporting
+    the following formats: [Raster](http://www.gdal.org/formats_list.html),
+    [Vector](http://www.gdal.org/ogr_formats.html).
+-   If EXIF information is embedded in the image file, the EXIF orientation will be taken into account
+    and thus the image will be rotated accordingly except if the flags @ref IMREAD_IGNORE_ORIENTATION
     or @ref IMREAD_UNCHANGED are passed.
--   Use the IMREAD_UNCHANGED flag to preserve the floating-point values from PFM images.
--   By default, the number of pixels must be less than 2^30. This limit can be changed by setting
-    the environment variable `OPENCV_IO_MAX_IMAGE_PIXELS`. See @ref tutorial_env_reference.
+-   Use the IMREAD_UNCHANGED flag to keep the floating point values from PFM image.
+-   By default number of pixels must be less than 2^30. Limit can be set using system
+    variable OPENCV_IO_MAX_IMAGE_PIXELS
 
-@param filename Name of the file to be loaded.
-@param flags Flag that can take values of `cv::ImreadModes`.
+@param filename Name of file to be loaded.
+@param flags Flag that can take values of cv::ImreadModes
 */
-CV_EXPORTS_W Mat imread( const String& filename, int flags = IMREAD_COLOR_BGR );
+CV_EXPORTS_W Mat imread( const String& filename, int flags = IMREAD_COLOR );
 
 /** @brief Loads an image from a file.
 
@@ -280,7 +279,7 @@ This is an overloaded member function, provided for convenience. It differs from
 @note
 The image passing through the img parameter can be pre-allocated. The memory is reused if the shape and the type match with the load image.
  */
-CV_EXPORTS_W void imread( const String& filename, OutputArray dst, int flags = IMREAD_COLOR_BGR );
+CV_EXPORTS_W void imread( const String& filename, OutputArray dst, int flags = IMREAD_COLOR );
 
 /** @brief Loads a multi-page image from a file.
 
@@ -292,7 +291,7 @@ The function imreadmulti loads a multi-page image from the specified file into a
 */
 CV_EXPORTS_W bool imreadmulti(const String& filename, CV_OUT std::vector<Mat>& mats, int flags = IMREAD_ANYCOLOR);
 
-/** @brief Loads images of a multi-page image from a file.
+/** @brief Loads a of images of a multi-page image from a file.
 
 The function imreadmulti loads a specified range from a multi-page image from the specified file into a vector of Mat objects.
 @param filename Name of file to be loaded.
@@ -304,13 +303,11 @@ The function imreadmulti loads a specified range from a multi-page image from th
 */
 CV_EXPORTS_W bool imreadmulti(const String& filename, CV_OUT std::vector<Mat>& mats, int start, int count, int flags = IMREAD_ANYCOLOR);
 
-/** @brief Returns the number of images inside the given file
+/** @brief Returns the number of images inside the give file
 
-The function imcount returns the number of pages in a multi-page image (e.g. TIFF), the number of frames in an animation (e.g. AVIF), and 1 otherwise.
-If the image cannot be decoded, 0 is returned.
+The function imcount will return the number of pages in a multi-page image, or 1 for single-page images
 @param filename Name of file to be loaded.
 @param flags Flag that can take values of cv::ImreadModes, default with cv::IMREAD_ANYCOLOR.
-@todo when cv::IMREAD_LOAD_GDAL flag used the return value will be 0 or 1 because OpenCV's GDAL decoder doesn't support multi-page reading yet.
 */
 CV_EXPORTS_W size_t imcount(const String& filename, int flags = IMREAD_ANYCOLOR);
 
@@ -405,7 +402,7 @@ The function imencode compresses the image and stores it in the memory buffer th
 result. See cv::imwrite for the list of supported formats and flags description.
 
 @param ext File extension that defines the output format. Must include a leading period.
-@param img Image to be compressed.
+@param img Image to be written.
 @param buf Output buffer resized to fit the compressed image.
 @param params Format-specific parameters. See cv::imwrite and cv::ImwriteFlags.
 */
@@ -413,61 +410,27 @@ CV_EXPORTS_W bool imencode( const String& ext, InputArray img,
                             CV_OUT std::vector<uchar>& buf,
                             const std::vector<int>& params = std::vector<int>());
 
-/** @brief Encodes array of images into a memory buffer.
+/** @brief Returns true if the specified image can be decoded by OpenCV
 
-The function is analog to cv::imencode for in-memory multi-page image compression.
-See cv::imwrite for the list of supported formats and flags description.
-
-@param ext File extension that defines the output format. Must include a leading period.
-@param imgs Vector of images to be written.
-@param buf Output buffer resized to fit the compressed data.
-@param params Format-specific parameters. See cv::imwrite and cv::ImwriteFlags.
-*/
-CV_EXPORTS_W bool imencodemulti( const String& ext, InputArrayOfArrays imgs,
-                                 CV_OUT std::vector<uchar>& buf,
-                                 const std::vector<int>& params = std::vector<int>());
-
-/** @brief Checks if the specified image file can be decoded by OpenCV.
-
-The function haveImageReader checks if OpenCV is capable of reading the specified file.
-This can be useful for verifying support for a given image format before attempting to load an image.
-
-@param filename The name of the file to be checked.
-@return true if an image reader for the specified file is available and the file can be opened, false otherwise.
-
-@note The function checks the availability of image codecs that are either built into OpenCV or dynamically loaded.
-It does not check for the actual existence of the file but rather the ability to read the specified file type.
-If the file cannot be opened or the format is unsupported, the function will return false.
-
-@sa cv::haveImageWriter, cv::imread, cv::imdecode
+@param filename File name of the image
 */
 CV_EXPORTS_W bool haveImageReader( const String& filename );
 
-/** @brief Checks if the specified image file or specified file extension can be encoded by OpenCV.
+/** @brief Returns true if an image with the specified filename can be encoded by OpenCV
 
-The function haveImageWriter checks if OpenCV is capable of writing images with the specified file extension.
-This can be useful for verifying support for a given image format before attempting to save an image.
-
-@param filename The name of the file or the file extension (e.g., ".jpg", ".png").
-It is recommended to provide the file extension rather than the full file name.
-@return true if an image writer for the specified extension is available, false otherwise.
-
-@note The function checks the availability of image codecs that are either built into OpenCV or dynamically loaded.
-It does not check for the actual existence of the file but rather the ability to write files of the given type.
-
-@sa cv::haveImageReader, cv::imwrite, cv::imencode
-*/
+ @param filename File name of the image
+ */
 CV_EXPORTS_W bool haveImageWriter( const String& filename );
 
-/** @brief To read multi-page images on demand
+/** @brief To read Multi Page images on demand
 
-The ImageCollection class provides iterator API to read multi-page images on demand. Create iterator
+The ImageCollection class provides iterator API to read multi page images on demand. Create iterator
 to the collection of the images and iterate over the collection. Decode the necessary page with operator*.
 
 The performance of page decoding is O(1) if collection is increment sequentially. If the user wants to access random page,
 then the time Complexity is O(n) because the collection has to be reinitialized every time in order to go to the correct page.
 However, the intermediate pages are not decoded during the process, so typically it's quite fast.
-This is required because multi-page codecs does not support going backwards.
+This is required because multipage codecs does not support going backwards.
 After decoding the one page, it is stored inside the collection cache. Hence, trying to get Mat object from already decoded page is O(1).
 If you need memory, you can use .releaseCache() method to release cached index.
 The space complexity is O(n) if all pages are decoded into memory. The user is able to decode and release images on demand.

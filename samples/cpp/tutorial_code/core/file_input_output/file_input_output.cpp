@@ -8,14 +8,14 @@ using namespace std;
 static void help(char** av)
 {
     cout << endl
-        << av[0] << " shows the usage of the OpenCV serialization functionality."         << endl << endl
+        << av[0] << " shows the usage of the OpenCV serialization functionality."         << endl
         << "usage: "                                                                      << endl
-        <<  av[0] << " [output file name] (default outputfile.yml.gz)"                    << endl << endl
-        << "The output file may be XML (xml), YAML (yml/yaml), or JSON (json)." << endl
-        << "You can even compress it by specifying this in its extension like xml.gz yaml.gz etc... " << endl
+        <<  av[0] << " outputfile.yml.gz"                                                 << endl
+        << "The output file may be either XML (xml) or YAML (yml/yaml). You can even compress it by "
+        << "specifying this in its extension like xml.gz yaml.gz etc... "                  << endl
         << "With FileStorage you can serialize objects in OpenCV by using the << and >> operators" << endl
         << "For example: - create a class and have it serialized"                         << endl
-        << "             - use it to read and write matrices."                            << endl << endl;
+        << "             - use it to read and write matrices."                            << endl;
 }
 
 class MyData
@@ -68,16 +68,13 @@ static ostream& operator<<(ostream& out, const MyData& m)
 
 int main(int ac, char** av)
 {
-    string filename;
-
     if (ac != 2)
     {
         help(av);
-        filename = "outputfile.yml.gz";
+        return 1;
     }
-    else
-        filename = av[1];
 
+    string filename = av[1];
     { //write
         //! [iomati]
         Mat R = Mat_<uchar>::eye(3, 3),
@@ -121,7 +118,7 @@ int main(int ac, char** av)
         //! [close]
         fs.release();                                       // explicit close
         //! [close]
-        cout << "Write operation to file:" << filename << " completed successfully." << endl;
+        cout << "Write Done." << endl;
     }
 
     {//read

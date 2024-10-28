@@ -118,7 +118,6 @@ public:
     //! default allocator
     CV_WRAP static GpuMat::Allocator* defaultAllocator();
     CV_WRAP static void setDefaultAllocator(GpuMat::Allocator* allocator);
-    CV_WRAP static GpuMat::Allocator* getStdAllocator();
 
     //! default constructor
     CV_WRAP explicit GpuMat(GpuMat::Allocator* allocator = GpuMat::defaultAllocator());

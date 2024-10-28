@@ -158,6 +158,9 @@ side. That meeting point is the epipole.
 
 For better results, images with good resolution and many non-planar points should be used.
 
+Additional Resources
+--------------------
+
 Exercises
 ---------
 

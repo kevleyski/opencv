@@ -132,6 +132,10 @@ public:
     ImageEncoder newEncoder() const CV_OVERRIDE;
 
 protected:
+    void  writeTag( WLByteStream& strm, TiffTag tag,
+                    TiffFieldType fieldType,
+                    int count, int value );
+
     bool writeLibTiff( const std::vector<Mat>& img_vec, const std::vector<int>& params );
     bool write_32FC3_SGILOG(const Mat& img, void* tif);
 

@@ -162,9 +162,7 @@ void InfEngineNgraphNet::createNet(Target targetId) {
             CV_LOG_DEBUG(NULL, "DNN/NGRAPH: Add 'Result' output: " << output_node_it->first);
             CV_Assert(output_node_it->second);
             auto out = std::make_shared<ov::op::v0::Result>(output_node_it->second->node);
-            std::string name = output_node_it->first + (output_node_it->second->node.get_node()->get_output_size() == 1 ? "" : ".0")
-            CV_LOG_DEBUG(NULL, "DNN-IE: Change friendly name from " << out->get_friendly_name() << " to " << name);
-            out->set_friendly_name(name);
+            out->set_friendly_name(output_node_it->first + (output_node_it->second->node.get_node()->get_output_size() == 1 ? "" : ".0"));
             outs.push_back(out);
         }
         CV_Assert_N(!inputs_vec.empty(), !outs.empty());
@@ -548,22 +546,16 @@ void InfEngineNgraphNet::forward(const std::vector<Ptr<BackendWrapper> >& outBlo
         {
             const std::string& name = it.get_node()->get_friendly_name();
             auto blobIt = allBlobs.find(name);
-            if (blobIt == allBlobs.end())
-            {
-                CV_Error(Error::StsAssert, format("Input blob with name %s not found", name.c_str()));
-            }
+            CV_Assert(blobIt != allBlobs.end());
             reqWrapper->req.set_input_tensor(i++, isAsync ? copyBlob(blobIt->second) : blobIt->second);
         }
 
         i = 0;
-        for (const auto& it : cnn->outputs())  // Starts from OpenVINO 2024 CompiledModel changes output frindly names
+        for (const auto& it : netExec.outputs())
         {
             const std::string& name = it.get_node()->get_friendly_name();
             auto blobIt = allBlobs.find(name);
-            if (blobIt == allBlobs.end())
-            {
-                CV_Error(Error::StsAssert, format("Output blob with name %s not found", name.c_str()));
-            }
+            CV_Assert(blobIt != allBlobs.end());
             reqWrapper->req.set_output_tensor(i++, isAsync ? copyBlob(blobIt->second) : blobIt->second);
         }
 

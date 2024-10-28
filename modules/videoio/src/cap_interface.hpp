@@ -241,31 +241,85 @@ public:
 };
 } // namespace
 
+//===================================================
 
-// Advanced base class for VideoCapture backends providing some extra functionality
-class VideoCaptureBase : public IVideoCapture
+// Utility
+
+static inline void applyMetadataRotation(const IVideoCapture& cap, OutputArray mat)
 {
+    bool rotation_auto = 0 != cap.getProperty(CAP_PROP_ORIENTATION_AUTO);
+    int rotation_angle = static_cast<int>(cap.getProperty(CAP_PROP_ORIENTATION_META));
+
+    if(!rotation_auto || rotation_angle%360 == 0)
+    {
+        return;
+    }
+
+    cv::RotateFlags flag;
+    if(rotation_angle == 90 || rotation_angle == -270) { // Rotate clockwise 90 degrees
+        flag = cv::ROTATE_90_CLOCKWISE;
+    } else if(rotation_angle == 270 || rotation_angle == -90) { // Rotate clockwise 270 degrees
+        flag = cv::ROTATE_90_COUNTERCLOCKWISE;
+    } else if(rotation_angle == 180 || rotation_angle == -180) { // Rotate clockwise 180 degrees
+        flag = cv::ROTATE_180;
+    } else { // Unsupported rotation
+        return;
+    }
+
+    cv::rotate(mat, mat, flag);
+}
+
+//===================================================
+
+// Wrapper
+
+class LegacyCapture : public IVideoCapture
+{
+private:
+    CvCapture * cap;
+    bool autorotate;
+    LegacyCapture(const LegacyCapture &);
+    LegacyCapture& operator=(const LegacyCapture &);
+
+    bool shouldSwapWidthHeight() const
+    {
+        if (!autorotate)
+            return false;
+        int rotation = static_cast<int>(cap->getProperty(cv::CAP_PROP_ORIENTATION_META));
+        return std::abs(rotation % 180) == 90;
+    }
+
 public:
-    VideoCaptureBase() : autorotate(false) {}
+    LegacyCapture(CvCapture * cap_) : cap(cap_), autorotate(true) {}
+    ~LegacyCapture()
+    {
+        cvReleaseCapture(&cap);
+    }
     double getProperty(int propId) const CV_OVERRIDE
     {
+        if (!cap)
+            return 0;
+
         switch(propId)
         {
             case cv::CAP_PROP_ORIENTATION_AUTO:
                 return static_cast<double>(autorotate);
 
             case cv::CAP_PROP_FRAME_WIDTH:
-                return shouldSwapWidthHeight() ? getProperty_(cv::CAP_PROP_FRAME_HEIGHT) : getProperty_(cv::CAP_PROP_FRAME_WIDTH);
+                return shouldSwapWidthHeight() ? cap->getProperty(cv::CAP_PROP_FRAME_HEIGHT) : cap->getProperty(cv::CAP_PROP_FRAME_WIDTH);
 
             case cv::CAP_PROP_FRAME_HEIGHT:
-                return shouldSwapWidthHeight() ? getProperty_(cv::CAP_PROP_FRAME_WIDTH) : getProperty_(cv::CAP_PROP_FRAME_HEIGHT);
+                return shouldSwapWidthHeight() ? cap->getProperty(cv::CAP_PROP_FRAME_WIDTH) : cap->getProperty(cv::CAP_PROP_FRAME_HEIGHT);
 
             default:
-                return getProperty_(propId);
+                return cap->getProperty(propId);
         }
     }
     bool setProperty(int propId, double value) CV_OVERRIDE
     {
+        if (!cap)
+            return false;
+
         switch(propId)
         {
             case cv::CAP_PROP_ORIENTATION_AUTO:
@@ -273,55 +327,84 @@ public:
                 return true;
 
             default:
-                return setProperty_(propId, value);
+                return cvSetCaptureProperty(cap, propId, value) != 0;
         }
+    }
+    bool grabFrame() CV_OVERRIDE
+    {
+        return cap ? cvGrabFrame(cap) != 0 : false;
     }
     bool retrieveFrame(int channel, OutputArray image) CV_OVERRIDE
     {
-        const bool res = retrieveFrame_(channel, image);
-        if (res)
-            applyMetadataRotation(image);
-        return res;
-    }
-
-protected:
-    virtual double getProperty_(int) const = 0;
-    virtual bool setProperty_(int, double) = 0;
-    virtual bool retrieveFrame_(int, OutputArray) = 0;
-
-protected:
-    bool shouldSwapWidthHeight() const
-    {
-        if (!autorotate)
-            return false;
-        int rotation = static_cast<int>(getProperty(cv::CAP_PROP_ORIENTATION_META));
-        return std::abs(rotation % 180) == 90;
-    }
-    void applyMetadataRotation(OutputArray mat) const
-    {
-        bool rotation_auto = 0 != getProperty(CAP_PROP_ORIENTATION_AUTO);
-        int rotation_angle = static_cast<int>(getProperty(CAP_PROP_ORIENTATION_META));
-        if(!rotation_auto || rotation_angle%360 == 0)
+        IplImage* _img = cvRetrieveFrame(cap, channel);
+        if( !_img )
         {
-            return;
+            image.release();
+            return false;
         }
-        cv::RotateFlags flag;
-        if(rotation_angle == 90 || rotation_angle == -270) { // Rotate clockwise 90 degrees
-            flag = cv::ROTATE_90_CLOCKWISE;
-        } else if(rotation_angle == 270 || rotation_angle == -90) { // Rotate clockwise 270 degrees
-            flag = cv::ROTATE_90_COUNTERCLOCKWISE;
-        } else if(rotation_angle == 180 || rotation_angle == -180) { // Rotate clockwise 180 degrees
-            flag = cv::ROTATE_180;
-        } else { // Unsupported rotation
-            return;
+        if(_img->origin == IPL_ORIGIN_TL)
+        {
+            cv::cvarrToMat(_img).copyTo(image);
         }
-        cv::rotate(mat, mat, flag);
+        else
+        {
+            Mat temp = cv::cvarrToMat(_img);
+            flip(temp, image, 0);
+        }
+        applyMetadataRotation(*this, image);
+        return true;
+    }
+    bool isOpened() const CV_OVERRIDE
+    {
+        return cap != 0;  // legacy interface doesn't support closed files
+    }
+    int getCaptureDomain() CV_OVERRIDE
+    {
+        return cap ? cap->getCaptureDomain() : 0;
     }
 
-protected:
-    bool autorotate;
+    CvCapture* getCvCapture() const { return cap; }
 };
 
+class LegacyWriter : public IVideoWriter
+{
+private:
+    CvVideoWriter * writer;
+    LegacyWriter(const LegacyWriter &);
+    LegacyWriter& operator=(const LegacyWriter &);
+public:
+    LegacyWriter(CvVideoWriter * wri_) : writer(wri_)
+    {}
+    ~LegacyWriter()
+    {
+        cvReleaseVideoWriter(&writer);
+    }
+    double getProperty(int propId) const CV_OVERRIDE
+    {
+        if (writer)
+        {
+            return writer->getProperty(propId);
+        }
+        return 0.;
+    }
+    bool setProperty(int, double) CV_OVERRIDE
+    {
+        return false;
+    }
+    bool isOpened() const CV_OVERRIDE
+    {
+        return writer != NULL;
+    }
+    void write(InputArray image) CV_OVERRIDE
+    {
+        IplImage _img = cvIplImage(image.getMat());
+        cvWriteFrame(writer, &_img);
+    }
+    int getCaptureDomain() const CV_OVERRIDE
+    {
+        return writer ? writer->getCaptureDomain() : 0;
+    }
+};
 
 //==================================================================================================
 

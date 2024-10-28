@@ -14,9 +14,6 @@ libraries. The following modules are available:
 -   @ref imgproc (**imgproc**) - an image processing module that includes linear and non-linear image filtering,
     geometrical image transformations (resize, affine and perspective warping, generic table-based
     remapping), color space conversion, histograms, and so on.
--   @ref imgcodecs (**imgcodecs**) - includes functions for reading and writing image files in various formats.
--   @ref videoio (**videoio**) - an easy-to-use interface to video capturing and video codecs.
--   @ref highgui (**highgui**) - an easy-to-use interface to simple UI capabilities.
 -   @ref video (**video**) - a video analysis module that includes motion estimation, background subtraction,
     and object tracking algorithms.
 -   @ref calib3d (**calib3d**) - basic multiple-view geometry algorithms, single and stereo camera calibration,
@@ -24,11 +21,8 @@ libraries. The following modules are available:
 -   @ref features2d (**features2d**) - salient feature detectors, descriptors, and descriptor matchers.
 -   @ref objdetect (**objdetect**) - detection of objects and instances of the predefined classes (for example,
     faces, eyes, mugs, people, cars, and so on).
--   @ref dnn (**dnn**) - Deep Neural Network module.
--   @ref ml (**ml**) - The Machine Learning module includes a set of classes and functions for statistical classification,
-    regression, and clustering of data.
--   @ref photo (**photo**) - advanced photo processing techniques like denoising, inpainting.
--   @ref stitching (**stitching**) - functions for image stitching and panorama creation.
+-   @ref highgui (**highgui**) - an easy-to-use interface to simple UI capabilities.
+-   @ref videoio (**videoio**) - an easy-to-use interface to video capturing and video codecs.
 -   ... some other helper modules, such as FLANN and Google test wrappers, Python bindings, and
     others.
 

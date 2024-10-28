@@ -147,3 +147,6 @@ Additional Resources
     recommended to visit. Our test image is generated from this link)
 2.  [Online course at coursera](https://www.coursera.org/course/images) (First image taken from
     here)
+
+Exercises
+---------

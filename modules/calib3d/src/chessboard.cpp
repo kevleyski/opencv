@@ -1625,30 +1625,36 @@ bool Chessboard::Board::normalizeMarkerOrientation()
             if(!current_cell->marker || !current_cell->right || !current_cell->right->marker)
                 continue;
 
-            if(current_cell->right->top && current_cell->right->top->marker)
+            if(current_cell->black)
             {
-                rotateLeft();
-                rotateLeft();
-                pcell = current_cell->right;
-                break;
+                if(current_cell->right->top && current_cell->right->top->marker)
+                {
+                    rotateLeft();
+                    rotateLeft();
+                    pcell = current_cell->right;
+                    break;
+                }
+                if(current_cell->right->bottom && current_cell->right->bottom->marker)
+                {
+                    rotateLeft();
+                    pcell = current_cell->right;
+                    break;
+                }
             }
-            if(current_cell->right->bottom && current_cell->right->bottom->marker)
+            else
             {
-                rotateLeft();
-                pcell = current_cell->right;
-                break;
-            }
-            if(current_cell->top && current_cell->top->marker)
-            {
-                rotateRight();
-                pcell = current_cell;
-                break;
-            }
-            if(current_cell->bottom && current_cell->bottom->marker)
-            {
-                // correct orientation
-                pcell = current_cell;
-                break;
+                if(current_cell->top && current_cell->top->marker)
+                {
+                    rotateRight();
+                    pcell = current_cell;
+                    break;
+                }
+                if(current_cell->bottom && current_cell->bottom->marker)
+                {
+                    // correct orientation
+                    pcell = current_cell;
+                    break;
+                }
             }
         }
     }
@@ -1657,7 +1663,7 @@ bool Chessboard::Board::normalizeMarkerOrientation()
         //check for ambiguity
         if(rowCount()-pcell->bottom->getRow() > 2)
         {
-            CV_LOG_DEBUG(NULL, "FIX board " << pcell->bottom->getRow() << " " << rowCount());
+           // std::cout << "FIX board " << pcell->bottom->getRow() << " " << rowCount();
             flipVertical();
             rotateRight();
         }
@@ -2259,7 +2265,7 @@ int Chessboard::Board::detectMarkers(cv::InputArray image)
                 cell->marker = noise-signal > (noise-reference)*0.5;
             if(cell->marker)
                 count++;
-            CV_LOG_DEBUG(NULL, "Cell: " << x << "/" << y << " signal " << signal << " noise " << noise << " reference " << reference  << " has marker " << int(cell->marker));
+            // std::cout << x << "/" << y << " signal " << signal << " noise " << noise << " reference " << reference  << " has marker " << int(cell->marker) << std::endl;
         }
     }
     return count;
@@ -3373,7 +3379,7 @@ cv::Scalar Chessboard::Board::calcEdgeSharpness(cv::InputArray _img,float rise_d
     }
     if(count == 0)
     {
-        CV_LOG_DEBUG(NULL, "calcEdgeSharpness: checkerboard too small for calculation.");
+        std::cout  <<"calcEdgeSharpness: checkerboard too small for calculation." << std::endl;
         return cv::Scalar::all(9999);
     }
     sharpness = sharpness/float(count);

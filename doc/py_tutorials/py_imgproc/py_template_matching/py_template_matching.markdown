@@ -46,12 +46,12 @@ assert template is not None, "file could not be read, check with os.path.exists(
 w, h = template.shape[::-1]
 
 # All the 6 methods for comparison in a list
-methods = ['TM_CCOEFF', 'TM_CCOEFF_NORMED', 'TM_CCORR',
-            'TM_CCORR_NORMED', 'TM_SQDIFF', 'TM_SQDIFF_NORMED']
+methods = ['cv.TM_CCOEFF', 'cv.TM_CCOEFF_NORMED', 'cv.TM_CCORR',
+            'cv.TM_CCORR_NORMED', 'cv.TM_SQDIFF', 'cv.TM_SQDIFF_NORMED']
 
 for meth in methods:
     img = img2.copy()
-    method = getattr(cv, meth)
+    method = eval(meth)
 
     # Apply template Matching
     res = cv.matchTemplate(img,template,method)
@@ -132,3 +132,9 @@ cv.imwrite('res.png',img_rgb)
 Result:
 
 ![image](images/res_mario.jpg)
+
+Additional Resources
+--------------------
+
+Exercises
+---------

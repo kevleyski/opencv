@@ -81,22 +81,6 @@ static Size validateInputImageSize(const Size& size)
 }
 
 
-static inline int calcType(int type, int flags)
-{
-    if( (flags & IMREAD_LOAD_GDAL) != IMREAD_LOAD_GDAL && flags != IMREAD_UNCHANGED )
-    {
-        if( (flags & IMREAD_ANYDEPTH) == 0 )
-            type = CV_MAKETYPE(CV_8U, CV_MAT_CN(type));
-
-        if( (flags & IMREAD_COLOR) != 0 || (flags & IMREAD_COLOR_RGB) != 0 ||
-           ((flags & IMREAD_ANYCOLOR) != 0 && CV_MAT_CN(type) > 1) )
-            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 3);
-        else
-            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 1);
-    }
-    return type;
-}
-
 namespace {
 
 class ByteStreamBuffer: public std::streambuf
@@ -344,7 +328,7 @@ static ImageEncoder findEncoder( const String& _ext )
 }
 
 
-static void ExifTransform(int orientation, OutputArray img)
+static void ExifTransform(int orientation, Mat& img)
 {
     switch( orientation )
     {
@@ -381,7 +365,7 @@ static void ExifTransform(int orientation, OutputArray img)
     }
 }
 
-static void ApplyExifOrientation(ExifEntry_t orientationTag, OutputArray img)
+static void ApplyExifOrientation(ExifEntry_t orientationTag, Mat& img)
 {
     int orientation = IMAGE_ORIENTATION_TL;
 
@@ -401,7 +385,7 @@ static void ApplyExifOrientation(ExifEntry_t orientationTag, OutputArray img)
  *
 */
 static bool
-imread_( const String& filename, int flags, OutputArray mat )
+imread_( const String& filename, int flags, Mat& mat )
 {
     /// Search for the relevant decoder to handle the imagery
     ImageDecoder decoder;
@@ -432,12 +416,6 @@ imread_( const String& filename, int flags, OutputArray mat )
             scale_denom = 8;
     }
 
-    // Try to decode image by RGB instead of BGR.
-    if (flags & IMREAD_COLOR_RGB && flags != IMREAD_UNCHANGED)
-    {
-        decoder->setRGB(true);
-    }
-
     /// set the scale_denom in the driver
     decoder->setScale( scale_denom );
 
@@ -466,7 +444,18 @@ imread_( const String& filename, int flags, OutputArray mat )
     Size size = validateInputImageSize(Size(decoder->width(), decoder->height()));
 
     // grab the decoded type
-    const int type = calcType(decoder->type(), flags);
+    int type = decoder->type();
+    if( (flags & IMREAD_LOAD_GDAL) != IMREAD_LOAD_GDAL && flags != IMREAD_UNCHANGED )
+    {
+        if( (flags & IMREAD_ANYDEPTH) == 0 )
+            type = CV_MAKETYPE(CV_8U, CV_MAT_CN(type));
+
+        if( (flags & IMREAD_COLOR) != 0 ||
+           ((flags & IMREAD_ANYCOLOR) != 0 && CV_MAT_CN(type) > 1) )
+            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 3);
+        else
+            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 1);
+    }
 
     if (mat.empty())
     {
@@ -480,16 +469,11 @@ imread_( const String& filename, int flags, OutputArray mat )
     }
 
     // read the image data
-    Mat real_mat = mat.getMat();
-    const void * original_ptr = real_mat.data;
     bool success = false;
     try
     {
-        if (decoder->readData(real_mat))
-        {
-            CV_CheckTrue(original_ptr == real_mat.data, "Internal imread issue");
+        if (decoder->readData(mat))
             success = true;
-        }
     }
     catch (const cv::Exception& e)
     {
@@ -548,9 +532,6 @@ imreadmulti_(const String& filename, int flags, std::vector<Mat>& mats, int star
         count = std::numeric_limits<int>::max();
     }
 
-    if (flags & IMREAD_COLOR_RGB && flags != IMREAD_UNCHANGED)
-        decoder->setRGB(true);
-
     /// set the filename in the driver
     decoder->setSource(filename);
 
@@ -586,7 +567,18 @@ imreadmulti_(const String& filename, int flags, std::vector<Mat>& mats, int star
     while (current < count)
     {
         // grab the decoded type
-        const int type = calcType(decoder->type(), flags);
+        int type = decoder->type();
+        if ((flags & IMREAD_LOAD_GDAL) != IMREAD_LOAD_GDAL && flags != IMREAD_UNCHANGED)
+        {
+            if ((flags & IMREAD_ANYDEPTH) == 0)
+                type = CV_MAKETYPE(CV_8U, CV_MAT_CN(type));
+
+            if ((flags & IMREAD_COLOR) != 0 ||
+                ((flags & IMREAD_ANYCOLOR) != 0 && CV_MAT_CN(type) > 1))
+                type = CV_MAKETYPE(CV_MAT_DEPTH(type), 3);
+            else
+                type = CV_MAKETYPE(CV_MAT_DEPTH(type), 1);
+        }
 
         // established the required input image size
         Size size = validateInputImageSize(Size(decoder->width(), decoder->height()));
@@ -653,8 +645,10 @@ void imread( const String& filename, OutputArray dst, int flags )
 {
     CV_TRACE_FUNCTION();
 
+    Mat img = dst.getMat();
+
     /// load the data
-    imread_(filename, flags, dst);
+    imread_(filename, flags, img);
 }
 
 /**
@@ -723,7 +717,6 @@ static bool imwrite_( const String& filename, const std::vector<Mat>& img_vec,
         Mat temp;
         if( !encoder->isFormatSupported(image.depth()) )
         {
-            CV_LOG_ONCE_WARNING(NULL, "Unsupported depth image for selected encoder is fallbacked to CV_8U.");
             CV_Assert( encoder->isFormatSupported(CV_8U) );
             image.convertTo( temp, CV_8U );
             image = temp;
@@ -788,12 +781,10 @@ static bool imwrite_( const String& filename, const std::vector<Mat>& img_vec,
     catch (const cv::Exception& e)
     {
         CV_LOG_ERROR(NULL, "imwrite_('" << filename << "'): can't write data: " << e.what());
-        code = false;
     }
     catch (...)
     {
         CV_LOG_ERROR(NULL, "imwrite_('" << filename << "'): can't write data: unknown exception");
-        code = false;
     }
 
     return code;
@@ -839,12 +830,6 @@ imdecode_( const Mat& buf, int flags, Mat& mat )
             scale_denom = 4;
         else if( flags & IMREAD_REDUCED_GRAYSCALE_8 )
             scale_denom = 8;
-    }
-
-    // Try to decode image by RGB instead of BGR.
-    if (flags & IMREAD_COLOR_RGB && flags != IMREAD_UNCHANGED)
-    {
-        decoder->setRGB(true);
     }
 
     /// set the scale_denom in the driver
@@ -899,7 +884,18 @@ imdecode_( const Mat& buf, int flags, Mat& mat )
     // established the required input image size
     Size size = validateInputImageSize(Size(decoder->width(), decoder->height()));
 
-    const int type = calcType(decoder->type(), flags);
+    int type = decoder->type();
+    if( (flags & IMREAD_LOAD_GDAL) != IMREAD_LOAD_GDAL && flags != IMREAD_UNCHANGED )
+    {
+        if( (flags & IMREAD_ANYDEPTH) == 0 )
+            type = CV_MAKETYPE(CV_8U, CV_MAT_CN(type));
+
+        if( (flags & IMREAD_COLOR) != 0 ||
+           ((flags & IMREAD_ANYCOLOR) != 0 && CV_MAT_CN(type) > 1) )
+            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 3);
+        else
+            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 1);
+    }
 
     mat.create( size.height, size.width, type );
 
@@ -981,13 +977,7 @@ imdecodemulti_(const Mat& buf, int flags, std::vector<Mat>& mats, int start, int
 
     ImageDecoder decoder = findDecoder(buf_row);
     if (!decoder)
-        return false;
-
-    // Try to decode image by RGB instead of BGR.
-    if (flags & IMREAD_COLOR_RGB && flags != IMREAD_UNCHANGED)
-    {
-        decoder->setRGB(true);
-    }
+        return 0;
 
     if (count < 0) {
         count = std::numeric_limits<int>::max();
@@ -998,7 +988,7 @@ imdecodemulti_(const Mat& buf, int flags, std::vector<Mat>& mats, int start, int
         filename = tempfile();
         FILE* f = fopen(filename.c_str(), "wb");
         if (!f)
-            return false;
+            return 0;
         size_t bufSize = buf_row.total() * buf.elemSize();
         if (fwrite(buf_row.ptr(), 1, bufSize, f) != bufSize)
         {
@@ -1056,7 +1046,18 @@ imdecodemulti_(const Mat& buf, int flags, std::vector<Mat>& mats, int start, int
     while (current < count)
     {
         // grab the decoded type
-        const int type = calcType(decoder->type(), flags);
+        int type = decoder->type();
+        if ((flags & IMREAD_LOAD_GDAL) != IMREAD_LOAD_GDAL && flags != IMREAD_UNCHANGED)
+        {
+            if ((flags & IMREAD_ANYDEPTH) == 0)
+                type = CV_MAKETYPE(CV_8U, CV_MAT_CN(type));
+
+            if ((flags & IMREAD_COLOR) != 0 ||
+                ((flags & IMREAD_ANYCOLOR) != 0 && CV_MAT_CN(type) > 1))
+                type = CV_MAKETYPE(CV_MAT_DEPTH(type), 3);
+            else
+                type = CV_MAKETYPE(CV_MAT_DEPTH(type), 1);
+        }
 
         // established the required input image size
         Size size = validateInputImageSize(Size(decoder->width(), decoder->height()));
@@ -1124,44 +1125,27 @@ bool imdecodemulti(InputArray _buf, int flags, CV_OUT std::vector<Mat>& mats, co
     }
 }
 
-bool imencode( const String& ext, InputArray _img,
+bool imencode( const String& ext, InputArray _image,
                std::vector<uchar>& buf, const std::vector<int>& params_ )
 {
     CV_TRACE_FUNCTION();
+
+    Mat image = _image.getMat();
+    CV_Assert(!image.empty());
+
+    int channels = image.channels();
+    CV_Assert( channels == 1 || channels == 3 || channels == 4 );
 
     ImageEncoder encoder = findEncoder( ext );
     if( !encoder )
         CV_Error( Error::StsError, "could not find encoder for the specified extension" );
 
-    std::vector<Mat> img_vec;
-    CV_Assert(!_img.empty());
-    if (_img.isMatVector() || _img.isUMatVector())
-        _img.getMatVector(img_vec);
-    else
-        img_vec.push_back(_img.getMat());
-
-    CV_Assert(!img_vec.empty());
-    const bool isMultiImg = img_vec.size() > 1;
-
-    std::vector<Mat> write_vec;
-    for (size_t page = 0; page < img_vec.size(); page++)
+    if( !encoder->isFormatSupported(image.depth()) )
     {
-        Mat image = img_vec[page];
-        CV_Assert(!image.empty());
-
-        const int channels = image.channels();
-        CV_Assert( channels == 1 || channels == 3 || channels == 4 );
-
+        CV_Assert( encoder->isFormatSupported(CV_8U) );
         Mat temp;
-        if( !encoder->isFormatSupported(image.depth()) )
-        {
-            CV_LOG_ONCE_WARNING(NULL, "Unsupported depth image for selected encoder is fallbacked to CV_8U.");
-            CV_Assert( encoder->isFormatSupported(CV_8U) );
-            image.convertTo( temp, CV_8U );
-            image = temp;
-        }
-
-        write_vec.push_back(image);
+        image.convertTo(temp, CV_8U);
+        image = temp;
     }
 
 #if CV_VERSION_MAJOR < 5 && defined(HAVE_IMGCODEC_HDR)
@@ -1186,37 +1170,23 @@ bool imencode( const String& ext, InputArray _img,
     CV_Check(params.size(), (params.size() & 1) == 0, "Encoding 'params' must be key-value pairs");
     CV_CheckLE(params.size(), (size_t)(CV_IO_MAX_IMAGE_PARAMS*2), "");
 
-    bool code = false;
-    String filename;
-    if( !encoder->setDestination(buf) )
+    bool code;
+    if( encoder->setDestination(buf) )
     {
-        filename = tempfile();
-        code = encoder->setDestination(filename);
-        CV_Assert( code );
-    }
-
-    try {
-        if (!isMultiImg)
-            code = encoder->write(write_vec[0], params);
-        else
-            code = encoder->writemulti(write_vec, params);
-
+        code = encoder->write(image, params);
         encoder->throwOnEror();
         CV_Assert( code );
     }
-    catch (const cv::Exception& e)
+    else
     {
-        CV_LOG_ERROR(NULL, "imencode(): can't encode data: " << e.what());
-        code = false;
-    }
-    catch (...)
-    {
-        CV_LOG_ERROR(NULL, "imencode(): can't encode data: unknown exception");
-        code = false;
-    }
+        String filename = tempfile();
+        code = encoder->setDestination(filename);
+        CV_Assert( code );
 
-    if( !filename.empty() && code )
-    {
+        code = encoder->write(image, params);
+        encoder->throwOnEror();
+        CV_Assert( code );
+
         FILE* f = fopen( filename.c_str(), "rb" );
         CV_Assert(f != 0);
         fseek( f, 0, SEEK_END );
@@ -1228,12 +1198,6 @@ bool imencode( const String& ext, InputArray _img,
         remove(filename.c_str());
     }
     return code;
-}
-
-bool imencodemulti( const String& ext, InputArrayOfArrays imgs,
-                    std::vector<uchar>& buf, const std::vector<int>& params)
-{
-    return imencode(ext, imgs, buf, params);
 }
 
 bool haveImageReader( const String& filename )
@@ -1303,8 +1267,26 @@ void ImageCollection::Impl::init(String const& filename, int flags) {
     m_decoder->setSource(filename);
     CV_Assert(m_decoder->readHeader());
 
-    m_size = m_decoder->getFrameCount();
+    // count the pages of the image collection
+    size_t count = 1;
+    while(m_decoder->nextPage()) count++;
+
+    m_size = count;
     m_pages.resize(m_size);
+    // Reinitialize the decoder because we advanced to the last page while counting the pages of the image
+#ifdef HAVE_GDAL
+    if (m_flags != IMREAD_UNCHANGED && (m_flags & IMREAD_LOAD_GDAL) == IMREAD_LOAD_GDAL) {
+        m_decoder = GdalDecoder().newDecoder();
+    }
+    else {
+#endif
+    m_decoder = findDecoder(m_filename);
+#ifdef HAVE_GDAL
+    }
+#endif
+
+    m_decoder->setSource(m_filename);
+    m_decoder->readHeader();
 }
 
 size_t ImageCollection::Impl::size() const { return m_size; }
@@ -1334,7 +1316,17 @@ bool ImageCollection::Impl::readHeader() {
 
 // readHeader must be called before calling this method
 Mat ImageCollection::Impl::readData() {
-    const int type = calcType(m_decoder->type(), m_flags);
+    int type = m_decoder->type();
+    if ((m_flags & IMREAD_LOAD_GDAL) != IMREAD_LOAD_GDAL && m_flags != IMREAD_UNCHANGED) {
+        if ((m_flags & IMREAD_ANYDEPTH) == 0)
+            type = CV_MAKETYPE(CV_8U, CV_MAT_CN(type));
+
+        if ((m_flags & IMREAD_COLOR) != 0 ||
+            ((m_flags & IMREAD_ANYCOLOR) != 0 && CV_MAT_CN(type) > 1))
+            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 3);
+        else
+            type = CV_MAKETYPE(CV_MAT_DEPTH(type), 1);
+    }
 
     // established the required input image size
     Size size = validateInputImageSize(Size(m_width, m_height));

@@ -3,6 +3,7 @@ Helper module to download extra data from Internet
 '''
 from __future__ import print_function
 import os
+import cv2
 import sys
 import yaml
 import argparse

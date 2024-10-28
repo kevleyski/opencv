@@ -1,6 +1,44 @@
-// This file is part of OpenCV project.
-// It is subject to the license terms in the LICENSE file found in the top-level
-// directory of this distribution and at http://opencv.org/license.html
+/*M///////////////////////////////////////////////////////////////////////////////////////
+//
+//  IMPORTANT: READ BEFORE DOWNLOADING, COPYING, INSTALLING OR USING.
+//
+//  By downloading, copying, installing or using the software you agree to this license.
+//  If you do not agree to this license, do not download, install,
+//  copy or use the software.
+//
+//
+//                           License Agreement
+//                For Open Source Computer Vision Library
+//
+// Copyright (C) 2000-2008, Intel Corporation, all rights reserved.
+// Copyright (C) 2009, Willow Garage Inc., all rights reserved.
+// Third party copyrights are property of their respective owners.
+//
+// Redistribution and use in source and binary forms, with or without modification,
+// are permitted provided that the following conditions are met:
+//
+//   * Redistribution's of source code must retain the above copyright notice,
+//     this list of conditions and the following disclaimer.
+//
+//   * Redistribution's in binary form must reproduce the above copyright notice,
+//     this list of conditions and the following disclaimer in the documentation
+//     and/or other materials provided with the distribution.
+//
+//   * The name of the copyright holders may not be used to endorse or promote products
+//     derived from this software without specific prior written permission.
+//
+// This software is provided by the copyright holders and contributors "as is" and
+// any express or implied warranties, including, but not limited to, the implied
+// warranties of merchantability and fitness for a particular purpose are disclaimed.
+// In no event shall the Intel Corporation or contributors be liable for any direct,
+// indirect, incidental, special, exemplary, or consequential damages
+// (including, but not limited to, procurement of substitute goods or services;
+// loss of use, data, or profits; or business interruption) however caused
+// and on any theory of liability, whether in contract, strict liability,
+// or tort (including negligence or otherwise) arising in any way out of
+// the use of this software, even if advised of the possibility of such damage.
+//
+//M*/
 
 #include "precomp.hpp"
 #include "grfmt_sunras.hpp"
@@ -22,7 +60,6 @@ SunRasterDecoder::SunRasterDecoder()
     m_encoding = RAS_STANDARD;
     m_maptype = RMT_NONE;
     m_maplength = 0;
-    m_buf_supported = true;
 }
 
 
@@ -45,12 +82,7 @@ bool  SunRasterDecoder::readHeader()
 {
     bool result = false;
 
-    if (!m_buf.empty())
-        m_strm.open(m_buf);
-    else
-        m_strm.open(m_filename);
-
-    if( !m_strm.isOpened()) return false;
+    if( !m_strm.open( m_filename )) return false;
 
     try
     {
@@ -310,7 +342,7 @@ bad_decoding_end:
 
                 if( color )
                 {
-                    if( m_type == RAS_FORMAT_RGB || m_use_rgb)
+                    if( m_type == RAS_FORMAT_RGB )
                         icvCvt_RGB2BGR_8u_C3R(src, 0, data, 0, Size(m_width,1) );
                     else
                         memcpy(data, src, std::min(step, (size_t)src_pitch));
@@ -333,7 +365,7 @@ bad_decoding_end:
 
                 if( color )
                     icvCvt_BGRA2BGR_8u_C4C3R( src + 4, 0, data, 0, Size(m_width,1),
-                                              (m_type == RAS_FORMAT_RGB || m_use_rgb) ? 2 : 0 );
+                                              m_type == RAS_FORMAT_RGB ? 2 : 0 );
                 else
                     icvCvt_BGRA2Gray_8u_C4C1R( src + 4, 0, data, 0, Size(m_width,1),
                                                m_type == RAS_FORMAT_RGB ? 2 : 0 );
@@ -357,7 +389,6 @@ bad_decoding_end:
 SunRasterEncoder::SunRasterEncoder()
 {
     m_description = "Sun raster files (*.sr;*.ras)";
-    m_buf_supported = true;
 }
 
 
@@ -377,30 +408,19 @@ bool  SunRasterEncoder::write( const Mat& img, const std::vector<int>& )
     int fileStep = (width*channels + 1) & -2;
     WMByteStream  strm;
 
-    if (m_buf) {
-        if (!strm.open(*m_buf)) {
-            return false;
-        }
-        else {
-            m_buf->reserve(height * fileStep + 32);
-        }
-    }
-    else
-        strm.open(m_filename);
-
-    if( strm.isOpened() )
+    if( strm.open(m_filename) )
     {
-        CHECK_WRITE(strm.putBytes( fmtSignSunRas, (int)strlen(fmtSignSunRas) ));
-        CHECK_WRITE(strm.putDWord( width ));
-        CHECK_WRITE(strm.putDWord( height ));
-        CHECK_WRITE(strm.putDWord( channels*8 ));
-        CHECK_WRITE(strm.putDWord( fileStep*height ));
-        CHECK_WRITE(strm.putDWord( RAS_STANDARD ));
-        CHECK_WRITE(strm.putDWord( RMT_NONE ));
-        CHECK_WRITE(strm.putDWord( 0 ));
+        strm.putBytes( fmtSignSunRas, (int)strlen(fmtSignSunRas) );
+        strm.putDWord( width );
+        strm.putDWord( height );
+        strm.putDWord( channels*8 );
+        strm.putDWord( fileStep*height );
+        strm.putDWord( RAS_STANDARD );
+        strm.putDWord( RMT_NONE );
+        strm.putDWord( 0 );
 
         for( y = 0; y < height; y++ )
-            CHECK_WRITE(strm.putBytes( img.ptr(y), fileStep ));
+            strm.putBytes( img.ptr(y), fileStep );
 
         strm.close();
         result = true;

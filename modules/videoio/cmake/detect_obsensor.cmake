@@ -1,7 +1,12 @@
 # --- obsensor ---
 if(NOT HAVE_OBSENSOR)
+  if(APPLE)
+    # force to use orbbec sdk on mac
+    set(OBSENSOR_USE_ORBBEC_SDK ON)
+  endif()
+
   if(OBSENSOR_USE_ORBBEC_SDK)
-    include("${OpenCV_SOURCE_DIR}/3rdparty/orbbecsdk/orbbecsdk.cmake")
+    include(${CMAKE_SOURCE_DIR}/3rdparty/orbbecsdk/orbbecsdk.cmake)
     download_orbbec_sdk(ORBBEC_SDK_ROOT_DIR)
     message(STATUS "ORBBEC_SDK_ROOT_DIR: ${ORBBEC_SDK_ROOT_DIR}")
     if(ORBBEC_SDK_ROOT_DIR)

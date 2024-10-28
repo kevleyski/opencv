@@ -39,8 +39,6 @@
 //
 //M*/
 
-#include "opencv2/ts/ocl_test.hpp"
-#include "opencv2/ts/ts_gtest.h"
 #include "test_precomp.hpp"
 
 namespace opencv_test { namespace {
@@ -558,7 +556,7 @@ int CV_WarpAffineTest::prepare_test_case( int test_case_idx )
     angle = cvtest::randReal(rng)*360;
     scale = ((double)dst.rows/src.rows + (double)dst.cols/src.cols)*0.5;
     getRotationMatrix2D(center, angle, scale).convertTo(mat, mat.depth());
-    rng.fill( tmp, RNG::NORMAL, Scalar::all(1.), Scalar::all(0.01) );
+    rng.fill( tmp, CV_RAND_NORMAL, Scalar::all(1.), Scalar::all(0.01) );
     cv::max(tmp, 0.9, tmp);
     cv::min(tmp, 1.1, tmp);
     cv::multiply(tmp, mat, mat, 1.);
@@ -673,7 +671,7 @@ int CV_WarpPerspectiveTest::prepare_test_case( int test_case_idx )
     float bufer[16];
     Mat tmp( 1, 16, CV_32FC1, bufer );
 
-    rng.fill( tmp, RNG::NORMAL, Scalar::all(0.), Scalar::all(0.1) );
+    rng.fill( tmp, CV_RAND_NORMAL, Scalar::all(0.), Scalar::all(0.1) );
 
     for( i = 0; i < 4; i++ )
     {
@@ -770,8 +768,8 @@ void CV_RemapTest::fill_array( int test_case_idx, int i, int j, Mat& arr )
 
 void CV_RemapTest::run_func()
 {
-    cv::remap(test_mat[INPUT][0], test_mat[INPUT_OUTPUT][0],
-              test_mat[INPUT][1], test_mat[INPUT][2], interpolation );
+    cvRemap( test_array[INPUT][0], test_array[INPUT_OUTPUT][0],
+             test_array[INPUT][1], test_array[INPUT][2], interpolation );
 }
 
 
@@ -875,7 +873,7 @@ protected:
     double get_success_error_level( int test_case_idx, int i, int j );
     void fill_array( int test_case_idx, int i, int j, Mat& arr );
 
-    Point2f center;
+    CvPoint2D32f center;
     bool test_cpp;
 };
 
@@ -927,8 +925,13 @@ void CV_GetRectSubPixTest::fill_array( int test_case_idx, int i, int j, Mat& arr
 
 void CV_GetRectSubPixTest::run_func()
 {
-    cv::Mat _out = test_mat[INPUT_OUTPUT][0];
-    cv::getRectSubPix(test_mat[INPUT][0], _out.size(), center, _out, _out.type());
+    if(!test_cpp)
+        cvGetRectSubPix( test_array[INPUT][0], test_array[INPUT_OUTPUT][0], center );
+    else
+    {
+        cv::Mat _out = cv::cvarrToMat(test_array[INPUT_OUTPUT][0]);
+        cv::getRectSubPix( cv::cvarrToMat(test_array[INPUT][0]), _out.size(), center, _out, _out.type());
+    }
 }
 
 

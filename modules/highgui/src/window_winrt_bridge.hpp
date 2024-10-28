@@ -113,6 +113,7 @@ private:
 
     // Meyers singleton
     HighguiBridge(const HighguiBridge &);
+    void operator=(HighguiBridge &);
     HighguiBridge() {
         windowsMap = new std::map<cv::String, CvWindow*>();
     };

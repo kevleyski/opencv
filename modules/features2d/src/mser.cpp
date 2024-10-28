@@ -873,13 +873,10 @@ extractMSER_8uC3( const Mat& src,
                   const MSER_Impl::Params& params )
 {
     bboxvec.clear();
-    AutoBuffer<MSCRNode> mapBuf(src.cols*src.rows);
-    MSCRNode* map = mapBuf.data();
+    MSCRNode* map = (MSCRNode*)cvAlloc( src.cols*src.rows*sizeof(map[0]) );
     int Ne = src.cols*src.rows*2-src.cols-src.rows;
-    AutoBuffer<MSCREdge> edgeBuf(Ne);
-    MSCREdge* edge = edgeBuf.data();
-    AutoBuffer<TempMSCR> mscrBuf(src.cols*src.rows);
-    TempMSCR* mscr = mscrBuf.data();
+    MSCREdge* edge = (MSCREdge*)cvAlloc( Ne*sizeof(edge[0]) );
+    TempMSCR* mscr = (TempMSCR*)cvAlloc( src.cols*src.rows*sizeof(mscr[0]) );
     double emean = 0;
     Mat dx( src.rows, src.cols-1, CV_64FC1 );
     Mat dy( src.rows-1, src.cols, CV_64FC1 );
@@ -990,6 +987,9 @@ extractMSER_8uC3( const Mat& src,
             }
             bboxvec.push_back(Rect(xmin, ymin, xmax - xmin + 1, ymax - ymin + 1));
         }
+    cvFree( &mscr );
+    cvFree( &edge );
+    cvFree( &map );
 }
 
 void MSER_Impl::detectRegions( InputArray _src, vector<vector<Point> >& msers, vector<Rect>& bboxes )
