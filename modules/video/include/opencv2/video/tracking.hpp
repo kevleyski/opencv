@@ -166,7 +166,7 @@ performance boost.
 The function implements a sparse iterative version of the Lucas-Kanade optical flow in pyramids. See
 @cite Bouguet00 . The function is parallelized with the TBB library.
 
-@note
+@note Some examples:
 
 -   An example using the Lucas-Kanade optical flow algorithm can be found at
     opencv_source_code/samples/cpp/lkdemo.cpp
@@ -213,7 +213,7 @@ The function finds an optical flow for each prev pixel using the @cite Farneback
 
 \f[\texttt{prev} (y,x)  \sim \texttt{next} ( y + \texttt{flow} (y,x)[1],  x + \texttt{flow} (y,x)[0])\f]
 
-@note
+@note Some examples:
 
 -   An example using the optical flow algorithm described by Gunnar Farneback can be found at
     opencv_source_code/samples/cpp/fback.cpp
@@ -861,8 +861,6 @@ public:
     //bool update(InputArray image, CV_OUT Rect& boundingBox) CV_OVERRIDE;
 };
 
-<<<<<<< HEAD
-=======
 /** @brief the Nano tracker is a super lightweight dnn-based general object tracking.
  *
  *  Nano tracker is much faster and extremely lightweight due to special model structure, the whole model size is about 1.9 MB.
@@ -938,7 +936,6 @@ public:
     // void init(InputArray image, const Rect& boundingBox) CV_OVERRIDE;
     // bool update(InputArray image, CV_OUT Rect& boundingBox) CV_OVERRIDE;
 };
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 //! @} video_track
 

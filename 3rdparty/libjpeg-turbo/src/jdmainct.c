@@ -364,7 +364,7 @@ process_data_context_main(j_decompress_ptr cinfo, _JSAMPARRAY output_buf,
     main_ptr->context_state = CTX_PREPARE_FOR_IMCU;
     if (*out_row_ctr >= out_rows_avail)
       return;                   /* Postprocessor exactly filled output buf */
-    /*FALLTHROUGH*/
+    FALLTHROUGH                 /*FALLTHROUGH*/
   case CTX_PREPARE_FOR_IMCU:
     /* Prepare to process first M-1 row groups of this iMCU row */
     main_ptr->rowgroup_ctr = 0;
@@ -375,7 +375,7 @@ process_data_context_main(j_decompress_ptr cinfo, _JSAMPARRAY output_buf,
     if (main_ptr->iMCU_row_ctr == cinfo->total_iMCU_rows)
       set_bottom_pointers(cinfo);
     main_ptr->context_state = CTX_PROCESS_IMCU;
-    /*FALLTHROUGH*/
+    FALLTHROUGH                 /*FALLTHROUGH*/
   case CTX_PROCESS_IMCU:
     /* Call postprocessor using previously set pointers */
     (*cinfo->post->_post_process_data) (cinfo,

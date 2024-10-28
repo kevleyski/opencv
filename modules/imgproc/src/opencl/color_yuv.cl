@@ -568,8 +568,6 @@ __kernel void YUV2RGB_422(__global const uchar* srcptr, int src_step, int src_of
     }
 }
 
-<<<<<<< HEAD
-=======
 // Coefficients based on ITU.BT-601, ISBN 1-878707-09-4 (https://fourcc.org/fccyvrgb.php)
 // The conversion coefficients for RGB to YUV422 are based on the ones for RGB to YUV.
 // For both Y components, the coefficients are applied as given in the link to each input RGB pixel
@@ -640,7 +638,6 @@ __kernel void RGB2YUV_422(__global const uchar* srcptr, int src_step, int src_of
     }
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 ///////////////////////////////////// RGB <-> YCrCb //////////////////////////////////////
 
 __constant float c_RGB2YCrCbCoeffs_f[5] = {R2YF, G2YF, B2YF, YCRF, YCBF};

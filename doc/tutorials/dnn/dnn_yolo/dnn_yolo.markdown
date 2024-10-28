@@ -233,14 +233,8 @@ VIDEO DEMO:
 
 ### Building a Custom Pipeline
 
-<<<<<<< HEAD
-Use a universal sample for object detection models written
-[in C++](https://github.com/opencv/opencv/blob/master/samples/dnn/object_detection.cpp) and
-[in Python](https://github.com/opencv/opencv/blob/master/samples/dnn/object_detection.py) languages
-=======
 Sometimes there is a need to make some custom adjustments in the inference pipeline. With OpenCV DNN
 module this is also quite easy to achieve. Below we will outline the sample implementation details:
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 - Import required libraries
 

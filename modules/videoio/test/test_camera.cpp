@@ -26,14 +26,25 @@ static void test_readFrames(/*const*/ VideoCapture& capture, const int N = 100, 
     const bool validTickAndFps = cvTickFreq != 0 && fps != 0.;
     testTimestamps &= validTickAndFps;
 
+    double frame0ts = 0;
+
     for (int i = 0; i < N; i++)
     {
         SCOPED_TRACE(cv::format("frame=%d", i));
 
         capture >> frame;
-        const int64 sysTimeCurr = cv::getTickCount();
-        const double camTimeCurr = capture.get(cv::CAP_PROP_POS_MSEC);
         ASSERT_FALSE(frame.empty());
+
+        const int64 sysTimeCurr = cv::getTickCount();
+        double camTimeCurr = capture.get(cv::CAP_PROP_POS_MSEC);
+        if (i == 0)
+            frame0ts = camTimeCurr;
+        camTimeCurr -= frame0ts;  // normalized timestamp based on the first frame
+
+        if (cvtest::debugLevel > 0)
+        {
+            std::cout << i << ": " << camTimeCurr << std::endl;
+        }
 
         // Do we have a previous frame?
         if (i > 0 && testTimestamps)
@@ -105,6 +116,26 @@ TEST(DISABLED_videoio_camera, v4l_read_mjpg)
     int fourcc = (int)capture.get(CAP_PROP_FOURCC);
     std::cout << "FOURCC code: " << cv::format("0x%8x", fourcc) << std::endl;
     test_readFrames(capture);
+    capture.release();
+}
+
+TEST(DISABLED_videoio_camera, msmf_read_yuyv)
+{
+    VideoCapture capture(CAP_MSMF);
+    ASSERT_TRUE(capture.isOpened());
+    ASSERT_TRUE(capture.set(CAP_PROP_FOURCC, VideoWriter::fourcc('Y', 'U', 'Y', 'V')));
+    std::cout << "Camera 0 via " << capture.getBackendName() << " backend" << std::endl;
+    std::cout << "Frame width: " << capture.get(CAP_PROP_FRAME_WIDTH) << std::endl;
+    std::cout << "     height: " << capture.get(CAP_PROP_FRAME_HEIGHT) << std::endl;
+    std::cout << "Capturing FPS: " << capture.get(CAP_PROP_FPS) << std::endl;
+    int fourcc = (int)capture.get(CAP_PROP_FOURCC);
+    std::cout << "FOURCC code: " << cv::format("0x%8x", fourcc) << std::endl;
+    cv::Mat frame;
+    for (int i = 0; i < 10; i++)
+    {
+        capture >> frame;
+        EXPECT_EQ(2, frame.channels());
+    }
     capture.release();
 }
 
@@ -192,6 +223,35 @@ TEST(DISABLED_videoio_camera, v4l_read_framesize)
     capture.release();
 }
 
+TEST(DISABLED_videoio_camera, v4l_rgb_convert)
+{
+    VideoCapture capture(CAP_V4L2);
+    ASSERT_TRUE(capture.isOpened());
+    std::cout << "Camera 0 via " << capture.getBackendName() << " backend" << std::endl;
+    std::cout << " Frame width: " << capture.get(CAP_PROP_FRAME_WIDTH) << std::endl;
+    std::cout << "      height: " << capture.get(CAP_PROP_FRAME_HEIGHT) << std::endl;
+    std::cout << "Pixel format: " << capture.get(cv::CAP_PROP_FORMAT) << std::endl;
+    if (capture.get(CAP_PROP_FOURCC) != VideoWriter::fourcc('Y', 'U', 'Y', 'V'))
+    {
+        throw SkipTestException("Camera does not support YUYV format");
+    }
+    capture.set(cv::CAP_PROP_CONVERT_RGB, 0);
+    std::cout << "New pixel format: " << capture.get(cv::CAP_PROP_FORMAT) << std::endl;
+
+    cv::Mat frame;
+    for (int i = 0; i < 10; i++)
+    {
+        int pixel_type  = (int)capture.get(cv::CAP_PROP_FORMAT);
+        int channels    = CV_MAT_CN(pixel_type);
+        int pixel_bytes = CV_ELEM_SIZE(pixel_type);
+
+        // YUYV is expected for most of popular USB cam (COLOR_YUV2BGR_YUYV conversion)
+        EXPECT_EQ(2, channels);
+        EXPECT_EQ(2, pixel_bytes);
+
+        capture >> frame;
+    }
+}
 
 static
 utils::Paths getTestCameras()

@@ -162,12 +162,8 @@ private:
     int       mFormat;
 
     bool setupReadingAt(CMTime position);
-<<<<<<< HEAD
-    IplImage* retrieveFramePixelBuffer();
-=======
     cv::Mat retrieveFramePixelBuffer();
     int getPreferredOrientationDegrees() const;
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     CMTime mFrameTimestamp;
     size_t mFrameNum;
@@ -377,6 +373,15 @@ int CvCaptureCAM::startCaptureDevice(int cameraNum) {
         [localpool drain];
         return 0;
     }
+
+    // Preserve devices ordering on the system
+    // see AVCaptureDevice::uniqueID property documentation for more info
+    devices = [devices
+        sortedArrayUsingComparator:^NSComparisonResult(AVCaptureDevice *d1,
+                                                     AVCaptureDevice *d2) {
+          return [d1.uniqueID compare:d2.uniqueID];
+        }
+    ];
 
     mCaptureDevice = devices[cameraNum];
 
@@ -641,37 +646,6 @@ didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
             cv::cvtColor(devImage, mOutImage, cv::COLOR_YUV2BGR_UYVY);
             res = true;
         }
-<<<<<<< HEAD
-        mDeviceImage->width = int(width);
-        mDeviceImage->height = int(height);
-        mDeviceImage->nChannels = 4;
-        mDeviceImage->depth = IPL_DEPTH_8U;
-        mDeviceImage->widthStep = int(rowBytes);
-        mDeviceImage->imageData = reinterpret_cast<char *>(baseaddress);
-        mDeviceImage->imageSize = int(rowBytes*height);
-
-        cvCvtColor(mDeviceImage, mOutImage, CV_BGRA2BGR);
-    } else if ( pixelFormat == kCVPixelFormatType_422YpCbCr8 ) {
-        if ( currSize != width*3*height ) {
-            currSize = width*3*height;
-            free(mOutImagedata);
-            mOutImagedata = reinterpret_cast<uint8_t*>(malloc(currSize));
-        }
-
-        if (mDeviceImage == NULL) {
-            mDeviceImage = cvCreateImageHeader(cvSize(int(width),int(height)), IPL_DEPTH_8U, 2);
-        }
-        mDeviceImage->width = int(width);
-        mDeviceImage->height = int(height);
-        mDeviceImage->nChannels = 2;
-        mDeviceImage->depth = IPL_DEPTH_8U;
-        mDeviceImage->widthStep = int(rowBytes);
-        mDeviceImage->imageData = reinterpret_cast<char *>(baseaddress);
-        mDeviceImage->imageSize = int(rowBytes*height);
-
-        cvCvtColor(mDeviceImage, mOutImage, CV_YUV2BGR_UYVY);
-=======
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     } else {
         fprintf(stderr, "OpenCV: rowBytes == 0 or unknown pixel format 0x%08X\n", pixelFormat);
         mOutImage.create(cv::Size(0, 0), mOutImage.type());
@@ -778,7 +752,7 @@ bool CvCaptureFile::setupReadingAt(CMTime position) {
     // Capture in a pixel format that can be converted efficiently to the output mode.
     OSType pixelFormat;
     if (mMode == CV_CAP_MODE_BGR || mMode == CV_CAP_MODE_RGB) {
-        // For CV_CAP_MODE_BGR, read frames as BGRA (AV Foundation's YUV->RGB conversion is slightly faster than OpenCV's CV_YUV2BGR_YV12)
+        // For CV_CAP_MODE_BGR, read frames as BGRA (AV Foundation's YUV->RGB conversion is slightly faster than OpenCV's cv::COLOR_YUV2BGR_YV12)
         // kCVPixelFormatType_32ABGR is reportedly faster on OS X, but OpenCV doesn't have a CV_ABGR2BGR conversion.
         // kCVPixelFormatType_24RGB is significantly slower than kCVPixelFormatType_32BGRA.
         pixelFormat = kCVPixelFormatType_32BGRA;
@@ -902,11 +876,11 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         deviceChannels = 4;
 
         if (mMode == CV_CAP_MODE_BGR) {
-            cvtCode = CV_BGRA2BGR;
+            cvtCode = cv::COLOR_BGRA2BGR;
         } else if (mMode == CV_CAP_MODE_RGB) {
-            cvtCode = CV_BGRA2RGB;
+            cvtCode = cv::COLOR_BGRA2RGB;
         } else if (mMode == CV_CAP_MODE_GRAY) {
-            cvtCode = CV_BGRA2GRAY;
+            cvtCode = cv::COLOR_BGRA2GRAY;
         } else {
             CVPixelBufferUnlockBaseAddress(mGrabbedPixels, 0);
             CVBufferRelease(mGrabbedPixels);
@@ -918,11 +892,11 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         deviceChannels = 3;
 
         if (mMode == CV_CAP_MODE_BGR) {
-            cvtCode = CV_RGB2BGR;
+            cvtCode = cv::COLOR_RGB2BGR;
         } else if (mMode == CV_CAP_MODE_RGB) {
             cvtCode = -1;
         } else if (mMode == CV_CAP_MODE_GRAY) {
-            cvtCode = CV_RGB2GRAY;
+            cvtCode = cv::COLOR_RGB2GRAY;
         } else {
             CVPixelBufferUnlockBaseAddress(mGrabbedPixels, 0);
             CVBufferRelease(mGrabbedPixels);
@@ -934,11 +908,11 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         deviceChannels = 2;
 
         if (mMode == CV_CAP_MODE_BGR) {
-            cvtCode = CV_YUV2BGR_UYVY;
+            cvtCode = cv::COLOR_YUV2BGR_UYVY;
         } else if (mMode == CV_CAP_MODE_RGB) {
-            cvtCode = CV_YUV2RGB_UYVY;
+            cvtCode = cv::COLOR_YUV2RGB_UYVY;
         } else if (mMode == CV_CAP_MODE_GRAY) {
-            cvtCode = CV_YUV2GRAY_UYVY;
+            cvtCode = cv::COLOR_YUV2GRAY_UYVY;
         } else if (mMode == CV_CAP_MODE_YUYV) {
             cvtCode = -1;    // Copy
         } else {
@@ -950,23 +924,17 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         }
     } else if ( pixelFormat == kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange ||   // 420v
                 pixelFormat == kCVPixelFormatType_420YpCbCr8BiPlanarFullRange ) {   // 420f
-<<<<<<< HEAD
-        // cvCvtColor(CV_YUV2GRAY_420) is expecting a single buffer with both the Y plane and the CrCb planes.
-        // So, lie about the height of the buffer.  cvCvtColor(CV_YUV2GRAY_420) will only read the first 2/3 of it.
-        height = height * 3 / 2;
-=======
         // cvtColor(cv::COLOR_YUV2GRAY_420) is expecting a single buffer with both the Y plane and the CrCb planes.
         // So, lie about the height of the buffer.  cvtColor(cv::COLOR_YUV2GRAY_420) will only read the first 2/3 of it.
         sz.height = sz.height * 3 / 2;
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         deviceChannels = 1;
 
         if (mMode == CV_CAP_MODE_BGR) {
-            cvtCode = CV_YUV2BGR_YV12;
+            cvtCode = cv::COLOR_YUV2BGR_YV12;
         } else if (mMode == CV_CAP_MODE_RGB) {
-            cvtCode = CV_YUV2RGB_YV12;
+            cvtCode = cv::COLOR_YUV2RGB_YV12;
         } else if (mMode == CV_CAP_MODE_GRAY) {
-            cvtCode = CV_YUV2GRAY_420;
+            cvtCode = cv::COLOR_YUV2GRAY_420;
         } else {
             CVPixelBufferUnlockBaseAddress(mGrabbedPixels, 0);
             CVBufferRelease(mGrabbedPixels);
@@ -989,11 +957,7 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
         // Copy.
         devImage.copyTo(mOutImage);
     } else {
-<<<<<<< HEAD
-        cvCvtColor(mDeviceImage, mOutImage, cvtCode);
-=======
         cv::cvtColor(devImage, mOutImage, cvtCode);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 
 
@@ -1004,6 +968,13 @@ cv::Mat CvCaptureFile::retrieveFramePixelBuffer() {
     return mOutImage;
 }
 
+int CvCaptureFile::getPreferredOrientationDegrees() const {
+    if (mAssetTrack == nil) return 0;
+
+    CGAffineTransform transform = mAssetTrack.preferredTransform;
+    double radians = atan2(transform.b, transform.a);
+    return static_cast<int>(round(radians * 180 / M_PI));
+}
 
 bool CvCaptureFile::retrieveFrame_(int, cv::OutputArray arr) {
     cv::Mat res = retrieveFramePixelBuffer();
@@ -1039,6 +1010,8 @@ double CvCaptureFile::getProperty_(int property_id) const{
             return mFormat;
         case cv::CAP_PROP_FOURCC:
             return mMode;
+        case cv::CAP_PROP_ORIENTATION_META:
+            return getPreferredOrientationDegrees();
         default:
             break;
     }
@@ -1276,17 +1249,9 @@ void CvVideoWriter_AVFoundation::write(cv::InputArray image) {
     }
 
     if (movieColor) {
-<<<<<<< HEAD
-        //assert(iplimage->nChannels == 3);
-        cvCvtColor(iplimage, argbimage, CV_BGR2BGRA);
-    }else{
-        //assert(iplimage->nChannels == 1);
-        cvCvtColor(iplimage, argbimage, CV_GRAY2BGRA);
-=======
         cv::cvtColor(image, argbimage, cv::COLOR_BGR2BGRA);
     }else{
         cv::cvtColor(image, argbimage, cv::COLOR_GRAY2BGRA);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
     //IplImage -> CGImage conversion
     CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();

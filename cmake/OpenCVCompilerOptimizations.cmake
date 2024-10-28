@@ -20,6 +20,9 @@
 # VSX  (always available on Power8)
 # VSX3 (always available on Power9)
 
+# RISC-V arch:
+# RVV
+
 # CPU_{opt}_SUPPORTED=ON/OFF - compiler support (possibly with additional flag)
 # CPU_{opt}_IMPLIES=<list>
 # CPU_{opt}_FORCE=<list> - subset of "implies" list
@@ -46,14 +49,12 @@
 
 set(CPU_ALL_OPTIMIZATIONS "SSE;SSE2;SSE3;SSSE3;SSE4_1;SSE4_2;POPCNT;AVX;FP16;AVX2;FMA3;AVX_512F")
 list(APPEND CPU_ALL_OPTIMIZATIONS "AVX512_COMMON;AVX512_KNL;AVX512_KNM;AVX512_SKX;AVX512_CNL;AVX512_CLX;AVX512_ICL")
-<<<<<<< HEAD
-list(APPEND CPU_ALL_OPTIMIZATIONS NEON VFPV3 FP16)
-=======
 list(APPEND CPU_ALL_OPTIMIZATIONS NEON VFPV3 FP16 NEON_DOTPROD NEON_FP16 NEON_BF16)
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 list(APPEND CPU_ALL_OPTIMIZATIONS MSA)
 list(APPEND CPU_ALL_OPTIMIZATIONS VSX VSX3)
 list(APPEND CPU_ALL_OPTIMIZATIONS RVV)
+list(APPEND CPU_ALL_OPTIMIZATIONS LSX)
+list(APPEND CPU_ALL_OPTIMIZATIONS LASX)
 list(REMOVE_DUPLICATES CPU_ALL_OPTIMIZATIONS)
 
 ocv_update(CPU_VFPV3_FEATURE_ALIAS "")
@@ -106,8 +107,6 @@ ocv_optimization_process_obsolete_option(ENABLE_VFPV3 VFPV3 OFF)
 ocv_optimization_process_obsolete_option(ENABLE_NEON NEON ON)
 
 ocv_optimization_process_obsolete_option(ENABLE_VSX VSX ON)
-
-ocv_optimization_process_obsolete_option(ENABLE_RVV RVV OFF)
 
 macro(ocv_is_optimization_in_list resultvar check_opt)
   set(__checked "")
@@ -248,7 +247,7 @@ if(X86 OR X86_64)
     ocv_update(CPU_SSE2_IMPLIES "SSE")
   endif()
 
-  if(CV_ICC)
+  if(CV_ICC OR CV_ICX)
     macro(ocv_intel_compiler_optimization_option name unix_flags msvc_flags)
       ocv_update(CPU_${name}_FLAGS_NAME "${name}")
       if(MSVC)
@@ -267,7 +266,7 @@ if(X86 OR X86_64)
     ocv_intel_compiler_optimization_option(FP16 "-mavx" "/arch:AVX")
     ocv_intel_compiler_optimization_option(AVX "-mavx" "/arch:AVX")
     ocv_intel_compiler_optimization_option(FMA3 "" "")
-    ocv_intel_compiler_optimization_option(POPCNT "" "")
+    ocv_intel_compiler_optimization_option(POPCNT "-mpopcnt" "")  # -mpopcnt is available since ICC 19.0.0
     ocv_intel_compiler_optimization_option(SSE4_2 "-msse4.2" "/arch:SSE4.2")
     ocv_intel_compiler_optimization_option(SSE4_1 "-msse4.1" "/arch:SSE4.1")
     ocv_intel_compiler_optimization_option(SSE3 "-msse3" "/arch:SSE3")
@@ -284,7 +283,7 @@ if(X86 OR X86_64)
     ocv_intel_compiler_optimization_option(AVX512_CNL "-xCANNONLAKE" "/Qx:CANNONLAKE")
     ocv_intel_compiler_optimization_option(AVX512_CLX "-xCASCADELAKE" "/Qx:CASCADELAKE")
     ocv_intel_compiler_optimization_option(AVX512_ICL "-xICELAKE-CLIENT" "/Qx:ICELAKE-CLIENT")
-  elseif(CV_GCC OR CV_CLANG)
+  elseif(CV_GCC OR CV_CLANG OR CV_ICX)
     ocv_update(CPU_AVX2_FLAGS_ON "-mavx2")
     ocv_update(CPU_FP16_FLAGS_ON "-mf16c")
     ocv_update(CPU_AVX_FLAGS_ON "-mavx")
@@ -356,6 +355,9 @@ elseif(ARM OR AARCH64)
 
   ocv_update(CPU_NEON_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_neon.cpp")
   ocv_update(CPU_FP16_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_fp16.cpp")
+  ocv_update(CPU_NEON_FP16_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_neon_fp16.cpp")
+  ocv_update(CPU_NEON_BF16_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_neon_bf16.cpp")
+  ocv_update(CPU_NEON_DOTPROD_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_neon_dotprod.cpp")
   if(NOT AARCH64)
     ocv_update(CPU_KNOWN_OPTIMIZATIONS "VFPV3;NEON;FP16")
     if(NOT MSVC)
@@ -367,12 +369,6 @@ elseif(ARM OR AARCH64)
     endif()
     ocv_update(CPU_FP16_IMPLIES "NEON")
   else()
-<<<<<<< HEAD
-    ocv_update(CPU_KNOWN_OPTIMIZATIONS "NEON;FP16")
-    ocv_update(CPU_NEON_FLAGS_ON "")
-    ocv_update(CPU_FP16_IMPLIES "NEON")
-    set(CPU_BASELINE "NEON;FP16" CACHE STRING "${HELP_CPU_BASELINE}")
-=======
     ocv_update(CPU_KNOWN_OPTIMIZATIONS "NEON;FP16;NEON_DOTPROD;NEON_FP16;NEON_BF16")
     ocv_update(CPU_FP16_IMPLIES "NEON")
     ocv_update(CPU_NEON_DOTPROD_IMPLIES "NEON")
@@ -389,7 +385,6 @@ elseif(ARM OR AARCH64)
     endif()
     set(CPU_DISPATCH "NEON_FP16;NEON_BF16;NEON_DOTPROD" CACHE STRING "${HELP_CPU_DISPATCH}")
     ocv_default_baseline_detect_and_check_dispatch()
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   endif()
 
 elseif(MIPS)
@@ -421,13 +416,6 @@ elseif(PPC64LE)
   set(CPU_BASELINE "VSX" CACHE STRING "${HELP_CPU_BASELINE}")
 
 elseif(RISCV)
-<<<<<<< HEAD
-  ocv_update(CPU_RVV_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_rvv.cpp")
-  ocv_update(CPU_KNOWN_OPTIMIZATIONS "RVV")
-  ocv_update(CPU_RVV_FLAGS_ON "")
-  set(CPU_DISPATCH "RVV" CACHE STRING "${HELP_CPU_DISPATCH}")
-  set(CPU_BASELINE "RVV" CACHE STRING "${HELP_CPU_BASELINE}")
-=======
 
   ocv_update(CPU_KNOWN_OPTIMIZATIONS "RVV")
   ocv_update(CPU_RVV_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_rvv.cpp")
@@ -442,7 +430,6 @@ elseif(LOONGARCH64)
   ocv_update(CPU_LASX_FLAGS_ON "-mlasx")
   set(CPU_BASELINE "LSX" CACHE STRING "${HELP_CPU_BASELINE}")
   set(CPU_DISPATCH "LASX" CACHE STRING "${HELP_CPU_DISPATCH}")
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 endif()
 
@@ -706,7 +693,7 @@ macro(ocv_compiler_optimization_options)
 endmacro()
 
 macro(ocv_compiler_optimization_options_finalize)
-  if((CV_GCC OR CV_CLANG) AND (X86 OR X86_64))
+  if((CV_GCC OR CV_CLANG OR CV_ICX) AND (X86 OR X86_64))
     if(NOT APPLE AND CMAKE_SIZEOF_VOID_P EQUAL 4)
       if(OPENCV_EXTRA_CXX_FLAGS MATCHES "-m(sse2|avx)")
         add_extra_compiler_option(-mfpmath=sse) # !! important - be on the same wave with x64 compilers
@@ -755,7 +742,7 @@ macro(ocv_compiler_optimization_process_sources SOURCES_VAR_NAME LIBS_VAR_NAME T
           if(fname_LOWER MATCHES "\\.${OPT_LOWER}\\.cpp$")
 #message("${fname} BASELINE-${OPT}")
             set(__opt_found 1)
-            list(APPEND __result "${fname}")
+            list(APPEND __result_${OPT} "${fname}")
             break()
           endif()
         endforeach()
@@ -789,7 +776,7 @@ macro(ocv_compiler_optimization_process_sources SOURCES_VAR_NAME LIBS_VAR_NAME T
     endif()
   endforeach()
 
-  foreach(OPT ${CPU_DISPATCH_FINAL})
+  foreach(OPT ${CPU_BASELINE_FINAL} ${CPU_DISPATCH_FINAL})
     if(__result_${OPT})
 #message("${OPT}: ${__result_${OPT}}")
       if(CMAKE_GENERATOR MATCHES "^Visual"
@@ -993,7 +980,7 @@ macro(ocv_add_dispatched_file_force_all)
 endmacro()
 
 
-if(CV_DISABLE_OPTIMIZATION OR CV_ICC)
+if(CV_DISABLE_OPTIMIZATION OR CV_ICC OR CX_ICX)
   ocv_update(CV_ENABLE_UNROLLED 0)
 else()
   ocv_update(CV_ENABLE_UNROLLED 1)

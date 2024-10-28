@@ -1,9 +1,5 @@
 /* inftrees.c -- generate Huffman trees for efficient decoding
-<<<<<<< HEAD
- * Copyright (C) 1995-2017 Mark Adler
-=======
  * Copyright (C) 1995-2024 Mark Adler
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
@@ -13,11 +9,7 @@
 #define MAXBITS 15
 
 const char inflate_copyright[] =
-<<<<<<< HEAD
-   " inflate 1.2.11 Copyright 1995-2017 Mark Adler ";
-=======
    " inflate 1.3.1 Copyright 1995-2024 Mark Adler ";
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 /*
   If you use the zlib library in a product, an acknowledgment is welcome
   in the documentation of your product. If for some reason you cannot
@@ -65,11 +57,7 @@ int ZLIB_INTERNAL inflate_table(codetype type, unsigned short FAR *lens,
         35, 43, 51, 59, 67, 83, 99, 115, 131, 163, 195, 227, 258, 0, 0};
     static const unsigned short lext[31] = { /* Length codes 257..285 extra */
         16, 16, 16, 16, 16, 16, 16, 16, 17, 17, 17, 17, 18, 18, 18, 18,
-<<<<<<< HEAD
-        19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 77, 202};
-=======
         19, 19, 19, 19, 20, 20, 20, 20, 21, 21, 21, 21, 16, 203, 77};
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     static const unsigned short dbase[32] = { /* Distance codes 0..29 base */
         1, 2, 3, 4, 5, 7, 9, 13, 17, 25, 33, 49, 65, 97, 129, 193,
         257, 385, 513, 769, 1025, 1537, 2049, 3073, 4097, 6145,

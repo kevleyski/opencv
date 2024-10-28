@@ -8,6 +8,7 @@ set(VIDEOIO_ENABLE_PLUGINS "${VIDEOIO_ENABLE_PLUGINS_DEFAULT}" CACHE BOOL "Allow
 mark_as_advanced(VIDEOIO_PLUGIN_LIST VIDEOIO_ENABLE_PLUGINS)
 
 string(REPLACE "," ";" VIDEOIO_PLUGIN_LIST "${VIDEOIO_PLUGIN_LIST}")  # support comma-separated list (,) too
+string(TOLOWER "${VIDEOIO_PLUGIN_LIST}" VIDEOIO_PLUGIN_LIST)
 if(NOT VIDEOIO_ENABLE_PLUGINS)
   if(VIDEOIO_PLUGIN_LIST)
     message(WARNING "VideoIO: plugins are disabled through VIDEOIO_ENABLE_PLUGINS, so VIDEOIO_PLUGIN_LIST='${VIDEOIO_PLUGIN_LIST}' is ignored")
@@ -238,8 +239,6 @@ if(TARGET ocv.3rdparty.android_native_camera)
   list(APPEND tgts ocv.3rdparty.android_native_camera)
 endif()
 
-<<<<<<< HEAD
-=======
 if(TARGET ocv.3rdparty.obsensor)
 if(OBSENSOR_USE_ORBBEC_SDK)
     list(APPEND videoio_srcs
@@ -270,21 +269,11 @@ if(OBSENSOR_USE_ORBBEC_SDK)
   list(APPEND tgts ocv.3rdparty.obsensor)
 endif()
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 if(tgts STREQUAL "PRIVATE")
   set(tgts "")
 endif()
 
-# install used dependencies only
-if(NOT BUILD_SHARED_LIBS
-    AND NOT (CMAKE_VERSION VERSION_LESS "3.13.0")  # upgrade CMake: https://gitlab.kitware.com/cmake/cmake/-/merge_requests/2152
-)
-  foreach(tgt in ${tgts})
-    if(tgt MATCHES "^ocv\.3rdparty\.")
-      install(TARGETS ${tgt} EXPORT OpenCVModules)
-    endif()
-  endforeach()
-endif()
+ocv_install_used_external_targets(${tgts})
 
 ocv_set_module_sources(HEADERS ${videoio_ext_hdrs} ${videoio_hdrs} SOURCES ${videoio_srcs})
 ocv_module_include_directories()

@@ -1,15 +1,39 @@
 #include "perf_precomp.hpp"
-<<<<<<< HEAD
-=======
 #include <numeric>
 #include "opencv2/core/softfloat.hpp"
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 namespace opencv_test
 {
 using namespace perf;
 
+using BroadcastTest = perf::TestBaseWithParam<std::tuple<std::vector<int>, perf::MatType, std::vector<int>>>;
 typedef Size_MatType BinaryOpTest;
+
+PERF_TEST_P_(BroadcastTest, basic)
+{
+    std::vector<int> shape_src = get<0>(GetParam());
+    int dt_type = get<1>(GetParam());
+    std::vector<int> shape_dst = get<2>(GetParam());
+
+    cv::Mat src(static_cast<int>(shape_src.size()), shape_src.data(), dt_type);
+    cv::Mat dst(static_cast<int>(shape_dst.size()), shape_dst.data(), dt_type);
+
+    cv::randu(src, -1.f, 1.f);
+
+    TEST_CYCLE() cv::broadcast(src, shape_dst, dst);
+
+    SANITY_CHECK_NOTHING();
+}
+
+INSTANTIATE_TEST_CASE_P(/*nothing*/ , BroadcastTest,
+    testing::Combine(
+        testing::Values(std::vector<int>{1, 100, 800},
+                        std::vector<int>{10, 1, 800},
+                        std::vector<int>{10, 100, 1}),
+        testing::Values(CV_32FC1),
+        testing::Values(std::vector<int>{10, 100, 800})
+    )
+);
 
 PERF_TEST_P_(BinaryOpTest, min)
 {
@@ -394,6 +418,29 @@ PERF_TEST_P_(BinaryOpTest, reciprocal)
     declare.in(b, WARMUP_RNG).out(c);
 
     TEST_CYCLE() cv::divide(scale, b, c);
+
+    SANITY_CHECK_NOTHING();
+}
+
+
+PERF_TEST_P_(BinaryOpTest, transposeND)
+{
+    Size sz = get<0>(GetParam());
+    int type = get<1>(GetParam());
+    cv::Mat a = Mat(sz, type).reshape(1);
+
+    std::vector<int> order(a.dims);
+    std::iota(order.begin(), order.end(), 0);
+    std::reverse(order.begin(), order.end());
+
+    std::vector<int> new_sz(a.dims);
+    std::copy(a.size.p, a.size.p + a.dims, new_sz.begin());
+    std::reverse(new_sz.begin(), new_sz.end());
+    cv::Mat b = Mat(new_sz, type);
+
+    declare.in(a,WARMUP_RNG).out(b);
+
+    TEST_CYCLE() cv::transposeND(a, order, b);
 
     SANITY_CHECK_NOTHING();
 }

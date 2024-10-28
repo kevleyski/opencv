@@ -136,26 +136,8 @@ bool Subgraph::match(const Ptr<ImportGraphWrapper>& net, int nodeId,
         bool isCommutative = net->isCommutativeOp(node->getType());
         if (isCommutative)
         {
-<<<<<<< HEAD
-            if (nodes[inputNodes[j]].empty())  // Unknown input node type.
-                continue;
-            nodeId = getInputNodeId(net, node, j);
-            const Ptr<ImportNodeWrapper> inpNode = net->getNode(nodeId);
-            if (inpNode->getType() != "Const" && inpNode->getType() != "Constant")
-            {
-                nodesToMatch.push(nodeId);
-                targetNodes.push(inputNodes[j]);
-            }
-            else if (nodes[inputNodes[j]] != "Const" && nodes[inputNodes[j]] != "Constant")
-                return false;
-        }
-        matchedNodesIds.push_back(nodeToMatch);
-        targetNodesIds.push_back(targetNodeId);
-    }
-=======
             if (inputNodes.size() != 2)
                 CV_Error(Error::StsNotImplemented, "Commutative op fusion with more than 2 inputs");
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
             auto newMatchings = makePtr<std::map<int, int>>(*matchings);
             matchCandidates.push_back(newMatchings);

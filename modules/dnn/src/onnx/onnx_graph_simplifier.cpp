@@ -7,6 +7,7 @@
 
 #include "../precomp.hpp"
 
+#ifdef HAVE_PROTOBUF
 #include "../graph_simplifier.hpp"
 #include "onnx_graph_simplifier.hpp"
 
@@ -82,8 +83,6 @@ public:
         return makePtr<ONNXNodeWrapper>(node);
     }
 
-<<<<<<< HEAD
-=======
     int getTensorShapeSize(int node_id, int node_input_id) {
         const auto node = getNode(node_id);
         const auto &input_name = node->getInputName(node_input_id);
@@ -137,7 +136,6 @@ public:
         return tensor_proto.name();
     }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     virtual int getNumNodes() const CV_OVERRIDE
     {
         return numInputs + numInitializers + net.node_size();
@@ -178,9 +176,6 @@ private:
     opencv_onnx::GraphProto& net;
 };
 
-<<<<<<< HEAD
-class SoftMaxSubgraph : public Subgraph
-=======
 static Mat extractConstant(const Ptr<ImportGraphWrapper>& net, int node_id, int input_id)
 {
     auto onnx_net = net.dynamicCast<ONNXGraphWrapper>();
@@ -663,18 +658,11 @@ class AttentionSingleHeadSubGraph : public Subgraph {
 
 */
 class GeluSubGraph : public Subgraph
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 {
 public:
-    SoftMaxSubgraph() : axis(1)
+    GeluSubGraph()
     {
         int input = addNodeToMatch("");
-<<<<<<< HEAD
-        int inpExp = addNodeToMatch("Exp", input);
-        int sum = addNodeToMatch("ReduceSum", inpExp);
-        addNodeToMatch("Div", inpExp, sum);
-        setFusedNode("Softmax", input);
-=======
         div = addNodeToMatch("Div", input, addNodeToMatch("") /* B=sqrt(2) */ );
         int erf = addNodeToMatch("Erf", div);
         add = addNodeToMatch("Add", erf, addNodeToMatch("") /* B=1 */ );
@@ -682,7 +670,6 @@ public:
         mul2 = addNodeToMatch("Mul", mul, addNodeToMatch("") /* B=0.5 */) ;
 
         setFusedNode("Gelu", input);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 
     virtual bool match(const Ptr<ImportGraphWrapper>& net, int nodeId,
@@ -690,9 +677,6 @@ public:
     {
         if (Subgraph::match(net, nodeId, matchedNodesIds))
         {
-<<<<<<< HEAD
-            Ptr<ImportNodeWrapper> sum = net->getNode(matchedNodesIds[1]);
-=======
             // Check Div[B=sqrt(2)]
             float divisor = extractConstant(net, matchedNodesIds[div], 1).at<float>(0);
             if (std::fabs(divisor - M_SQRT2) >= std::numeric_limits<float>::epsilon())
@@ -924,7 +908,6 @@ public:
         {
             CV_Assert(id >= 0 && id < matchedNodesIds.size());
             Ptr<ImportNodeWrapper> sum = net->getNode(matchedNodesIds[id]);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             opencv_onnx::NodeProto* node = sum.dynamicCast<ONNXNodeWrapper>()->node;
 
             for (int i = 0; i < node->attribute_size(); i++)
@@ -952,10 +935,8 @@ public:
         attr->set_i(axis);
     }
 
-private:
+protected:
     int axis;
-<<<<<<< HEAD
-=======
     int id;
 };
 
@@ -1110,7 +1091,6 @@ public:
 protected:
     float alpha;
     int div, mul, elu;
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 };
 
 class NormalizeSubgraphBase : public Subgraph
@@ -1292,7 +1272,7 @@ public:
                         const Ptr<ImportNodeWrapper> node_to_check = net->getNode(i);
                         int numInp = node_to_check->getNumInputs();
                         for (int inp = 0; inp < numInp; ++inp) {
-                            if (i != nodeToMatch && inpNodeName == node_to_check->getInputName(0)) {
+                            if (i != nodeToMatch && inpNodeName == node_to_check->getInputName(inp)) {
                                 // Another node has the same input node, so it cannot be merged.
                                 return false;
                             }
@@ -1308,6 +1288,16 @@ private:
     int cast, gather;
 };
 
+/*  Constant folding shape for Expand.
+
+    Before fusion:
+             +--------------------------------------------------------------+ (X)
+             |                                                              |
+    ConstantOfShape[input=[4]] -> Mul[B=-1] -> Equal[A=[2, -1, -1, -1]] -> Where[Y=[2, -1, -1, -1]] -> Expand
+             \                                                           \
+             value=[1]                                                   (condition)
+
+*/
 class ExpandSubgraph : public Subgraph
 {
 public:
@@ -1324,8 +1314,6 @@ public:
         addNodeToMatch("Expand", input, where);
         setFusedNode("Expand", input, shape);
     }
-<<<<<<< HEAD
-=======
 
     static int extractValue(const Ptr<ImportGraphWrapper>& net, int node_id, int64_t &val) {
         Ptr<ImportNodeWrapper> node_wrapper = net->getNode(node_id);
@@ -1426,7 +1414,6 @@ protected:
 
 private:
     int init, mul, condition, where;
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 };
 
 class MishSubgraph : public Subgraph
@@ -1442,8 +1429,6 @@ public:
     }
 };
 
-<<<<<<< HEAD
-=======
 // softplus(x) = log(exp(x) + 1)
 class SoftplusSubgraph: public Subgraph
 {
@@ -1459,7 +1444,6 @@ public:
     }
 };
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 class MulCastSubgraph : public Subgraph
 {
 public:
@@ -1681,15 +1665,12 @@ public:
 void simplifySubgraphs(opencv_onnx::GraphProto& net)
 {
     std::vector<Ptr<Subgraph> > subgraphs;
-<<<<<<< HEAD
-=======
     subgraphs.push_back(makePtr<BiasedMatmulSubgraph>());
     subgraphs.push_back(makePtr<AdjustSliceAllOptionalInputsSubgraph>(3));
     subgraphs.push_back(makePtr<AdjustSliceAllOptionalInputsSubgraph>(4));
     subgraphs.push_back(makePtr<GeluSubGraph>());
     subgraphs.push_back(makePtr<GeluApproximationSubGraph>());
     subgraphs.push_back(makePtr<LayerNormSubGraph>());
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     subgraphs.push_back(makePtr<GatherCastSubgraph>());
     subgraphs.push_back(makePtr<MulCastSubgraph>());
     subgraphs.push_back(makePtr<UpsampleSubgraph>());
@@ -1697,6 +1678,10 @@ void simplifySubgraphs(opencv_onnx::GraphProto& net)
     subgraphs.push_back(makePtr<ResizeSubgraph2>());
     subgraphs.push_back(makePtr<ResizeSubgraph3>());
     subgraphs.push_back(makePtr<SoftMaxSubgraph>());
+    subgraphs.push_back(makePtr<SoftMaxSubgraph2>());
+    subgraphs.push_back(makePtr<LogSoftMaxSubgraph>());
+    subgraphs.push_back(makePtr<HardSwishSubgraph>());
+    subgraphs.push_back(makePtr<CeluSubgraph>());
     subgraphs.push_back(makePtr<NormalizeSubgraph1>());
     subgraphs.push_back(makePtr<NormalizeSubgraph2>());
     subgraphs.push_back(makePtr<NormalizeSubgraph2_2>());
@@ -1704,10 +1689,7 @@ void simplifySubgraphs(opencv_onnx::GraphProto& net)
     subgraphs.push_back(makePtr<BatchNormalizationSubgraph1>());
     subgraphs.push_back(makePtr<BatchNormalizationSubgraph2>());
     subgraphs.push_back(makePtr<ExpandSubgraph>());
-<<<<<<< HEAD
-=======
     subgraphs.push_back(makePtr<SoftplusSubgraph>());
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     subgraphs.push_back(makePtr<MishSubgraph>());
     subgraphs.push_back(makePtr<NormalizeSubgraph4>());
     subgraphs.push_back(makePtr<NormalizeSubgraph5>());
@@ -1719,7 +1701,7 @@ void simplifySubgraphs(opencv_onnx::GraphProto& net)
     simplifySubgraphs(Ptr<ImportGraphWrapper>(new ONNXGraphWrapper(net)), subgraphs);
 }
 
-Mat getMatFromTensor(opencv_onnx::TensorProto& tensor_proto)
+Mat getMatFromTensor(const opencv_onnx::TensorProto& tensor_proto)
 {
     if (tensor_proto.raw_data().empty() && tensor_proto.float_data().empty() &&
         tensor_proto.double_data().empty() && tensor_proto.int64_data().empty() &&
@@ -1745,8 +1727,6 @@ Mat getMatFromTensor(opencv_onnx::TensorProto& tensor_proto)
             Mat(sizes, CV_32FC1, val).copyTo(blob);
         }
     }
-<<<<<<< HEAD
-=======
     else if (datatype == opencv_onnx::TensorProto_DataType_FLOAT16)
     {
         // FIXME, for now, we only load FP16 Tensor as FP32 Mat, full support for FP16 is required in the future.
@@ -1791,12 +1771,27 @@ Mat getMatFromTensor(opencv_onnx::TensorProto& tensor_proto)
             Mat(sizes, CV_16FC1, val).convertTo(blob, CV_32FC1);
         }
     }
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     else if (datatype == opencv_onnx::TensorProto_DataType_DOUBLE)
     {
         const ::google::protobuf::RepeatedField<double> field = tensor_proto.double_data();
-        CV_Assert(!field.empty());
-        Mat(sizes, CV_64FC1, (void*)field.data()).convertTo(blob, CV_32FC1);
+        char* val = nullptr;
+        if (!field.empty())
+            val = (char *)field.data();
+        else
+            val = const_cast<char*>(tensor_proto.raw_data().c_str()); // sometime, the double will be stored at raw_data.
+
+#if CV_STRONG_ALIGNMENT
+        // Aligned pointer is required.
+        AutoBuffer<double, 16> aligned_val;
+        if (!isAligned<sizeof(double)>(val))
+        {
+            size_t sz = tensor_proto.raw_data().size();
+            aligned_val.allocate(divUp(sz, sizeof(double)));
+            memcpy(aligned_val.data(), val, sz);
+            val = (char*)aligned_val.data();
+        }
+#endif
+        Mat(sizes, CV_64FC1, val).convertTo(blob, CV_32FC1);
     }
     else if (datatype == opencv_onnx::TensorProto_DataType_INT32)
     {
@@ -1876,3 +1871,4 @@ Mat getMatFromTensor(opencv_onnx::TensorProto& tensor_proto)
 
 CV__DNN_INLINE_NS_END
 }}  // namespace cv::dnn
+#endif  // HAVE_PROTOBUF

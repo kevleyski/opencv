@@ -6,17 +6,18 @@
 
 #ifndef GAPI_STREAMING_ONEVPL_ONEVPL_FILE_DATA_PROVIDER_HPP
 #define GAPI_STREAMING_ONEVPL_ONEVPL_FILE_DATA_PROVIDER_HPP
+
 #include <stdio.h>
 
 #include <opencv2/gapi/streaming/onevpl/data_provider_interface.hpp>
+#include <opencv2/gapi/streaming/onevpl/cfg_params.hpp>
+
+#include "streaming/onevpl/data_provider_defines.hpp"
 
 namespace cv {
 namespace gapi {
 namespace wip {
 namespace onevpl {
-<<<<<<< HEAD
-struct FileDataProvider : public IDataProvider {
-=======
 
 // With gcc13, std::unique_ptr(FILE, decltype(&fclose)> causes ignored-attributes warning.
 // See https://stackoverflow.com/questions/76849365/can-we-add-attributes-to-standard-function-declarations-without-breaking-standar
@@ -26,16 +27,20 @@ struct FileDataProvider : public IDataProvider {
 #endif
 
 struct GAPI_EXPORTS FileDataProvider : public IDataProvider {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     using file_ptr = std::unique_ptr<FILE, decltype(&fclose)>;
-    FileDataProvider(const std::string& file_path);
+    FileDataProvider(const std::string& file_path,
+                     const std::vector<CfgParam> &codec_params = {},
+                     uint32_t bitstream_data_size_value = 2000000);
     ~FileDataProvider();
 
-    size_t fetch_data(size_t out_data_bytes_size, void* out_data) override;
+    mfx_codec_id_type get_mfx_codec_id() const override;
+    bool fetch_bitstream_data(std::shared_ptr<mfx_bitstream> &out_bitsream) override;
     bool empty() const override;
 private:
     file_ptr source_handle;
+    mfx_codec_id_type codec;
+    const uint32_t bitstream_data_size;
 };
 
 #if defined(__GNUC__) && (__GNUC__ == 13)

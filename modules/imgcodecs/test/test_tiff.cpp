@@ -2,19 +2,13 @@
 // It is subject to the license terms in the LICENSE file found in the top-level directory
 // of this distribution and at http://opencv.org/license.html
 #include "test_precomp.hpp"
+#include "opencv2/core/utils/logger.hpp"
+#include "opencv2/core/utils/configuration.private.hpp"
 
 namespace opencv_test { namespace {
 
 #ifdef HAVE_TIFF
 
-<<<<<<< HEAD
-// these defines are used to resolve conflict between tiff.h and opencv2/core/types_c.h
-#define uint64 uint64_hack_
-#define int64 int64_hack_
-#include "tiff.h"
-
-=======
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #ifdef __ANDROID__
 // Test disabled as it uses a lot of memory.
 // It is killed with SIGKILL by out of memory killer.
@@ -49,8 +43,6 @@ TEST(Imgcodecs_Tiff, decode_tile16384x16384)
     EXPECT_EQ(0, remove(file4.c_str()));
 }
 
-<<<<<<< HEAD
-=======
 //==================================================================================================
 // See https://github.com/opencv/opencv/issues/22388
 
@@ -477,7 +469,6 @@ INSTANTIATE_TEST_CASE_P(DISABLED_Imgcodecs_Tiff_Full, Imgcodecs_Tiff_decode_Huge
 
 //==================================================================================================
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 TEST(Imgcodecs_Tiff, write_read_16bit_big_little_endian)
 {
     // see issue #2601 "16-bit Grayscale TIFF Load Failures Due to Buffer Underflow and Endianness"
@@ -549,6 +540,116 @@ TEST(Imgcodecs_Tiff, decode_tile_remainder)
     // What about 32, 64 bit?
 }
 
+TEST(Imgcodecs_Tiff, decode_10_12_14)
+{
+    /* see issue #21700
+    */
+    const string root = cvtest::TS::ptr()->get_data_path();
+
+    const double maxDiff = 256;//samples do not have the exact same values because of the tool that created them
+    cv::Mat tmp;
+    double diff = 0;
+
+    cv::Mat img8UC1 = imread(root + "readwrite/pattern_8uc1.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img8UC1.empty());
+    ASSERT_EQ(img8UC1.type(), CV_8UC1);
+
+    cv::Mat img8UC3 = imread(root + "readwrite/pattern_8uc3.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img8UC3.empty());
+    ASSERT_EQ(img8UC3.type(), CV_8UC3);
+
+    cv::Mat img8UC4 = imread(root + "readwrite/pattern_8uc4.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img8UC4.empty());
+    ASSERT_EQ(img8UC4.type(), CV_8UC4);
+
+    cv::Mat img16UC1 = imread(root + "readwrite/pattern_16uc1.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img16UC1.empty());
+    ASSERT_EQ(img16UC1.type(), CV_16UC1);
+    ASSERT_EQ(img8UC1.size(), img16UC1.size());
+    img8UC1.convertTo(tmp, img16UC1.type(), (1U<<(16-8)));
+    diff = cv::norm(tmp.reshape(1), img16UC1.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img16UC3 = imread(root + "readwrite/pattern_16uc3.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img16UC3.empty());
+    ASSERT_EQ(img16UC3.type(), CV_16UC3);
+    ASSERT_EQ(img8UC3.size(), img16UC3.size());
+    img8UC3.convertTo(tmp, img16UC3.type(), (1U<<(16-8)));
+    diff = cv::norm(tmp.reshape(1), img16UC3.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img16UC4 = imread(root + "readwrite/pattern_16uc4.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img16UC4.empty());
+    ASSERT_EQ(img16UC4.type(), CV_16UC4);
+    ASSERT_EQ(img8UC4.size(), img16UC4.size());
+    img8UC4.convertTo(tmp, img16UC4.type(), (1U<<(16-8)));
+    diff = cv::norm(tmp.reshape(1), img16UC4.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img10UC1 = imread(root + "readwrite/pattern_10uc1.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img10UC1.empty());
+    ASSERT_EQ(img10UC1.type(), CV_16UC1);
+    ASSERT_EQ(img10UC1.size(), img16UC1.size());
+    diff = cv::norm(img10UC1.reshape(1), img16UC1.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img10UC3 = imread(root + "readwrite/pattern_10uc3.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img10UC3.empty());
+    ASSERT_EQ(img10UC3.type(), CV_16UC3);
+    ASSERT_EQ(img10UC3.size(), img16UC3.size());
+    diff = cv::norm(img10UC3.reshape(1), img16UC3.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img10UC4 = imread(root + "readwrite/pattern_10uc4.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img10UC4.empty());
+    ASSERT_EQ(img10UC4.type(), CV_16UC4);
+    ASSERT_EQ(img10UC4.size(), img16UC4.size());
+    diff = cv::norm(img10UC4.reshape(1), img16UC4.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img12UC1 = imread(root + "readwrite/pattern_12uc1.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img12UC1.empty());
+    ASSERT_EQ(img12UC1.type(), CV_16UC1);
+    ASSERT_EQ(img12UC1.size(), img16UC1.size());
+    diff = cv::norm(img12UC1.reshape(1), img16UC1.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img12UC3 = imread(root + "readwrite/pattern_12uc3.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img12UC3.empty());
+    ASSERT_EQ(img12UC3.type(), CV_16UC3);
+    ASSERT_EQ(img12UC3.size(), img16UC3.size());
+    diff = cv::norm(img12UC3.reshape(1), img16UC3.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img12UC4 = imread(root + "readwrite/pattern_12uc4.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img12UC4.empty());
+    ASSERT_EQ(img12UC4.type(), CV_16UC4);
+    ASSERT_EQ(img12UC4.size(), img16UC4.size());
+    diff = cv::norm(img12UC4.reshape(1), img16UC4.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img14UC1 = imread(root + "readwrite/pattern_14uc1.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img14UC1.empty());
+    ASSERT_EQ(img14UC1.type(), CV_16UC1);
+    ASSERT_EQ(img14UC1.size(), img16UC1.size());
+    diff = cv::norm(img14UC1.reshape(1), img16UC1.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img14UC3 = imread(root + "readwrite/pattern_14uc3.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img14UC3.empty());
+    ASSERT_EQ(img14UC3.type(), CV_16UC3);
+    ASSERT_EQ(img14UC3.size(), img16UC3.size());
+    diff = cv::norm(img14UC3.reshape(1), img16UC3.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+
+    cv::Mat img14UC4 = imread(root + "readwrite/pattern_14uc4.tif", cv::IMREAD_UNCHANGED);
+    ASSERT_FALSE(img14UC4.empty());
+    ASSERT_EQ(img14UC4.type(), CV_16UC4);
+    ASSERT_EQ(img14UC4.size(), img16UC4.size());
+    diff = cv::norm(img14UC4.reshape(1), img16UC4.reshape(1), cv::NORM_INF);
+    ASSERT_LE(diff, maxDiff);
+}
+
 TEST(Imgcodecs_Tiff, decode_infinite_rowsperstrip)
 {
     const uchar sample_data[142] = {
@@ -579,8 +680,6 @@ TEST(Imgcodecs_Tiff, decode_infinite_rowsperstrip)
     EXPECT_EQ(0, remove(filename.c_str()));
 }
 
-<<<<<<< HEAD
-=======
 TEST(Imgcodecs_Tiff, readWrite_unsigned)
 {
     const string root = cvtest::TS::ptr()->get_data_path();
@@ -608,7 +707,6 @@ TEST(Imgcodecs_Tiff, readWrite_unsigned)
     EXPECT_EQ(0, remove(filenameOutput.c_str()));
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 TEST(Imgcodecs_Tiff, readWrite_32FC1)
 {
     const string root = cvtest::TS::ptr()->get_data_path();
@@ -709,8 +807,6 @@ TEST(Imgcodecs_Tiff, readWrite_32FC3_RAW)
     EXPECT_EQ(0, remove(filenameOutput.c_str()));
 }
 
-<<<<<<< HEAD
-=======
 TEST(Imgcodecs_Tiff, read_palette_color_image)
 {
     const string root = cvtest::TS::ptr()->get_data_path();
@@ -861,7 +957,6 @@ Imgcodes_Tiff_TypeAndComp all_types[] = {
 };
 
 INSTANTIATE_TEST_CASE_P(AllTypes, Imgcodecs_Tiff_Types, testing::ValuesIn(all_types));
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 //==================================================================================================
 
@@ -892,8 +987,6 @@ TEST_P(Imgcodecs_Tiff_Modes, decode_multipage)
     }
 }
 
-<<<<<<< HEAD
-=======
 TEST_P(Imgcodecs_Tiff_Modes, decode_multipage_use_memory_buffer_all_pages)
 {
     const int mode = GetParam();
@@ -986,7 +1079,6 @@ TEST_P(Imgcodecs_Tiff_Modes, decode_multipage_use_memory_buffer_selected_pages)
     }
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 const int all_modes[] =
 {
     IMREAD_UNCHANGED,
@@ -1030,6 +1122,7 @@ TEST(Imgcodecs_Tiff_Modes, write_multipage)
     {
         EXPECT_PRED_FORMAT2(cvtest::MatComparator(0, 0), read_pages[i], pages[i]);
     }
+    EXPECT_EQ(0, remove(tmp_filename.c_str()));
 }
 
 //==================================================================================================
@@ -1183,6 +1276,29 @@ TEST(Imgcodecs_Tiff, read_multipage_indexed)
     }
 }
 
+TEST(Imgcodecs_Tiff, read_bigtiff_images)
+{
+    const string root = cvtest::TS::ptr()->get_data_path();
+    const string filenamesInput[] = {
+        "readwrite/BigTIFF.tif",
+        "readwrite/BigTIFFMotorola.tif",
+        "readwrite/BigTIFFLong.tif",
+        "readwrite/BigTIFFLong8.tif",
+        "readwrite/BigTIFFMotorolaLongStrips.tif",
+        "readwrite/BigTIFFLong8Tiles.tif",
+        "readwrite/BigTIFFSubIFD4.tif",
+        "readwrite/BigTIFFSubIFD8.tif"
+    };
+
+    for (int i = 0; i < 8; i++)
+    {
+        const Mat bigtiff_img = imread(root + filenamesInput[i], IMREAD_UNCHANGED);
+        ASSERT_FALSE(bigtiff_img.empty());
+        EXPECT_EQ(64, bigtiff_img.cols);
+        EXPECT_EQ(64, bigtiff_img.rows);
+        ASSERT_EQ(CV_8UC3, bigtiff_img.type());
+    }
+}
 
 #endif
 

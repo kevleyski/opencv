@@ -1,15 +1,11 @@
 /* gzlib.c -- zlib functions common to reading and writing gzip files
-<<<<<<< HEAD
- * Copyright (C) 2004-2017 Mark Adler
-=======
  * Copyright (C) 2004-2024 Mark Adler
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
  * For conditions of distribution and use, see copyright notice in zlib.h
  */
 
 #include "gzguts.h"
 
-#if defined(_WIN32) && !defined(__BORLANDC__) && !defined(__MINGW32__)
+#if defined(_WIN32) && !defined(__BORLANDC__)
 #  define LSEEK _lseeki64
 #else
 #if defined(_LARGEFILE64_SOURCE) && _LFS64_LARGEFILE-0
@@ -30,13 +26,7 @@
 
    The gz_strwinerror function does not change the current setting of
    GetLastError. */
-<<<<<<< HEAD
-char ZLIB_INTERNAL *gz_strwinerror (error)
-     DWORD error;
-{
-=======
 char ZLIB_INTERNAL *gz_strwinerror(DWORD error) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     static char buf[1024];
 
     wchar_t *msgbuf;
@@ -83,6 +73,8 @@ local void gz_reset(gz_statep state) {
         state->past = 0;            /* have not read past end yet */
         state->how = LOOK;          /* look for gzip header */
     }
+    else                            /* for writing ... */
+        state->reset = 0;           /* no deflateReset pending */
     state->seek = 0;                /* no seek request pending */
     gz_error(state, Z_OK, NULL);    /* clear error */
     state->x.pos = 0;               /* no uncompressed data yet */
@@ -374,7 +366,7 @@ z_off64_t ZEXPORT gzseek64(gzFile file, z_off64_t offset, int whence) {
     /* if within raw area while reading, just go there */
     if (state->mode == GZ_READ && state->how == COPY &&
             state->x.pos + offset >= 0) {
-        ret = LSEEK(state->fd, offset - state->x.have, SEEK_CUR);
+        ret = LSEEK(state->fd, offset - (z_off64_t)state->x.have, SEEK_CUR);
         if (ret == -1)
             return -1;
         state->x.have = 0;

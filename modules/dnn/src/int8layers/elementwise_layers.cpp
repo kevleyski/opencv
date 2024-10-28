@@ -4,6 +4,8 @@
 
 #include "../precomp.hpp"
 #include "layers_common.hpp"
+#include "../op_timvx.hpp"
+#include "../ie_ngraph.hpp"
 
 #include <opencv2/dnn/shape_utils.hpp>
 #include <iostream>
@@ -16,15 +18,46 @@ namespace dnn
 class ActivationLayerInt8Impl CV_FINAL : public ActivationLayerInt8
 {
 public:
+    int input_zp, output_zp;
+    float input_sc, output_sc;
+    float slope = 0.0f;
+
+#ifdef HAVE_TIMVX
+    tvActivationType tvActType;
+#endif
     ActivationLayerInt8Impl(const LayerParams &params)
     {
         setParamsFrom(params);
         activationLUT = !blobs.empty() ? blobs[0] : Mat();
+
+        input_zp = params.get<int>("input_zeropoint");
+        input_sc = params.get<float>("input_scale");
+        output_zp = params.get<int>("zeropoints");
+        output_sc = params.get<float>("scales");
+
+        if (params.has("slope"))
+        {
+            slope = params.get<float>("slope");
+        }
+
+#ifdef HAVE_TIMVX
+        tvActType = getTimVXActType(type);
+#endif
+
     }
 
     virtual bool supportBackend(int backendId) CV_OVERRIDE
     {
-        return backendId == DNN_BACKEND_OPENCV;
+#ifdef HAVE_TIMVX
+        if (backendId == DNN_BACKEND_TIMVX)
+        {
+            // TODO!: Leaky ReLU will be supported in future.
+            if (tvActType == tvActReLU && slope != 0.f)
+                return false;
+            return tvActType != tvActNotSupported;
+        }
+#endif
+        return backendId == DNN_BACKEND_OPENCV || backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH;
     }
 
     bool getMemoryShapes(const std::vector<MatShape> &inputs,
@@ -106,8 +139,6 @@ public:
         }
     };
 
-<<<<<<< HEAD
-=======
     virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
                                        const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
                                        const std::vector<Ptr<BackendWrapper> > &outputsWrapper,
@@ -252,7 +283,6 @@ public:
     }
 #endif  // HAVE_DNN_NGRAPH
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     void forward(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr, OutputArrayOfArrays internals_arr) CV_OVERRIDE
     {
         CV_TRACE_FUNCTION();

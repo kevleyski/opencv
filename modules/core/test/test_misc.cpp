@@ -4,8 +4,6 @@
 #include "test_precomp.hpp"
 #include <cmath>
 
-<<<<<<< HEAD
-=======
 #include "opencv2/core/utils/logger.hpp"
 
 #include <opencv2/core/utils/fp_control_utils.hpp>
@@ -13,7 +11,6 @@
 #include <chrono>
 #include <thread>
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 namespace opencv_test { namespace {
 
 TEST(Core_OutputArrayCreate, _1997)
@@ -253,8 +250,6 @@ TEST(Core_Parallel, propagate_exceptions)
     }, cv::Exception);
 }
 
-<<<<<<< HEAD
-=======
 class FPDenormalsHintCheckerParallelLoopBody : public cv::ParallelLoopBody
 {
 public:
@@ -309,7 +304,6 @@ TEST(Core_Parallel, propagate_fp_denormals_ignore_hint)
     }
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 TEST(Core_Version, consistency)
 {
     // this test verifies that OpenCV version loaded in runtime
@@ -888,8 +882,6 @@ TEST(Core_Types, trivially_copyable_extra)
 }
 #endif
 
-<<<<<<< HEAD
-=======
 template <typename T> class Rect_Test : public testing::Test {};
 
 TYPED_TEST_CASE_P(Rect_Test);
@@ -960,5 +952,4 @@ TEST_F(TestSetUpSkip, NoBodyRun) {
     FAIL() << "Unreachable code called";
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }} // namespace

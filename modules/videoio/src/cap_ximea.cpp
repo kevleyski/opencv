@@ -1743,7 +1743,7 @@ void CvCaptureCAM_XIMEA::errMsg(const char* msg, int errNum) const
 
     #if defined _WIN32
     char buf[512]="";
-    sprintf( buf, "%s : %d, %s\n", msg, errNum, error_message.c_str());
+    snprintf( buf, sizeof(buf), "%s : %d, %s\n", msg, errNum, error_message.c_str());
     OutputDebugString(buf);
     #else
     fprintf(stderr, "%s : %d, %s\n", msg, errNum, error_message.c_str());

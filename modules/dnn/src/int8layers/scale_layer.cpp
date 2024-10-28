@@ -6,6 +6,7 @@
 #include "layers_common.hpp"
 #include <opencv2/imgproc.hpp>
 #include <opencv2/dnn/shape_utils.hpp>
+#include "../ie_ngraph.hpp"
 
 namespace cv
 {
@@ -72,7 +73,8 @@ public:
 
     virtual bool supportBackend(int backendId) CV_OVERRIDE
     {
-        return backendId == DNN_BACKEND_OPENCV;
+        return backendId == DNN_BACKEND_OPENCV ||
+               backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH;
     }
 
     bool setActivation(const Ptr<ActivationLayer>& layer) CV_OVERRIDE
@@ -186,8 +188,6 @@ public:
         return flops;
     }
 
-<<<<<<< HEAD
-=======
 #ifdef HAVE_DNN_NGRAPH
     virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> >& inputs, const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
     {
@@ -241,7 +241,6 @@ public:
     }
 #endif  // HAVE_DNN_NGRAPH
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 private:
     bool hasWeights;
     std::vector<float> inp_sc;

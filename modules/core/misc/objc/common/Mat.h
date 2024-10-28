@@ -14,8 +14,6 @@
 
 #import <Foundation/Foundation.h>
 
-<<<<<<< HEAD
-=======
 #ifdef AVAILABLE_IMGCODECS
 #if TARGET_OS_IPHONE || TARGET_OS_VISION
 #import <UIKit/UIKit.h>
@@ -24,7 +22,6 @@
 #endif
 #endif
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 @class Size2i;
 @class Scalar;
 @class Range;
@@ -192,8 +189,6 @@ CV_EXPORTS @interface Mat : NSObject
 - (int)put:(NSArray<NSNumber*>*)indices count:(int)count intBuffer:(const int*)buffer NS_REFINED_FOR_SWIFT;
 - (int)put:(NSArray<NSNumber*>*)indices count:(int)count shortBuffer:(const short*)buffer NS_REFINED_FOR_SWIFT;
 
-<<<<<<< HEAD
-=======
 #pragma mark - Converters
 
 #ifdef AVAILABLE_IMGCODECS
@@ -225,7 +220,6 @@ CV_EXPORTS @interface Mat : NSObject
 - (id)debugQuickLookObject;
 
 #endif
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 @end
 

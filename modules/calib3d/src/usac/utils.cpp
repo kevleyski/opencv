@@ -8,8 +8,6 @@
 #include <map>
 
 namespace cv { namespace usac {
-<<<<<<< HEAD
-=======
 /*
 SolvePoly is used to find only real roots of N-degree polynomial using Sturm sequence.
 It recursively finds interval where a root lies, and the actual root is found using Regula-Falsi method.
@@ -238,10 +236,9 @@ Ptr<SolverPoly> SolverPoly::create() {
     return makePtr<SolvePoly>();
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 double Utils::getCalibratedThreshold (double threshold, const Mat &K1, const Mat &K2) {
-    return threshold / ((K1.at<double>(0, 0) + K1.at<double>(1, 1) +
-                         K2.at<double>(0, 0) + K2.at<double>(1, 1)) / 4.0);
+    const auto * const k1 = (double *) K1.data, * const k2 = (double *) K2.data;
+    return threshold / ((k1[0] + k1[4] + k2[0] + k2[4]) / 4.0);
 }
 
 /*
@@ -334,10 +331,10 @@ void Utils::normalizeAndDecalibPointsPnP (const Mat &K_, Mat &pts, Mat &calib_no
  *             0   fy  ty
  *             0   0   1]
  */
-void Utils::decomposeProjection (const Mat &P, Mat &K_, Mat &R, Mat &t, bool same_focal) {
-    const Mat M = P.colRange(0,3);
+void Utils::decomposeProjection (const Mat &P, Matx33d &K, Matx33d &R, Vec3d &t, bool same_focal) {
+    const Matx33d M = P.colRange(0,3);
     double scale = norm(M.row(2)); scale *= scale;
-    Matx33d K = Matx33d::eye();
+    K = Matx33d::eye();
     K(1,2) = M.row(1).dot(M.row(2)) / scale;
     K(0,2) = M.row(0).dot(M.row(2)) / scale;
     K(1,1) = sqrt(M.row(1).dot(M.row(1)) / scale - K(1,2)*K(1,2));
@@ -346,14 +343,83 @@ void Utils::decomposeProjection (const Mat &P, Mat &K_, Mat &R, Mat &t, bool sam
         K(0,0) = K(1,1) = (K(0,0) + K(1,1)) / 2;
     R = K.inv() * M / sqrt(scale);
     if (determinant(M) < 0) R *= -1;
-    t = R * M.inv() * P.col(3);
-    K_ = Mat(K);
+    t = R * M.inv() * Vec3d(P.col(3));
+}
+
+double Utils::getPoissonCDF (double lambda, int inliers) {
+    double exp_lambda = exp(-lambda), cdf = exp_lambda, lambda_i_div_fact_i = 1;
+    for (int i = 1; i <= inliers; i++) {
+        lambda_i_div_fact_i *= (lambda / i);
+        cdf += exp_lambda * lambda_i_div_fact_i;
+        if (fabs(cdf - 1) < DBL_EPSILON) // cdf is almost 1
+            break;
+    }
+    return cdf;
+}
+
+// since F(E) has rank 2 we use cross product to compute epipole,
+// since the third column / row is linearly dependent on two first
+// this is faster than SVD
+// It is recommended to normalize F, such that ||F|| = 1
+Vec3d Utils::getLeftEpipole (const Mat &F/*E*/) {
+    Vec3d _e = F.col(0).cross(F.col(2)); // F^T e' = 0; e'^T F = 0
+    const auto * const e = _e.val;
+    if (e[0] <= DBL_EPSILON && e[0] > -DBL_EPSILON &&
+        e[1] <= DBL_EPSILON && e[1] > -DBL_EPSILON &&
+        e[2] <= DBL_EPSILON && e[2] > -DBL_EPSILON)
+        _e = Vec3d(Mat(F.col(1))).cross(F.col(2));  // if e' is zero
+    return _e; // e'
+}
+Vec3d Utils::getRightEpipole (const Mat &F/*E*/) {
+    Vec3d _e = F.row(0).cross(F.row(2)); // Fe = 0
+    const auto * const e = _e.val;
+    if (e[0] <= DBL_EPSILON && e[0] > -DBL_EPSILON &&
+        e[1] <= DBL_EPSILON && e[1] > -DBL_EPSILON &&
+        e[2] <= DBL_EPSILON && e[2] > -DBL_EPSILON)
+        _e = F.row(1).cross(F.row(2));  // if e is zero
+    return _e;
+}
+
+void Utils::densitySort (const Mat &points, int knn, Mat &sorted_points, std::vector<int> &sorted_mask) {
+    // mask of sorted points (array of indexes)
+    const int points_size = points.rows, dim = points.cols;
+    sorted_mask = std::vector<int >(points_size);
+    for (int i = 0; i < points_size; i++)
+        sorted_mask[i] = i;
+
+    // get neighbors
+    FlannNeighborhoodGraph &graph = *FlannNeighborhoodGraph::create(points, points_size, knn,
+            true /*get distances */, 6, 1);
+
+    std::vector<double> sum_knn_distances (points_size, 0);
+    for (int p = 0; p < points_size; p++) {
+        const std::vector<double> &dists = graph.getNeighborsDistances(p);
+        for (int k = 0; k < knn; k++)
+            sum_knn_distances[p] += dists[k];
+    }
+
+    // compare by sum of distances to k nearest neighbors.
+    std::sort(sorted_mask.begin(), sorted_mask.end(), [&](int a, int b) {
+        return sum_knn_distances[a] < sum_knn_distances[b];
+    });
+
+    // copy array of points to array with sorted points
+    // using @sorted_idx mask of sorted points indexes
+
+    sorted_points = Mat(points_size, dim, points.type());
+    const auto * const points_ptr = (float *) points.data;
+    auto * spoints_ptr = (float *) sorted_points.data;
+    for (int i = 0; i < points_size; i++) {
+        const int pt2 = sorted_mask[i] * dim;
+        for (int j = 0; j < dim; j++)
+            (*spoints_ptr++) =  points_ptr[pt2+j];
+    }
 }
 
 Matx33d Math::getSkewSymmetric(const Vec3d &v) {
-     return Matx33d(0,    -v[2], v[1],
-                   v[2],  0,    -v[0],
-                  -v[1],  v[0], 0);
+     return {0,    -v[2], v[1],
+             v[2],  0,   -v[0],
+            -v[1],  v[0], 0};
 }
 
 Matx33d Math::rotVec2RotMat (const Vec3d &v) {
@@ -361,9 +427,9 @@ Matx33d Math::rotVec2RotMat (const Vec3d &v) {
     const double x = v[0] / phi, y = v[1] / phi, z = v[2] / phi;
     const double a = sin(phi), b = cos(phi);
     // R = I + sin(phi) * skew(v) + (1 - cos(phi) * skew(v)^2
-    return Matx33d((b - 1)*y*y + (b - 1)*z*z + 1, -a*z - x*y*(b - 1), a*y - x*z*(b - 1),
+    return {(b - 1)*y*y + (b - 1)*z*z + 1, -a*z - x*y*(b - 1), a*y - x*z*(b - 1),
      a*z - x*y*(b - 1), (b - 1)*x*x + (b - 1)*z*z + 1, -a*x - y*z*(b - 1),
-    -a*y - x*z*(b - 1), a*x - y*z*(b - 1), (b - 1)*x*x + (b - 1)*y*y + 1);
+    -a*y - x*z*(b - 1), a*x - y*z*(b - 1), (b - 1)*x*x + (b - 1)*y*y + 1};
 }
 
 Vec3d Math::rotMat2RotVec (const Matx33d &R) {
@@ -413,7 +479,7 @@ bool Math::eliminateUpperTriangular (std::vector<double> &a, int m, int n) {
 
         // if pivot value is 0 continue
         if (fabs(pivot) < DBL_EPSILON)
-            return false; // matrix is not full rank -> terminate
+            continue;
 
         // swap row with maximum pivot value with current row
         for (int c = r; c < n; c++)
@@ -431,6 +497,18 @@ bool Math::eliminateUpperTriangular (std::vector<double> &a, int m, int n) {
     return true;
 }
 
+double Utils::intersectionOverUnion (const std::vector<bool> &a, const std::vector<bool> &b) {
+    int intersects = 0, unions = 0;
+    for (int i = 0; i < (int)a.size(); i++)
+        if (a[i] || b[i]) {
+            unions++; // one value is true
+            if (a[i] && b[i])
+                intersects++; // a[i] == b[i] and if they both true
+        }
+    if (unions == 0) return 0.0;
+    return (double) intersects / unions;
+}
+
 //////////////////////////////////////// RANDOM GENERATOR /////////////////////////////
 class UniformRandomGeneratorImpl : public UniformRandomGenerator {
 private:
@@ -446,15 +524,12 @@ public:
         max_range = max_range_;
         subset = std::vector<int>(subset_size_);
     }
-
     int getRandomNumber () override {
         return rng.uniform(0, max_range);
     }
-
     int getRandomNumber (int max_rng) override {
         return rng.uniform(0, max_rng);
     }
-
     // closed range
     void resetGenerator (int max_range_) override {
         CV_CheckGE(0, max_range_, "max range must be greater than 0");
@@ -480,7 +555,6 @@ public:
     // interval is <0; max_range)
     void generateUniqueRandomSet (std::vector<int>& sample, int max_range_) override {
         /*
-         * necessary condition:
          * if subset size is bigger than range then array cannot be unique,
          * so function has infinite loop.
          */
@@ -519,14 +593,12 @@ public:
         }
         return subset;
     }
-
     void setSubsetSize (int subset_size_) override {
+        if (subset_size < subset_size_)
+            subset.resize(subset_size_);
         subset_size = subset_size_;
     }
     int getSubsetSize () const override { return subset_size; }
-    Ptr<RandomGenerator> clone (int state) const override {
-        return makePtr<UniformRandomGeneratorImpl>(state, max_range, subset_size);
-    }
 };
 
 Ptr<UniformRandomGenerator> UniformRandomGenerator::create (int state) {
@@ -575,19 +647,17 @@ float Utils::findMedian (std::vector<float> &array) {
     } else {
         // even: return average
         return (quicksort_median(array, length/2  , 0, length-1) +
-                quicksort_median(array, length/2+1, 0, length-1))/2;
+                quicksort_median(array, length/2+1, 0, length-1))*.5f;
     }
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// Radius Search Graph /////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 class RadiusSearchNeighborhoodGraphImpl : public RadiusSearchNeighborhoodGraph {
 private:
     std::vector<std::vector<int>> graph;
 public:
     RadiusSearchNeighborhoodGraphImpl (const Mat &container_, int points_size,
-                               double radius, int flann_search_params, int num_kd_trees) {
+               double radius, int flann_search_params, int num_kd_trees) {
         // Radius search OpenCV works only with float data
         CV_Assert(container_.type() == CV_32F);
 
@@ -600,6 +670,8 @@ public:
 
         int pt = 0;
         for (const auto &n : neighbours) {
+            if (n.size() <= 1)
+                continue;
             auto &graph_row = graph[pt];
             graph_row = std::vector<int>(n.size()-1);
             int j = 0;
@@ -610,7 +682,7 @@ public:
             pt++;
         }
     }
-
+    const std::vector<std::vector<int>> &getGraph () const override { return graph; }
     inline const std::vector<int> &getNeighbors(int point_idx) const override {
         return graph[point_idx];
     }
@@ -621,9 +693,7 @@ Ptr<RadiusSearchNeighborhoodGraph> RadiusSearchNeighborhoodGraph::create (const 
             flann_search_params, num_kd_trees);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// FLANN Graph /////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 class FlannNeighborhoodGraphImpl : public FlannNeighborhoodGraph {
 private:
     std::vector<std::vector<int>> graph;
@@ -662,6 +732,7 @@ public:
     const std::vector<double>& getNeighborsDistances (int idx) const override {
         return distances[idx];
     }
+    const std::vector<std::vector<int>> &getGraph () const override { return graph; }
     inline const std::vector<int> &getNeighbors(int point_idx) const override {
         // CV_Assert(point_idx_ < num_vertices);
         return graph[point_idx];
@@ -675,9 +746,7 @@ Ptr<FlannNeighborhoodGraph> FlannNeighborhoodGraph::create(const Mat &points,
         k_nearest_neighbors_, get_distances, flann_search_params_, num_kd_trees);
 }
 
-///////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////// Grid Neighborhood Graph /////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////
 class GridNeighborhoodGraphImpl : public GridNeighborhoodGraph {
 private:
     // This struct is used for the nearest neighbors search by griding two images.
@@ -697,13 +766,13 @@ private:
         }
     };
 
-    std::map<CellCoord, std::vector<int >> neighbors_map;
     std::vector<std::vector<int>> graph;
 public:
     GridNeighborhoodGraphImpl (const Mat &container_, int points_size,
           int cell_size_x_img1, int cell_size_y_img1, int cell_size_x_img2, int cell_size_y_img2,
           int max_neighbors) {
 
+        std::map<CellCoord, std::vector<int >> neighbors_map;
         const auto * const container = (float *) container_.data;
         // <int, int, int, int> -> {neighbors set}
         // Key is cell position. The value is indexes of neighbors.
@@ -727,7 +796,6 @@ public:
         // store neighbors cells into graph (2D vector)
         for (const auto &cell : neighbors_map) {
             const int neighbors_in_cell = static_cast<int>(cell.second.size());
-
             // only one point in cell -> no neighbors
             if (neighbors_in_cell < 2) continue;
 
@@ -747,7 +815,7 @@ public:
             }
         }
     }
-
+    const std::vector<std::vector<int>> &getGraph () const override { return graph; }
     inline const std::vector<int> &getNeighbors(int point_idx) const override {
         // Note, neighbors vector also includes point_idx!
         // return neighbors_map[vertices_to_cells[point_idx]];

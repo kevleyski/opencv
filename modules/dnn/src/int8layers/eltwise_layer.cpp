@@ -4,6 +4,8 @@
 
 #include "../precomp.hpp"
 #include "layers_common.hpp"
+#include "../op_timvx.hpp"
+#include "../ie_ngraph.hpp"
 #include <opencv2/dnn/shape_utils.hpp>
 
 namespace cv
@@ -22,6 +24,10 @@ public:
     } op;
     std::vector<float> coeffs;
     std::vector<int> zeropoints;
+    std::vector<float> scales;
+
+    int output_zp;
+    float output_sc;
 
     enum OutputChannelsMode
     {
@@ -84,6 +90,20 @@ public:
             }
         }
 
+        if (params.has("input_scales"))
+        {
+            DictValue sc = params.get("input_scales");
+            int i, n = sc.size();
+            scales.resize(n);
+            for (i = 0; i < n; i++)
+            {
+                scales[i] = sc.get<float>(i);
+            }
+        }
+
+        output_zp = params.get<int>("zeropoints");
+        output_sc = params.get<float>("scales");
+
         channelsModeInput = ELTWISE_CHANNNELS_SAME;
         if (params.has("output_channels_mode"))
         {
@@ -116,7 +136,10 @@ public:
 
     virtual bool supportBackend(int backendId) CV_OVERRIDE
     {
-        return backendId == DNN_BACKEND_OPENCV;
+        // For TimVX Backend, only ELTWISE_CHANNNELS_SAME was supported.
+        if (backendId == DNN_BACKEND_TIMVX && haveTimVX())
+            return channelsModeInput == ELTWISE_CHANNNELS_SAME;
+        return backendId == DNN_BACKEND_OPENCV || backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH;
     }
 
     bool getMemoryShapes(const std::vector<MatShape> &inputs,
@@ -219,8 +242,6 @@ public:
         }
     }
 
-<<<<<<< HEAD
-=======
     virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
                                        const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
                                        const std::vector<Ptr<BackendWrapper> > &outputsWrapper,
@@ -381,7 +402,6 @@ public:
     }
 #endif  // HAVE_DNN_NGRAPH
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     class EltwiseInvoker : public ParallelLoopBody
     {
         EltwiseLayerInt8Impl& self;
@@ -401,7 +421,7 @@ public:
 
         EltwiseInvoker(EltwiseLayerInt8Impl& self_)
             : self(self_)
-            , nsrcs(0), dst(0), buf(0), nstripes(0), activ(0), channels(0)
+            , nsrcs(0), dst(0), buf(0), nstripes(0), activLUT(0), activ(0), channels(0)
             , planeSize(0), offset(0)
         {}
 
@@ -508,7 +528,8 @@ public:
             int8_t* dstptr0 = dst->ptr<int8_t>();
             float* bufptr0 = buf->ptr<float>();
             int blockSize0 = 1 << 12;
-
+            CV_Assert(op != PROD || zeropointsptr);
+            CV_Assert((op != PROD && op != SUM) || coeffsptr);
             for (size_t ofs = stripeStart; ofs < stripeEnd; )
             {
                 int sampleIdx = (int)(ofs / planeSize);

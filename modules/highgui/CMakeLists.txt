@@ -1,9 +1,9 @@
 set(the_description "High-level GUI")
 
 if(ANDROID)
-  ocv_add_module(highgui opencv_imgproc opencv_imgcodecs OPTIONAL opencv_videoio WRAP python)
+  ocv_add_module(highgui opencv_imgproc OPTIONAL opencv_imgcodecs opencv_videoio WRAP python)
 else()
-  ocv_add_module(highgui opencv_imgproc opencv_imgcodecs OPTIONAL opencv_videoio WRAP python java)
+  ocv_add_module(highgui opencv_imgproc OPTIONAL opencv_imgcodecs opencv_videoio WRAP python java)
 endif()
 
 include(${CMAKE_CURRENT_LIST_DIR}/cmake/plugin.cmake)
@@ -49,9 +49,6 @@ list(REMOVE_ITEM highgui_ext_hdrs "${CMAKE_CURRENT_LIST_DIR}/include/opencv2/${n
 
 set(OPENCV_HIGHGUI_BUILTIN_BACKEND "")
 
-<<<<<<< HEAD
-if(HAVE_QT)
-=======
 if(WITH_FRAMEBUFFER AND HAVE_FRAMEBUFFER)
   set(OPENCV_HIGHGUI_BUILTIN_BACKEND "FB")
   add_definitions(-DHAVE_FRAMEBUFFER)
@@ -87,7 +84,6 @@ if(WITH_WAYLAND AND HAVE_WAYLAND)
   endif()
 
 elseif(HAVE_QT)
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   set(OPENCV_HIGHGUI_BUILTIN_BACKEND "QT${QT_VERSION_MAJOR}")
   add_definitions(-DHAVE_QT)
 
@@ -98,13 +94,14 @@ elseif(HAVE_QT)
     set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
     if(QT_VERSION_MAJOR EQUAL 6)
+      add_definitions(-DHAVE_QT6) # QGLWidget deprecated for QT6, use this preprocessor to adjust window_QT.[h,cpp]
       QT6_ADD_RESOURCES(_RCC_OUTFILES ${CMAKE_CURRENT_LIST_DIR}/src/window_QT.qrc)
       QT6_WRAP_CPP(_MOC_OUTFILES ${CMAKE_CURRENT_LIST_DIR}/src/window_QT.h)
     elseif(QT_VERSION_MAJOR EQUAL 5)
       QT5_ADD_RESOURCES(_RCC_OUTFILES ${CMAKE_CURRENT_LIST_DIR}/src/window_QT.qrc)
       QT5_WRAP_CPP(_MOC_OUTFILES ${CMAKE_CURRENT_LIST_DIR}/src/window_QT.h)
     else()
-      message(FATAL_ERROR "Unsuported QT version: ${QT_VERSION_MAJOR}")
+      message(FATAL_ERROR "Unsupported QT version: ${QT_VERSION_MAJOR}")
     endif()
 
     list(APPEND highgui_srcs
@@ -116,7 +113,14 @@ elseif(HAVE_QT)
     set(qt_deps Core Gui Widgets Test Concurrent)
     if(HAVE_QT_OPENGL)
       add_definitions(-DHAVE_QT_OPENGL)
+      # QOpenGLWidget requires Qt6 package component OpenGLWidgets
+      if(QT_VERSION_MAJOR GREATER 5)
+        list(APPEND qt_deps OpenGLWidgets)
+      endif()
       list(APPEND qt_deps OpenGL)
+      if(OPENGL_LIBRARIES)
+        list(APPEND HIGHGUI_LIBRARIES "${OPENGL_LIBRARIES}")
+      endif()
     endif()
 
     foreach(dt_dep ${qt_deps})
@@ -126,8 +130,11 @@ elseif(HAVE_QT)
     endforeach()
   else()
     ocv_assert(QT_VERSION_MAJOR EQUAL 4)
-    if (HAVE_QT_OPENGL)
+    if(HAVE_QT_OPENGL)
       set(QT_USE_QTOPENGL TRUE)
+      if(OPENGL_LIBRARIES)
+        list(APPEND HIGHGUI_LIBRARIES "${OPENGL_LIBRARIES}")
+      endif()
     endif()
     include(${QT_USE_FILE})
 
@@ -190,6 +197,9 @@ if(TARGET ocv.3rdparty.win32ui)
     set(OPENCV_HIGHGUI_BUILTIN_BACKEND "WIN32UI")
     list(APPEND highgui_srcs ${CMAKE_CURRENT_LIST_DIR}/src/window_w32.cpp)
     list(APPEND tgts ocv.3rdparty.win32ui)
+    if(HAVE_OPENGL AND OPENGL_LIBRARIES)
+      list(APPEND tgts "${OPENGL_LIBRARIES}")
+    endif()
   endif()
 endif()
 
@@ -272,16 +282,7 @@ if(tgts STREQUAL "PRIVATE")
   set(tgts "")
 endif()
 
-# install used dependencies only
-if(NOT BUILD_SHARED_LIBS
-    AND NOT (CMAKE_VERSION VERSION_LESS "3.13.0")  # upgrade CMake: https://gitlab.kitware.com/cmake/cmake/-/merge_requests/2152
-)
-  foreach(tgt in ${tgts})
-    if(tgt MATCHES "^ocv\.3rdparty\.")
-      install(TARGETS ${tgt} EXPORT OpenCVModules)
-    endif()
-  endforeach()
-endif()
+ocv_install_used_external_targets(${tgts})
 
 source_group("Src" FILES ${highgui_srcs} ${highgui_hdrs})
 source_group("Include" FILES ${highgui_ext_hdrs})
@@ -295,7 +296,7 @@ if(APPLE)
   add_apple_compiler_options(${the_module})
 endif()
 
-if(MSVC)
+if(MSVC AND NOT BUILD_SHARED_LIBS AND BUILD_WITH_STATIC_CRT)
   set_target_properties(${the_module} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:atlthunk.lib /NODEFAULTLIB:atlsd.lib /NODEFAULTLIB:libcmt.lib /DEBUG")
 endif()
 

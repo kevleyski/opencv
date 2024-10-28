@@ -3,9 +3,8 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1991-1998, Thomas G. Lane.
- * It was modified by The libjpeg-turbo Project to include only code relevant
- * to libjpeg-turbo.
- * Copyright (C) 2022, D. R. Commander.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2022, 2024, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -190,13 +189,13 @@ format_message(j_common_ptr cinfo, char *buffer)
 
   /* Format the message into the passed buffer */
   if (isstring)
-    snprintf(buffer, JMSG_LENGTH_MAX, msgtext, err->msg_parm.s);
+    SNPRINTF(buffer, JMSG_LENGTH_MAX, msgtext, err->msg_parm.s);
   else
-    snprintf(buffer, JMSG_LENGTH_MAX, msgtext,
-            err->msg_parm.i[0], err->msg_parm.i[1],
-            err->msg_parm.i[2], err->msg_parm.i[3],
-            err->msg_parm.i[4], err->msg_parm.i[5],
-            err->msg_parm.i[6], err->msg_parm.i[7]);
+    SNPRINTF(buffer, JMSG_LENGTH_MAX, msgtext,
+             err->msg_parm.i[0], err->msg_parm.i[1],
+             err->msg_parm.i[2], err->msg_parm.i[3],
+             err->msg_parm.i[4], err->msg_parm.i[5],
+             err->msg_parm.i[6], err->msg_parm.i[7]);
 }
 
 

@@ -151,8 +151,6 @@ TEST(videoio_gstreamer, gray16_writing)
     EXPECT_EQ(0, remove(temp_file.c_str()));
 }
 
-<<<<<<< HEAD
-=======
 TEST(videoio_gstreamer, timeout_property)
 {
     if (!videoio_registry::hasBackend(CAP_GSTREAMER))
@@ -223,5 +221,4 @@ static const string bunny_params[] = {
 INSTANTIATE_TEST_CASE_P(videoio, gstreamer_bunny, testing::ValuesIn(bunny_params));
 
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }} // namespace

@@ -246,8 +246,6 @@ static void cvtOnePlaneYUVtoBGR(const uchar * src_data, size_t src_step,
         CV_CPU_DISPATCH_MODES_ALL);
 }
 
-<<<<<<< HEAD
-=======
 // 4:2:2 interleaved
 // Y : [16, 235]; Cb, Cr: [16, 240] centered at 128
 // 14-bit fixed-point arithmetics is used
@@ -269,7 +267,6 @@ static void cvtOnePlaneBGRtoYUV(const uchar * src_data, size_t src_step,
         CV_CPU_DISPATCH_MODES_ALL);
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 } // namespace hal
 
 //
@@ -345,8 +342,6 @@ bool oclCvtColorOnePlaneYUV2BGR( InputArray _src, OutputArray _dst, int dcn, int
     return h.run();
 }
 
-<<<<<<< HEAD
-=======
 bool oclCvtColorOnePlaneBGR2YUV( InputArray _src, OutputArray _dst, int dcn, int bidx, int uidx, int yidx )
 {
     OclHelper< Set<3, 4>, Set<2>, Set<CV_8U, CV_16U, CV_32F> > h(_src, _dst, dcn);
@@ -361,7 +356,6 @@ bool oclCvtColorOnePlaneBGR2YUV( InputArray _src, OutputArray _dst, int dcn, int
     return h.run();
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 bool oclCvtColorYUV2Gray_420( InputArray _src, OutputArray _dst )
 {
     OclHelper< Set<1>, Set<1>, Set<CV_8U>, FROM_YUV> h(_src, _dst, 1);
@@ -438,14 +432,12 @@ void cvtColorYUV2BGR(InputArray _src, OutputArray _dst, AlgorithmHint hint, int 
 // 20-bit fixed-point arithmetics
 void cvtColorOnePlaneYUV2BGR( InputArray _src, OutputArray _dst, AlgorithmHint hint, int dcn, bool swapb, int uidx, int ycn)
 {
-    CvtHelper< Set<2>, Set<3, 4>, Set<CV_8U> > h(_src, _dst, dcn);
+    CvtHelper< Set<2>, Set<3, 4>, Set<CV_8U>, FROM_UYVY > h(_src, _dst, dcn);
 
     hal::cvtOnePlaneYUVtoBGR(h.src.data, h.src.step, h.dst.data, h.dst.step, h.src.cols, h.src.rows,
                              dcn, swapb, uidx, ycn, hint);
 }
 
-<<<<<<< HEAD
-=======
 // 4:2:2 interleaved
 // Y : [16, 235]; Cb, Cr: [16, 240] centered at 128
 // 14-bit fixed-point arithmetics is used
@@ -457,7 +449,6 @@ void cvtColorOnePlaneBGR2YUV( InputArray _src, OutputArray _dst, AlgorithmHint h
                              h.scn, swapb, uidx, ycn, hint);
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 void cvtColorYUV2Gray_ch( InputArray _src, OutputArray _dst, int coi )
 {
     CV_Assert( _src.channels() == 2 && _src.depth() == CV_8U );

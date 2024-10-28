@@ -20,6 +20,7 @@ libjpeg-turbo         libjpeg-turbo is covered by three compatible BSD-style ope
                       WITH_JPEG CMake option must be ON to add libjpeg or libjpeg-turbo support to imgcodecs.
                       BUILD_JPEG=ON selects libjpeg-turbo by default (since OpenCV 3.4.2).
                       Enable BUILD_JPEG_TURBO_DISABLE=ON to force using of libjpeg (this option is removed in OpenCV 4.0).
+                      SIMD instructions are enabled by default. Use ENABLE_LIBJPEG_TURBO_SIMD to control SIMD instructions.
 ------------------------------------------------------------------------------------
 libpng                Portable Network Graphics library.
                       The license and copyright notes can be found in libpng/LICENSE.
@@ -27,8 +28,6 @@ libpng                Portable Network Graphics library.
                       for details and links to the source code
 
                       WITH_PNG CMake option must be ON to add libpng support to imgcodecs.
-<<<<<<< HEAD
-=======
                       
 libspng               Portable Network Graphics library.
                       The license and copyright notes can be found in libspng/LICENSE.
@@ -36,23 +35,18 @@ libspng               Portable Network Graphics library.
                       for details and links to the source code
                       
                       WITH_SPNG CMake option must be ON to add libspng support to imgcodecs
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 ------------------------------------------------------------------------------------
 libtiff               Tag Image File Format (TIFF) Software
                       Copyright (c) 1988-1997 Sam Leffler
                       Copyright (c) 1991-1997 Silicon Graphics, Inc.
-<<<<<<< HEAD
-                      See libtiff home page http://www.libtiff.org/
-=======
                       See libtiff home page #1 http://www.simplesystems.org/libtiff/
                                             #2 https://libtiff.gitlab.io/libtiff/
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                       for details and links to the source code
 
                       WITH_TIFF CMake option must be ON to add libtiff & zlib support to imgcodecs.
 ------------------------------------------------------------------------------------
 zlib                  General purpose LZ77 compression library
-                      Copyright (C) 1995-2012 Jean-loup Gailly and Mark Adler.
+                      Copyright (C) 1995-2022 Jean-loup Gailly and Mark Adler.
                       See zlib home page http://www.zlib.net
                       for details and links to the source code
 

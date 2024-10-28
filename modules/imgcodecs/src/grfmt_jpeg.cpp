@@ -44,6 +44,8 @@
 
 #ifdef HAVE_JPEG
 
+#include <opencv2/core/utils/logger.hpp>
+
 #ifdef _MSC_VER
 //interaction between '_setjmp' and C++ object destruction is non-portable
 #pragma warning(disable: 4611)
@@ -257,9 +259,6 @@ bool  JpegDecoder::readHeader()
             result = true;
         }
     }
-
-    if( !result )
-        close();
 
     return result;
 }
@@ -545,7 +544,6 @@ bool  JpegDecoder::readData( Mat& img )
         }
     }
 
-    close();
     return result;
 }
 
@@ -635,9 +633,9 @@ bool JpegEncoder::write( const Mat& img, const std::vector<int>& params )
     JpegErrorMgr jerr;
     JpegDestination dest;
 
-    jpeg_create_compress(&cinfo);
     cinfo.err = jpeg_std_error(&jerr.pub);
     jerr.pub.error_exit = error_exit;
+    jpeg_create_compress(&cinfo);
 
     if( !m_buf )
     {
@@ -706,26 +704,27 @@ bool JpegEncoder::write( const Mat& img, const std::vector<int>& params )
         int rst_interval = 0;
         int luma_quality = -1;
         int chroma_quality = -1;
+        uint32_t sampling_factor = 0; // same as 0x221111
 
         for( size_t i = 0; i < params.size(); i += 2 )
         {
-            if( params[i] == CV_IMWRITE_JPEG_QUALITY )
+            if( params[i] == IMWRITE_JPEG_QUALITY )
             {
                 quality = params[i+1];
                 quality = MIN(MAX(quality, 0), 100);
             }
 
-            if( params[i] == CV_IMWRITE_JPEG_PROGRESSIVE )
+            if( params[i] == IMWRITE_JPEG_PROGRESSIVE )
             {
                 progressive = params[i+1];
             }
 
-            if( params[i] == CV_IMWRITE_JPEG_OPTIMIZE )
+            if( params[i] == IMWRITE_JPEG_OPTIMIZE )
             {
                 optimize = params[i+1];
             }
 
-            if( params[i] == CV_IMWRITE_JPEG_LUMA_QUALITY )
+            if( params[i] == IMWRITE_JPEG_LUMA_QUALITY )
             {
                 if (params[i+1] >= 0)
                 {
@@ -740,7 +739,7 @@ bool JpegEncoder::write( const Mat& img, const std::vector<int>& params )
                 }
             }
 
-            if( params[i] == CV_IMWRITE_JPEG_CHROMA_QUALITY )
+            if( params[i] == IMWRITE_JPEG_CHROMA_QUALITY )
             {
                 if (params[i+1] >= 0)
                 {
@@ -748,10 +747,31 @@ bool JpegEncoder::write( const Mat& img, const std::vector<int>& params )
                 }
             }
 
-            if( params[i] == CV_IMWRITE_JPEG_RST_INTERVAL )
+            if( params[i] == IMWRITE_JPEG_RST_INTERVAL )
             {
                 rst_interval = params[i+1];
                 rst_interval = MIN(MAX(rst_interval, 0), 65535L);
+            }
+
+            if( params[i] == IMWRITE_JPEG_SAMPLING_FACTOR )
+            {
+                sampling_factor = static_cast<uint32_t>(params[i+1]);
+
+                switch ( sampling_factor )
+                {
+                    case IMWRITE_JPEG_SAMPLING_FACTOR_411:
+                    case IMWRITE_JPEG_SAMPLING_FACTOR_420:
+                    case IMWRITE_JPEG_SAMPLING_FACTOR_422:
+                    case IMWRITE_JPEG_SAMPLING_FACTOR_440:
+                    case IMWRITE_JPEG_SAMPLING_FACTOR_444:
+                    // OK.
+                    break;
+
+                    default:
+                    CV_LOG_WARNING(NULL, cv::format("Unknown value for IMWRITE_JPEG_SAMPLING_FACTOR: 0x%06x", sampling_factor ) );
+                    sampling_factor = 0;
+                    break;
+                }
             }
         }
 
@@ -765,9 +785,6 @@ bool JpegEncoder::write( const Mat& img, const std::vector<int>& params )
         if( optimize )
             cinfo.optimize_coding = TRUE;
 
-<<<<<<< HEAD
-#if JPEG_LIB_VERSION >= 70
-=======
         if( (channels > 1) && ( sampling_factor != 0 ) )
         {
             cinfo.comp_info[0].v_samp_factor = (sampling_factor >> 16 ) & 0xF;
@@ -776,7 +793,6 @@ bool JpegEncoder::write( const Mat& img, const std::vector<int>& params )
             cinfo.comp_info[1].h_samp_factor = 1;
         }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         if (luma_quality >= 0 && chroma_quality >= 0)
         {
 #if JPEG_LIB_VERSION >= 70

@@ -242,29 +242,6 @@ public:
 } // namespace
 
 
-<<<<<<< HEAD
-// Wrapper
-
-class LegacyCapture : public IVideoCapture
-{
-private:
-    CvCapture * cap;
-    LegacyCapture(const LegacyCapture &);
-    LegacyCapture& operator=(const LegacyCapture &);
-public:
-    LegacyCapture(CvCapture * cap_) : cap(cap_) {}
-    ~LegacyCapture()
-    {
-        cvReleaseCapture(&cap);
-    }
-    double getProperty(int propId) const CV_OVERRIDE
-    {
-        return cap ? cap->getProperty(propId) : 0;
-    }
-    bool setProperty(int propId, double value) CV_OVERRIDE
-    {
-        return cvSetCaptureProperty(cap, propId, value) != 0;
-=======
 // Advanced base class for VideoCapture backends providing some extra functionality
 class VideoCaptureBase : public IVideoCapture
 {
@@ -298,7 +275,6 @@ public:
             default:
                 return setProperty_(propId, value);
         }
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
     bool retrieveFrame(int channel, OutputArray image) CV_OVERRIDE
     {
@@ -318,22 +294,8 @@ protected:
     {
         if (!autorotate)
             return false;
-<<<<<<< HEAD
-        }
-        if(_img->origin == IPL_ORIGIN_TL)
-        {
-            cv::cvarrToMat(_img).copyTo(image);
-        }
-        else
-        {
-            Mat temp = cv::cvarrToMat(_img);
-            flip(temp, image, 0);
-        }
-        return true;
-=======
         int rotation = static_cast<int>(getProperty(cv::CAP_PROP_ORIENTATION_META));
         return std::abs(rotation % 180) == 90;
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
     void applyMetadataRotation(OutputArray mat) const
     {
@@ -431,6 +393,11 @@ Ptr<IVideoCapture> createXINECapture(const std::string &filename);
 
 Ptr<IVideoCapture> createAndroidCapture_cam( int index );
 Ptr<IVideoCapture> createAndroidCapture_file(const std::string &filename);
+Ptr<IVideoWriter> createAndroidVideoWriter(const std::string& filename, int fourcc,
+                                           double fps, const Size& frameSize,
+                                           const VideoWriterParameters& params);
+
+Ptr<IVideoCapture> create_obsensor_capture(int index);
 
 bool VideoCapture_V4L_waitAny(
         const std::vector<VideoCapture>& streams,

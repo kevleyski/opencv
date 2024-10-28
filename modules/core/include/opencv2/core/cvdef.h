@@ -276,6 +276,9 @@ namespace cv {
 #define CV_CPU_AVX_5124FMAPS    27
 
 #define CV_CPU_NEON             100
+#define CV_CPU_NEON_DOTPROD     101
+#define CV_CPU_NEON_FP16        102
+#define CV_CPU_NEON_BF16        103
 
 #define CV_CPU_MSA              150
 
@@ -285,6 +288,9 @@ namespace cv {
 #define CV_CPU_VSX3             201
 
 #define CV_CPU_RVV              210
+
+#define CV_CPU_LSX              230
+#define CV_CPU_LASX             231
 
 // CPU features groups
 #define CV_CPU_AVX512_SKX       256
@@ -332,6 +338,9 @@ enum CpuFeatures {
     CPU_AVX_5124FMAPS   = 27,
 
     CPU_NEON            = 100,
+    CPU_NEON_DOTPROD    = 101,
+    CPU_NEON_FP16       = 102,
+    CPU_NEON_BF16       = 103,
 
     CPU_MSA             = 150,
 
@@ -341,6 +350,9 @@ enum CpuFeatures {
     CPU_VSX3            = 201,
 
     CPU_RVV             = 210,
+
+    CPU_LSX             = 230,
+    CPU_LASX            = 231,
 
     CPU_AVX512_SKX      = 256, //!< Skylake-X with AVX-512F/CD/BW/DQ/VL
     CPU_AVX512_COMMON   = 257, //!< Common instructions AVX-512F/CD for all CPUs that support AVX-512
@@ -461,6 +473,7 @@ Cv64suf;
 #define CV_EXPORTS_W_SIMPLE CV_EXPORTS
 #define CV_EXPORTS_AS(synonym) CV_EXPORTS
 #define CV_EXPORTS_W_MAP CV_EXPORTS
+#define CV_EXPORTS_W_PARAMS CV_EXPORTS
 #define CV_IN_OUT
 #define CV_OUT
 #define CV_PROP
@@ -742,6 +755,8 @@ __CV_ENUM_FLAGS_BITWISE_XOR_EQ   (EnumType, EnumType)                           
 #  elif __cplusplus >= 201703L
 //   available when compiler is C++17 compliant
 #    define CV_NODISCARD_STD [[nodiscard]]
+#  elif defined(__INTEL_COMPILER)
+     // see above, available when C++17 is enabled
 #  elif defined(_MSC_VER) && _MSC_VER >= 1911 && _MSVC_LANG >= 201703L
 //   available with VS2017 v15.3+ with /std:c++17 or higher; works on functions and classes
 #    define CV_NODISCARD_STD [[nodiscard]]
@@ -794,27 +809,8 @@ __CV_ENUM_FLAGS_BITWISE_XOR_EQ   (EnumType, EnumType)                           
 #  define CV_CONSTEXPR constexpr
 #endif
 
-<<<<<<< HEAD
-// Integer types portatibility
-#ifdef OPENCV_STDINT_HEADER
-#include OPENCV_STDINT_HEADER
-#elif defined(__cplusplus)
-#if defined(_MSC_VER) && _MSC_VER < 1600 /* MSVS 2010 */
-namespace cv {
-typedef signed char int8_t;
-typedef unsigned char uint8_t;
-typedef signed short int16_t;
-typedef unsigned short uint16_t;
-typedef signed int int32_t;
-typedef unsigned int uint32_t;
-typedef signed __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-}
-#elif defined(_MSC_VER) || __cplusplus >= 201103L
-=======
 // Integer types portability
 #ifdef __cplusplus
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #include <cstdint>
 namespace cv {
 using std::int8_t;

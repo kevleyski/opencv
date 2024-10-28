@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 '''
 Tracker demo
 
@@ -10,6 +9,9 @@ For DaSiamRPN:
     network:     https://www.dropbox.com/s/rr1lk9355vzolqv/dasiamrpn_model.onnx?dl=0
     kernel_r1:   https://www.dropbox.com/s/999cqx5zrfi7w4p/dasiamrpn_kernel_r1.onnx?dl=0
     kernel_cls1: https://www.dropbox.com/s/qvmtszx5h339a0w/dasiamrpn_kernel_cls1.onnx?dl=0
+For NanoTrack:
+    nanotrack_backbone: https://github.com/HonglinChu/SiamTrackers/blob/master/NanoTrack/models/nanotrackv2/nanotrack_backbone_sim.onnx
+    nanotrack_headneck: https://github.com/HonglinChu/SiamTrackers/blob/master/NanoTrack/models/nanotrackv2/nanotrack_head_sim.onnx
 
 USAGE:
     tracker.py [-h] [--input INPUT_VIDEO]
@@ -19,10 +21,6 @@ USAGE:
                     [--dasiamrpn_net DASIAMRPN_NET]
                     [--dasiamrpn_kernel_r1 DASIAMRPN_KERNEL_R1]
                     [--dasiamrpn_kernel_cls1 DASIAMRPN_KERNEL_CLS1]
-<<<<<<< HEAD
-                    [--dasiamrpn_backend DASIAMRPN_BACKEND]
-                    [--dasiamrpn_target DASIAMRPN_TARGET]
-=======
                     [--nanotrack_backbone NANOTRACK_BACKBONE]
                     [--nanotrack_headneck NANOTRACK_TARGET]
                     [--vittrack_net VITTRACK_MODEL]
@@ -30,7 +28,6 @@ USAGE:
                     [--tracking_score_threshold TRACKING SCORE THRESHOLD FOR ONLY VITTRACK]
                     [--backend CHOOSE ONE OF COMPUTATION BACKEND]
                     [--target CHOOSE ONE OF COMPUTATION TARGET]
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 '''
 
 # Python 2/3 compatibility
@@ -53,10 +50,9 @@ class App(object):
 
     def __init__(self, args):
         self.args = args
+        self.trackerAlgorithm = args.tracker_algo
+        self.tracker = self.createTracker()
 
-<<<<<<< HEAD
-    def initializeTracker(self, image, trackerAlgorithm):
-=======
     def createTracker(self):
         if self.trackerAlgorithm == 'mil':
             tracker = cv.TrackerMIL_create()
@@ -92,42 +88,27 @@ class App(object):
         return tracker
 
     def initializeTracker(self, image):
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         while True:
-            if trackerAlgorithm == 'mil':
-                tracker = cv.TrackerMIL_create()
-            elif trackerAlgorithm == 'goturn':
-                params = cv.TrackerGOTURN_Params()
-                params.modelTxt = self.args.goturn
-                params.modelBin = self.args.goturn_model
-                tracker = cv.TrackerGOTURN_create(params)
-            elif trackerAlgorithm == 'dasiamrpn':
-                params = cv.TrackerDaSiamRPN_Params()
-                params.model = self.args.dasiamrpn_net
-                params.kernel_cls1 = self.args.dasiamrpn_kernel_cls1
-                params.kernel_r1 = self.args.dasiamrpn_kernel_r1
-                tracker = cv.TrackerDaSiamRPN_create(params)
-            else:
-                sys.exit("Tracker {} is not recognized. Please use one of three available: mil, goturn, dasiamrpn.".format(trackerAlgorithm))
-
             print('==> Select object ROI for tracker ...')
             bbox = cv.selectROI('tracking', image)
             print('ROI: {}'.format(bbox))
+            if bbox[2] <= 0 or bbox[3] <= 0:
+                sys.exit("ROI selection cancelled. Exiting...")
 
             try:
-                tracker.init(image, bbox)
+                self.tracker.init(image, bbox)
             except Exception as e:
                 print('Unable to initialize tracker with requested bounding box. Is there any object?')
                 print(e)
                 print('Try again ...')
                 continue
 
-            return tracker
+            return
 
     def run(self):
         videoPath = self.args.input
-        trackerAlgorithm = self.args.tracker_algo
-        camera = create_capture(videoPath, presets['cube'])
+        print('Using video: {}'.format(videoPath))
+        camera = create_capture(cv.samples.findFileOrKeep(videoPath), presets['cube'])
         if not camera.isOpened():
             sys.exit("Can't open video stream: {}".format(videoPath))
 
@@ -137,7 +118,7 @@ class App(object):
         assert image is not None
 
         cv.namedWindow('tracking')
-        tracker = self.initializeTracker(image, trackerAlgorithm)
+        self.initializeTracker(image)
 
         print("==> Tracking is started. Press 'SPACE' to re-initialize tracker or 'ESC' for exit...")
 
@@ -147,7 +128,7 @@ class App(object):
                 print("Can't read frame")
                 break
 
-            ok, newbox = tracker.update(image)
+            ok, newbox = self.tracker.update(image)
             #print(ok, newbox)
 
             if ok:
@@ -156,7 +137,7 @@ class App(object):
             cv.imshow("tracking", image)
             k = cv.waitKey(1)
             if k == 32:  # SPACE
-                tracker = self.initializeTracker(image)
+                self.initializeTracker(image)
             if k == 27:  # ESC
                 break
 
@@ -167,24 +148,12 @@ if __name__ == '__main__':
     print(__doc__)
     parser = argparse.ArgumentParser(description="Run tracker")
     parser.add_argument("--input", type=str, default="vtest.avi", help="Path to video source")
-    parser.add_argument("--tracker_algo", type=str, default="mil", help="One of three available tracking algorithms: mil, goturn, dasiamrpn")
+    parser.add_argument("--tracker_algo", type=str, default="nanotrack", help="One of available tracking algorithms: mil, goturn, dasiamrpn, nanotrack, vittrack")
     parser.add_argument("--goturn", type=str, default="goturn.prototxt", help="Path to GOTURN architecture")
     parser.add_argument("--goturn_model", type=str, default="goturn.caffemodel", help="Path to GOTERN model")
     parser.add_argument("--dasiamrpn_net", type=str, default="dasiamrpn_model.onnx", help="Path to onnx model of DaSiamRPN net")
     parser.add_argument("--dasiamrpn_kernel_r1", type=str, default="dasiamrpn_kernel_r1.onnx", help="Path to onnx model of DaSiamRPN kernel_r1")
     parser.add_argument("--dasiamrpn_kernel_cls1", type=str, default="dasiamrpn_kernel_cls1.onnx", help="Path to onnx model of DaSiamRPN kernel_cls1")
-<<<<<<< HEAD
-    parser.add_argument("--dasiamrpn_backend", type=int, default=0, help="Choose one of computation backends:\
-                                                                           0: automatically (by default),\
-                                                                           1: Halide language (http://halide-lang.org/),\
-                                                                           2: Intel's Deep Learning Inference Engine (https://software.intel.com/openvino-toolkit),\
-                                                                           3: OpenCV implementation")
-    parser.add_argument("--dasiamrpn_target", type=int, default=0, help="Choose one of target computation devices:\
-                                                                         0: CPU target (by default),\
-                                                                         1: OpenCL,\
-                                                                         2: OpenCL fp16 (half-float precision),\
-                                                                         3: VPU")
-=======
     parser.add_argument("--nanotrack_backbone", type=str, default="nanotrack_backbone_sim.onnx", help="Path to onnx model of NanoTrack backBone")
     parser.add_argument("--nanotrack_headneck", type=str, default="nanotrack_head_sim.onnx", help="Path to onnx model of NanoTrack headNeck")
     parser.add_argument("--vittrack_net", type=str, default="vitTracker.onnx", help="Path to onnx model of  vittrack")
@@ -207,7 +176,6 @@ if __name__ == '__main__':
                         '%d: CUDA, '
                         '%d: CUDA fp16 (half-float preprocess)'% targets)
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     args = parser.parse_args()
     App(args).run()
     cv.destroyAllWindows()

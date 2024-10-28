@@ -22,13 +22,8 @@ In this tutorial, we first introduce how to obtain the custom OCR model, then ho
 
 After completing the model training, please use [transform_to_onnx.py](https://github.com/zihaomu/deep-text-recognition-benchmark/blob/master/transform_to_onnx.py) to convert the model into onnx format.
 
-<<<<<<< HEAD
-#### Execute in webcam
-The Python version example code can be found at [here](https://github.com/opencv/opencv/blob/master/samples/dnn/text_detection.py).
-=======
 ### Execute in webcam
 The Python version example code can be found at [here](https://github.com/opencv/opencv/blob/4.x/samples/dnn/text_detection.py).
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 Example:
 @code{.bash}

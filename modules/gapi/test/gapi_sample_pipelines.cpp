@@ -51,9 +51,6 @@ namespace
          static GMatDesc outMeta(GMatDesc in) { return in; }
     };
 
-<<<<<<< HEAD
-    // These definitons test the correct macro work if the kernel has multiple output values
-=======
     G_TYPED_KERNEL(GZeros, <GMat(GMat, GMatDesc)>, "org.opencv.test.zeros")
     {
         static GMatDesc outMeta(GMatDesc /*in*/, GMatDesc user_desc)
@@ -105,7 +102,6 @@ namespace
     };
 
     // These definitions test the correct macro work if the kernel has multiple output values
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     G_TYPED_KERNEL(GRetGArrayTupleOfGMat2Kernel,  <GArray<std::tuple<GMat, GMat>>(GMat, Scalar)>,                                         "org.opencv.test.retarrayoftupleofgmat2kernel")  {};
     G_TYPED_KERNEL(GRetGArraTupleyOfGMat3Kernel,  <GArray<std::tuple<GMat, GMat, GMat>>(GMat)>,                                           "org.opencv.test.retarrayoftupleofgmat3kernel")  {};
     G_TYPED_KERNEL(GRetGArraTupleyOfGMat4Kernel,  <GArray<std::tuple<GMat, GMat, GMat, GMat>>(GMat)>,                                     "org.opencv.test.retarrayoftupleofgmat4kernel")  {};
@@ -486,8 +482,6 @@ TEST(GAPI_Pipeline, ReplaceDefaultByFunctor)
     EXPECT_TRUE(f.is_called);
 }
 
-<<<<<<< HEAD
-=======
 TEST(GAPI_Pipeline, GraphOutputIs1DMat)
 {
     int dim = 100;
@@ -578,5 +572,4 @@ TEST(GAPI_Pipeline, BranchesExecutedInParallel)
     EXPECT_GE(1200u, elapsed_in_ms);
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 } // namespace opencv_test

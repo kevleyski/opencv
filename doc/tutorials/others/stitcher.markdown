@@ -26,12 +26,7 @@ Code
 @add_toggle_cpp
 This tutorial's code is shown in the lines below. You can download it from [here](https://github.com/opencv/opencv/tree/4.x/samples/cpp/stitching.cpp).
 
-<<<<<<< HEAD
-This tutorial code's is shown lines below. You can also download it from
-[here](https://github.com/opencv/opencv/tree/master/samples/cpp/stitching.cpp).
-=======
 Note: The C++ version includes additional options such as image division (--d3) and more detailed error handling, which are not present in the Python example.
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 @include samples/cpp/stitching.cpp
 
@@ -137,11 +132,11 @@ configuration you can use stitching_detailed source code available in C++ or pyt
 
 <H4>stitching_detailed</H4>
 @add_toggle_cpp
-[stitching_detailed.cpp](https://raw.githubusercontent.com/opencv/opencv/master/samples/cpp/stitching_detailed.cpp)
+[stitching_detailed.cpp](https://raw.githubusercontent.com/opencv/opencv/4.x/samples/cpp/stitching_detailed.cpp)
 @end_toggle
 
 @add_toggle_python
-[stitching_detailed.py](https://raw.githubusercontent.com/opencv/opencv/master/samples/python/stitching_detailed.py)
+[stitching_detailed.py](https://raw.githubusercontent.com/opencv/opencv/4.x/samples/python/stitching_detailed.py)
 @end_toggle
 
 stitching_detailed program uses command line to get stitching parameter. Many parameters exists. Above examples shows some command line parameters possible :
@@ -188,4 +183,4 @@ newspaper1.jpg newspaper2.jpg --work_megapix 0.6 --features surf --matcher affin
 
 ![](images/affinepano.jpg)
 
-You can find  all images in https://github.com/opencv/opencv_extra/tree/master/testdata/stitching
+You can find  all images in https://github.com/opencv/opencv_extra/tree/4.x/testdata/stitching

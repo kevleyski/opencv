@@ -68,11 +68,7 @@ typedef long long int int64_t;
 #  define WEBP_EXTERN extern __attribute__ ((visibility ("default")))
 # else
 #  define WEBP_EXTERN extern
-<<<<<<< HEAD
-# endif  /* __GNUC__ >= 4 */
-=======
 # endif  /* defined(_WIN32) && defined(WEBP_DLL) */
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif  /* WEBP_EXTERN */
 
 // Macro to check ABI compatibility (same major revision number)

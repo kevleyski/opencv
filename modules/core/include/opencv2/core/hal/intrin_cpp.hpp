@@ -48,6 +48,7 @@
 #include <limits>
 #include <cstring>
 #include <algorithm>
+#include "opencv2/core/utility.hpp"
 #include "opencv2/core/saturate.hpp"
 
 //! @cond IGNORED
@@ -933,23 +934,11 @@ OPENCV_HAL_IMPL_CMP_OP(<=, v_le)
 For all types except 64-bit integer values. */
 OPENCV_HAL_IMPL_CMP_OP(>=, v_ge)
 
-<<<<<<< HEAD
-/** @brief Equal comparison
-
-For all types except 64-bit integer values. */
-OPENCV_HAL_IMPL_CMP_OP(==)
-
-/** @brief Not equal comparison
-
-For all types except 64-bit integer values. */
-OPENCV_HAL_IMPL_CMP_OP(!=)
-=======
 /** @brief Equal comparison */
 OPENCV_HAL_IMPL_CMP_OP(==, v_eq)
 
 /** @brief Not equal comparison */
 OPENCV_HAL_IMPL_CMP_OP(!=, v_ne)
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 template<int n>
 inline v_reg<float, n> v_not_nan(const v_reg<float, n>& a)

@@ -3,11 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.opencv</groupId>
     <artifactId>opencv-parent</artifactId>
-<<<<<<< HEAD
-    <version>4.5.4</version>
-=======
     <version>4.10.0</version>
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     <packaging>pom</packaging>
     <name>OpenCV Parent POM</name>
     <licenses>

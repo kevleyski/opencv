@@ -9,11 +9,7 @@ Using Orbbec Astra 3D cameras {#tutorial_orbbec_astra_openni}
 
 ### Introduction
 
-<<<<<<< HEAD:doc/tutorials/app/orbbec_astra.markdown
-This tutorial is devoted to the Astra Series of Orbbec 3D cameras (https://orbbec3d.com/product-astra-pro/).
-=======
 This tutorial is devoted to the Astra Series of Orbbec 3D cameras (https://www.orbbec.com/products/structured-light-camera/astra-series/).
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d:doc/tutorials/app/orbbec_astra_openni.markdown
 That cameras have a depth sensor in addition to a common color sensor. The depth sensors can be read using
 the open source OpenNI API with @ref cv::VideoCapture class. The video stream is provided through the regular
 camera interface.
@@ -22,13 +18,11 @@ camera interface.
 
 In order to use the Astra camera's depth sensor with OpenCV you should do the following steps:
 
-<<<<<<< HEAD:doc/tutorials/app/orbbec_astra.markdown
--#  Download the latest version of Orbbec OpenNI SDK (from here <https://orbbec3d.com/develop/>).
-=======
 -#  Download the latest version of Orbbec OpenNI SDK (from here <https://www.orbbec.com/developers/openni-sdk/>).
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d:doc/tutorials/app/orbbec_astra_openni.markdown
     Unzip the archive, choose the build according to your operating system and follow installation
-    steps provided in the Readme file. For instance, if you use 64bit GNU/Linux run:
+    steps provided in the Readme file.
+
+-#  For instance, if you use 64bit GNU/Linux run:
     @code{.bash}
     $ cd Linux/OpenNI-Linux-x64-2.3.0.63/
     $ sudo ./install.sh
@@ -39,19 +33,14 @@ In order to use the Astra camera's depth sensor with OpenCV you should do the fo
     @code{.bash}
     $ source OpenNIDevEnvironment
     @endcode
-
--#  Run the following commands to verify that OpenNI library and header files can be found. You should see
-    something similar in your terminal:
+    To verify that the source command works and OpenNI library and header files can be found, run the following
+    command and you should see something similar in your terminal:
     @code{.bash}
     $ echo $OPENNI2_INCLUDE
     /home/user/OpenNI_2.3.0.63/Linux/OpenNI-Linux-x64-2.3.0.63/Include
     $ echo $OPENNI2_REDIST
     /home/user/OpenNI_2.3.0.63/Linux/OpenNI-Linux-x64-2.3.0.63/Redist
     @endcode
-<<<<<<< HEAD:doc/tutorials/app/orbbec_astra.markdown
-    If the above two variables are empty, then you need to source `OpenNIDevEnvironment` again. Now you can
-    configure OpenCV with OpenNI support enabled by setting the `WITH_OPENNI2` flag in CMake.
-=======
     If the above two variables are empty, then you need to source `OpenNIDevEnvironment` again.
 
     @note Orbbec OpenNI SDK version 2.3.0.86 and newer does not provide `install.sh` any more.
@@ -88,7 +77,6 @@ In order to use the Astra camera's depth sensor with OpenCV you should do the fo
     [here](https://3dclub.orbbec3d.com/t/universal-download-thread-for-astra-series-cameras/622).
 
 -#  Now you can configure OpenCV with OpenNI support enabled by setting the `WITH_OPENNI2` flag in CMake.
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d:doc/tutorials/app/orbbec_astra_openni.markdown
     You may also like to enable the `BUILD_EXAMPLES` flag to get a code sample working with your Astra camera.
     Run the following commands in the directory containing OpenCV source code to enable OpenNI support:
     @code{.bash}
@@ -212,9 +200,5 @@ but the depth data makes it easy.
 ![Depth frame](images/astra_depth.png)
 
 The complete implementation can be found in
-<<<<<<< HEAD:doc/tutorials/app/orbbec_astra.markdown
-[orbbec_astra.cpp](https://github.com/opencv/opencv/tree/master/samples/cpp/tutorial_code/videoio/orbbec_astra/orbbec_astra.cpp)
-=======
 [openni_orbbec_astra.cpp](https://github.com/opencv/opencv/tree/4.x/samples/cpp/tutorial_code/videoio/openni_orbbec_astra/openni_orbbec_astra.cpp)
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d:doc/tutorials/app/orbbec_astra_openni.markdown
 in `samples/cpp/tutorial_code/videoio` directory.

@@ -51,8 +51,6 @@
 #endif
 #endif
 
-#define INTER_RESIZE_COEF_SCALE (1 << INTER_RESIZE_COEF_BITS)
-#define CAST_BITS (INTER_RESIZE_COEF_BITS << 1)
 #define INC(x,l) min(x+1,l-1)
 
 #define noconvert
@@ -188,13 +186,9 @@ __kernel void resizeLN(__global const uchar * srcptr, int src_step, int src_offs
         int y_ = INC(y, src_rows);
         int x_ = INC(x, src_cols);
 
-<<<<<<< HEAD
-#if depth <= 4
-=======
 #if SRC_DEPTH <= 1  // 8U/8S only, 16U+ cause integer overflows
 #define INTER_RESIZE_COEF_SCALE (1 << INTER_RESIZE_COEF_BITS)
 #define CAST_BITS (INTER_RESIZE_COEF_BITS << 1)
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         u = u * INTER_RESIZE_COEF_SCALE;
         v = v * INTER_RESIZE_COEF_SCALE;
 
@@ -220,11 +214,7 @@ __kernel void resizeLN(__global const uchar * srcptr, int src_step, int src_offs
         WT data2 = CONVERT_TO_WT(loadpix(srcptr + mad24(y_, src_step, mad24(x, TSIZE, src_offset))));
         WT data3 = CONVERT_TO_WT(loadpix(srcptr + mad24(y_, src_step, mad24(x_, TSIZE, src_offset))));
 
-<<<<<<< HEAD
-        T uval = u1 * v1 * data0 + u * v1 * data1 + u1 * v *data2 + u * v *data3;
-=======
         T uval = CONVERT_TO_DT((u1 * v1) * data0 + (u * v1) * data1 + (u1 * v) * data2 + (u * v) * data3);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif
         storepix(uval, dstptr + mad24(dy, dst_step, mad24(dx, TSIZE, dst_offset)));
     }

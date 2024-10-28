@@ -963,10 +963,6 @@ public class CoreTest extends OpenCVTestCase {
         assertEquals(0.0, d);
 
         d = Core.Mahalanobis(line1, line2, covar);
-<<<<<<< HEAD
-
-=======
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         assertTrue(d > 0.0);
     }
 
@@ -2062,4 +2058,12 @@ public class CoreTest extends OpenCVTestCase {
         assertEquals(Core.VERSION, Core.getVersionString());
     }
 
+    public void testHardwareOptions() {
+        Core.checkHardwareSupport(0);
+        boolean original_status = Core.useOptimized();
+        Core.setUseOptimized(!original_status);
+        assertEquals(!original_status, Core.useOptimized());
+        Core.setUseOptimized(original_status);
+        assertEquals(original_status, Core.useOptimized());
+    }
 }

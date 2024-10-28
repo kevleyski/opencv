@@ -59,9 +59,11 @@ uLong ZEXPORT zlibCompileFlags(void) {
 #ifdef ZLIB_DEBUG
     flags += 1 << 8;
 #endif
+    /*
 #if defined(ASMV) || defined(ASMINF)
     flags += 1 << 9;
 #endif
+     */
 #ifdef ZLIB_WINAPI
     flags += 1 << 10;
 #endif
@@ -117,13 +119,7 @@ uLong ZEXPORT zlibCompileFlags(void) {
 #  endif
 int ZLIB_INTERNAL z_verbose = verbose;
 
-<<<<<<< HEAD
-void ZLIB_INTERNAL z_error (m)
-    char *m;
-{
-=======
 void ZLIB_INTERNAL z_error(char *m) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     fprintf(stderr, "%s\n", m);
     exit(1);
 }
@@ -137,7 +133,7 @@ const char * ZEXPORT zError(int err) {
 }
 
 #if defined(_WIN32_WCE) && _WIN32_WCE < 0x800
-    /* The Microsoft C Run-Time Library for Windows CE doesn't have
+    /* The older Microsoft C Run-Time Library for Windows CE doesn't have
      * errno.  We define it as a global variable to simplify porting.
      * Its value is always 0 and should not be used.
      */
@@ -203,12 +199,7 @@ local ptr_table table[MAX_PTR];
  * a protected system like OS/2. Use Microsoft C instead.
  */
 
-<<<<<<< HEAD
-voidpf ZLIB_INTERNAL zcalloc (voidpf opaque, unsigned items, unsigned size)
-{
-=======
 voidpf ZLIB_INTERNAL zcalloc(voidpf opaque, unsigned items, unsigned size) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     voidpf buf;
     ulg bsize = (ulg)items*size;
 
@@ -233,12 +224,7 @@ voidpf ZLIB_INTERNAL zcalloc(voidpf opaque, unsigned items, unsigned size) {
     return buf;
 }
 
-<<<<<<< HEAD
-void ZLIB_INTERNAL zcfree (voidpf opaque, voidpf ptr)
-{
-=======
 void ZLIB_INTERNAL zcfree(voidpf opaque, voidpf ptr) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     int n;
 
     (void)opaque;
@@ -274,22 +260,12 @@ void ZLIB_INTERNAL zcfree(voidpf opaque, voidpf ptr) {
 #  define _hfree   hfree
 #endif
 
-<<<<<<< HEAD
-voidpf ZLIB_INTERNAL zcalloc (voidpf opaque, uInt items, uInt size)
-{
-=======
 voidpf ZLIB_INTERNAL zcalloc(voidpf opaque, uInt items, uInt size) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     (void)opaque;
     return _halloc((long)items, size);
 }
 
-<<<<<<< HEAD
-void ZLIB_INTERNAL zcfree (voidpf opaque, voidpf ptr)
-{
-=======
 void ZLIB_INTERNAL zcfree(voidpf opaque, voidpf ptr) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     (void)opaque;
     _hfree(ptr);
 }
@@ -307,28 +283,13 @@ extern voidp calloc(uInt items, uInt size);
 extern void free(voidpf ptr);
 #endif
 
-<<<<<<< HEAD
-voidpf ZLIB_INTERNAL zcalloc (opaque, items, size)
-    voidpf opaque;
-    unsigned items;
-    unsigned size;
-{
-=======
 voidpf ZLIB_INTERNAL zcalloc(voidpf opaque, unsigned items, unsigned size) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     (void)opaque;
     return sizeof(uInt) > 2 ? (voidpf)malloc(items * size) :
                               (voidpf)calloc(items, size);
 }
 
-<<<<<<< HEAD
-void ZLIB_INTERNAL zcfree (opaque, ptr)
-    voidpf opaque;
-    voidpf ptr;
-{
-=======
 void ZLIB_INTERNAL zcfree(voidpf opaque, voidpf ptr) {
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     (void)opaque;
     free(ptr);
 }

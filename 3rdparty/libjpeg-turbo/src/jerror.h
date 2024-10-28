@@ -7,7 +7,7 @@
  * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
  * libjpeg-turbo Modifications:
- * Copyright (C) 2014, 2017, 2021-2022, D. R. Commander.
+ * Copyright (C) 2014, 2017, 2021-2023, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -106,7 +106,7 @@ JMESSAGE(JERR_MISMATCHED_QUANT_TABLE,
          "Cannot transcode due to multiple use of quantization table %d")
 JMESSAGE(JERR_MISSING_DATA, "Scan script does not transmit all data")
 JMESSAGE(JERR_MODE_CHANGE, "Invalid color quantization mode change")
-JMESSAGE(JERR_NOTIMPL, "Not implemented yet")
+JMESSAGE(JERR_NOTIMPL, "Requested features are incompatible")
 JMESSAGE(JERR_NOT_COMPILED, "Requested feature was omitted at compile time")
 #if JPEG_LIB_VERSION >= 70
 JMESSAGE(JERR_NO_ARITH_TABLE, "Arithmetic table 0x%02x was not defined")
@@ -273,6 +273,7 @@ JMESSAGE(JERR_BAD_RESTART,
 #define ERREXITS(cinfo, code, str) \
   ((cinfo)->err->msg_code = (code), \
    strncpy((cinfo)->err->msg_parm.s, (str), JMSG_STR_PARM_MAX), \
+   (cinfo)->err->msg_parm.s[JMSG_STR_PARM_MAX - 1] = '\0', \
    (*(cinfo)->err->error_exit) ((j_common_ptr)(cinfo)))
 
 #define MAKESTMT(stuff)         do { stuff } while (0)
@@ -329,6 +330,7 @@ JMESSAGE(JERR_BAD_RESTART,
 #define TRACEMSS(cinfo, lvl, code, str) \
   ((cinfo)->err->msg_code = (code), \
    strncpy((cinfo)->err->msg_parm.s, (str), JMSG_STR_PARM_MAX), \
+   (cinfo)->err->msg_parm.s[JMSG_STR_PARM_MAX - 1] = '\0', \
    (*(cinfo)->err->emit_message) ((j_common_ptr)(cinfo), (lvl)))
 
 #endif /* JERROR_H */

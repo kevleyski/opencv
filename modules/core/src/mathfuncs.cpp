@@ -280,11 +280,8 @@ void cartToPolar( InputArray src1, InputArray src2,
 {
     CV_INSTRUMENT_REGION();
 
-<<<<<<< HEAD
-=======
     CV_Assert(dst1.getObj() != dst2.getObj());
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     CV_OCL_RUN(dst1.isUMat() && dst2.isUMat(),
             ocl_cartToPolar(src1, src2, dst1, dst2, angleInDegrees))
 
@@ -588,8 +585,6 @@ void polarToCart( InputArray src1, InputArray src2,
 {
     CV_INSTRUMENT_REGION();
 
-<<<<<<< HEAD
-=======
     CV_Assert(dst1.getObj() != dst2.getObj());
 
     const bool isInPlace =
@@ -598,7 +593,6 @@ void polarToCart( InputArray src1, InputArray src2,
         (src2.getObj() == dst1.getObj()) ||
         (src2.getObj() == dst2.getObj());
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     int type = src2.type(), depth = CV_MAT_DEPTH(type), cn = CV_MAT_CN(type);
     CV_Assert((depth == CV_32F || depth == CV_64F) && (src1.empty() || src1.type() == type));
 
@@ -643,13 +637,13 @@ void polarToCart( InputArray src1, InputArray src2,
                 {
                     k = 0;
 
-#if CV_SIMD
-                    int cWidth = v_float32::nlanes;
+#if (CV_SIMD || CV_SIMD_SCALABLE)
+                    int cWidth = VTraits<v_float32>::vlanes();
                     for( ; k <= len - cWidth; k += cWidth )
                     {
                         v_float32 v_m = vx_load(mag + k);
-                        v_store(x + k, vx_load(x + k) * v_m);
-                        v_store(y + k, vx_load(y + k) * v_m);
+                        v_store(x + k, v_mul(vx_load(x + k), v_m));
+                        v_store(y + k, v_mul(vx_load(y + k), v_m));
                     }
                     vx_cleanup();
 #endif
@@ -794,7 +788,7 @@ struct iPow_SIMD
     }
 };
 
-#if CV_SIMD
+#if (CV_SIMD || CV_SIMD_SCALABLE)
 
 template <>
 struct iPow_SIMD<uchar, unsigned>
@@ -804,7 +798,7 @@ struct iPow_SIMD<uchar, unsigned>
         int i = 0;
         v_uint32 v_1 = vx_setall_u32(1u);
 
-        for ( ; i <= len - v_uint16::nlanes; i += v_uint16::nlanes)
+        for ( ; i <= len - VTraits<v_uint16>::vlanes(); i += VTraits<v_uint16>::vlanes())
         {
             v_uint32 v_a1 = v_1, v_a2 = v_1;
             v_uint16 v = vx_load_expand(src + i);
@@ -816,16 +810,16 @@ struct iPow_SIMD<uchar, unsigned>
             {
                 if (p & 1)
                 {
-                    v_a1 *= v_b1;
-                    v_a2 *= v_b2;
+                    v_a1 = v_mul(v_a1, v_b1);
+                    v_a2 = v_mul(v_a2, v_b2);
                 }
-                v_b1 *= v_b1;
-                v_b2 *= v_b2;
+                v_b1 = v_mul(v_b1, v_b1);
+                v_b2 = v_mul(v_b2, v_b2);
                 p >>= 1;
             }
 
-            v_a1 *= v_b1;
-            v_a2 *= v_b2;
+            v_a1 = v_mul(v_a1, v_b1);
+            v_a2 = v_mul(v_a2, v_b2);
 
             v = v_pack(v_a1, v_a2);
             v_pack_store(dst + i, v);
@@ -844,7 +838,7 @@ struct iPow_SIMD<schar, int>
         int i = 0;
         v_int32 v_1 = vx_setall_s32(1);
 
-        for ( ; i <= len - v_int16::nlanes; i += v_int16::nlanes)
+        for ( ; i <= len - VTraits<v_int16>::vlanes(); i += VTraits<v_int16>::vlanes())
         {
             v_int32 v_a1 = v_1, v_a2 = v_1;
             v_int16 v = vx_load_expand(src + i);
@@ -856,16 +850,16 @@ struct iPow_SIMD<schar, int>
             {
                 if (p & 1)
                 {
-                    v_a1 *= v_b1;
-                    v_a2 *= v_b2;
+                    v_a1 = v_mul(v_a1, v_b1);
+                    v_a2 = v_mul(v_a2, v_b2);
                 }
-                v_b1 *= v_b1;
-                v_b2 *= v_b2;
+                v_b1 = v_mul(v_b1, v_b1);
+                v_b2 = v_mul(v_b2, v_b2);
                 p >>= 1;
             }
 
-            v_a1 *= v_b1;
-            v_a2 *= v_b2;
+            v_a1 = v_mul(v_a1, v_b1);
+            v_a2 = v_mul(v_a2, v_b2);
 
             v = v_pack(v_a1, v_a2);
             v_pack_store(dst + i, v);
@@ -884,7 +878,7 @@ struct iPow_SIMD<ushort, unsigned>
         int i = 0;
         v_uint32 v_1 = vx_setall_u32(1u);
 
-        for ( ; i <= len - v_uint16::nlanes; i += v_uint16::nlanes)
+        for ( ; i <= len - VTraits<v_uint16>::vlanes(); i += VTraits<v_uint16>::vlanes())
         {
             v_uint32 v_a1 = v_1, v_a2 = v_1;
             v_uint16 v = vx_load(src + i);
@@ -896,16 +890,16 @@ struct iPow_SIMD<ushort, unsigned>
             {
                 if (p & 1)
                 {
-                    v_a1 *= v_b1;
-                    v_a2 *= v_b2;
+                    v_a1 = v_mul(v_a1, v_b1);
+                    v_a2 = v_mul(v_a2, v_b2);
                 }
-                v_b1 *= v_b1;
-                v_b2 *= v_b2;
+                v_b1 = v_mul(v_b1, v_b1);
+                v_b2 = v_mul(v_b2, v_b2);
                 p >>= 1;
             }
 
-            v_a1 *= v_b1;
-            v_a2 *= v_b2;
+            v_a1 = v_mul(v_a1, v_b1);
+            v_a2 = v_mul(v_a2, v_b2);
 
             v = v_pack(v_a1, v_a2);
             v_store(dst + i, v);
@@ -924,7 +918,7 @@ struct iPow_SIMD<short, int>
         int i = 0;
         v_int32 v_1 = vx_setall_s32(1);
 
-        for ( ; i <= len - v_int16::nlanes; i += v_int16::nlanes)
+        for ( ; i <= len - VTraits<v_int16>::vlanes(); i += VTraits<v_int16>::vlanes())
         {
             v_int32 v_a1 = v_1, v_a2 = v_1;
             v_int16 v = vx_load(src + i);
@@ -936,16 +930,16 @@ struct iPow_SIMD<short, int>
             {
                 if (p & 1)
                 {
-                    v_a1 *= v_b1;
-                    v_a2 *= v_b2;
+                    v_a1 = v_mul(v_a1, v_b1);
+                    v_a2 = v_mul(v_a2, v_b2);
                 }
-                v_b1 *= v_b1;
-                v_b2 *= v_b2;
+                v_b1 = v_mul(v_b1, v_b1);
+                v_b2 = v_mul(v_b2, v_b2);
                 p >>= 1;
             }
 
-            v_a1 *= v_b1;
-            v_a2 *= v_b2;
+            v_a1 = v_mul(v_a1, v_b1);
+            v_a2 = v_mul(v_a2, v_b2);
 
             v = v_pack(v_a1, v_a2);
             v_store(dst + i, v);
@@ -964,29 +958,29 @@ struct iPow_SIMD<int, int>
         int i = 0;
         v_int32 v_1 = vx_setall_s32(1);
 
-        for ( ; i <= len - v_int32::nlanes*2; i += v_int32::nlanes*2)
+        for ( ; i <= len - VTraits<v_int32>::vlanes()*2; i += VTraits<v_int32>::vlanes()*2)
         {
             v_int32 v_a1 = v_1, v_a2 = v_1;
-            v_int32 v_b1 = vx_load(src + i), v_b2 = vx_load(src + i + v_int32::nlanes);
+            v_int32 v_b1 = vx_load(src + i), v_b2 = vx_load(src + i + VTraits<v_int32>::vlanes());
             int p = power;
 
             while( p > 1 )
             {
                 if (p & 1)
                 {
-                    v_a1 *= v_b1;
-                    v_a2 *= v_b2;
+                    v_a1 = v_mul(v_a1, v_b1);
+                    v_a2 = v_mul(v_a2, v_b2);
                 }
-                v_b1 *= v_b1;
-                v_b2 *= v_b2;
+                v_b1 = v_mul(v_b1, v_b1);
+                v_b2 = v_mul(v_b2, v_b2);
                 p >>= 1;
             }
 
-            v_a1 *= v_b1;
-            v_a2 *= v_b2;
+            v_a1 = v_mul(v_a1, v_b1);
+            v_a2 = v_mul(v_a2, v_b2);
 
             v_store(dst + i, v_a1);
-            v_store(dst + i + v_int32::nlanes, v_a2);
+            v_store(dst + i + VTraits<v_int32>::vlanes(), v_a2);
         }
         vx_cleanup();
 
@@ -1002,34 +996,34 @@ struct iPow_SIMD<float, float>
         int i = 0;
         v_float32 v_1 = vx_setall_f32(1.f);
 
-        for ( ; i <= len - v_float32::nlanes*2; i += v_float32::nlanes*2)
+        for ( ; i <= len - VTraits<v_float32>::vlanes()*2; i += VTraits<v_float32>::vlanes()*2)
         {
             v_float32 v_a1 = v_1, v_a2 = v_1;
-            v_float32 v_b1 = vx_load(src + i), v_b2 = vx_load(src + i + v_float32::nlanes);
+            v_float32 v_b1 = vx_load(src + i), v_b2 = vx_load(src + i + VTraits<v_float32>::vlanes());
             int p = std::abs(power);
             if( power < 0 )
             {
-                v_b1 = v_1 / v_b1;
-                v_b2 = v_1 / v_b2;
+                v_b1 = v_div(v_1, v_b1);
+                v_b2 = v_div(v_1, v_b2);
             }
 
             while( p > 1 )
             {
                 if (p & 1)
                 {
-                    v_a1 *= v_b1;
-                    v_a2 *= v_b2;
+                    v_a1 = v_mul(v_a1, v_b1);
+                    v_a2 = v_mul(v_a2, v_b2);
                 }
-                v_b1 *= v_b1;
-                v_b2 *= v_b2;
+                v_b1 = v_mul(v_b1, v_b1);
+                v_b2 = v_mul(v_b2, v_b2);
                 p >>= 1;
             }
 
-            v_a1 *= v_b1;
-            v_a2 *= v_b2;
+            v_a1 = v_mul(v_a1, v_b1);
+            v_a2 = v_mul(v_a2, v_b2);
 
             v_store(dst + i, v_a1);
-            v_store(dst + i + v_float32::nlanes, v_a2);
+            v_store(dst + i + VTraits<v_float32>::vlanes(), v_a2);
         }
         vx_cleanup();
 
@@ -1037,7 +1031,7 @@ struct iPow_SIMD<float, float>
     }
 };
 
-#if CV_SIMD_64F
+#if (CV_SIMD_64F || CV_SIMD_SCALABLE_64F)
 template <>
 struct iPow_SIMD<double, double>
 {
@@ -1046,34 +1040,34 @@ struct iPow_SIMD<double, double>
         int i = 0;
         v_float64 v_1 = vx_setall_f64(1.);
 
-        for ( ; i <= len - v_float64::nlanes*2; i += v_float64::nlanes*2)
+        for ( ; i <= len - VTraits<v_float64>::vlanes()*2; i += VTraits<v_float64>::vlanes()*2)
         {
             v_float64 v_a1 = v_1, v_a2 = v_1;
-            v_float64 v_b1 = vx_load(src + i), v_b2 = vx_load(src + i + v_float64::nlanes);
+            v_float64 v_b1 = vx_load(src + i), v_b2 = vx_load(src + i + VTraits<v_float64>::vlanes());
             int p = std::abs(power);
             if( power < 0 )
             {
-                v_b1 = v_1 / v_b1;
-                v_b2 = v_1 / v_b2;
+                v_b1 = v_div(v_1, v_b1);
+                v_b2 = v_div(v_1, v_b2);
             }
 
             while( p > 1 )
             {
                 if (p & 1)
                 {
-                    v_a1 *= v_b1;
-                    v_a2 *= v_b2;
+                    v_a1 = v_mul(v_a1, v_b1);
+                    v_a2 = v_mul(v_a2, v_b2);
                 }
-                v_b1 *= v_b1;
-                v_b2 *= v_b2;
+                v_b1 = v_mul(v_b1, v_b1);
+                v_b2 = v_mul(v_b2, v_b2);
                 p >>= 1;
             }
 
-            v_a1 *= v_b1;
-            v_a2 *= v_b2;
+            v_a1 = v_mul(v_a1, v_b1);
+            v_a2 = v_mul(v_a2, v_b2);
 
             v_store(dst + i, v_a1);
-            v_store(dst + i + v_float64::nlanes, v_a2);
+            v_store(dst + i + VTraits<v_float64>::vlanes(), v_a2);
         }
         vx_cleanup();
 
@@ -1651,29 +1645,11 @@ void patchNaNs( InputOutputArray _a, double _val )
     Cv32suf val;
     val.f = (float)_val;
 
-<<<<<<< HEAD
-#if CV_SIMD
-    v_int32 v_mask1 = vx_setall_s32(0x7fffffff), v_mask2 = vx_setall_s32(0x7f800000);
-    v_int32 v_val = vx_setall_s32(val.i);
-#endif
-
-=======
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     for( size_t i = 0; i < it.nplanes; i++, ++it )
     {
         int* tptr = ptrs[0];
         int j = 0;
 
-<<<<<<< HEAD
-#if CV_SIMD
-        size_t cWidth = (size_t)v_int32::nlanes;
-        for ( ; j + cWidth <= len; j += cWidth)
-        {
-            v_int32 v_src = vx_load(tptr + j);
-            v_int32 v_cmp_mask = v_mask2 < (v_src & v_mask1);
-            v_int32 v_dst = v_select(v_cmp_mask, v_val, v_src);
-            v_store(tptr + j, v_dst);
-=======
 #if (CV_SIMD || CV_SIMD_SCALABLE)
         v_int32 v_pos_mask = vx_setall_s32(0x7fffffff), v_exp_mask = vx_setall_s32(0x7f800000);
         v_int32 v_val = vx_setall_s32(val.i);
@@ -1695,7 +1671,6 @@ void patchNaNs( InputOutputArray _a, double _val )
                 v_store(tptr + j, v_dst0);
                 v_store(tptr + j + cWidth, v_dst1);
             }
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
 #endif
 

@@ -4,6 +4,8 @@
 
 #include "../precomp.hpp"
 #include "layers_common.hpp"
+#include "../op_timvx.hpp"
+#include "../ie_ngraph.hpp"
 #include "opencv2/core/hal/intrin.hpp"
 
 #include <float.h>
@@ -26,9 +28,12 @@ public:
         computeMaxIdx = false;
         globalPooling = false;
         isGlobalPooling = std::vector<bool>(3, false);
-        output_zp = params.get<int>("zeropoints");
-        input_zp = params.get<int>("input_zeropoint", 0);
+        output_zp = params.get<int>("zeropoints", 0);
+        input_zp = params.get<int>("input_zeropoint", output_zp);
         multiplier = params.get<float>("multiplier", 1.f);
+
+        output_sc = params.get<float>("scales", 1.f);
+        input_sc =  multiplier * output_sc;
 
         hasDynamicShapes = params.get<bool>("has_dynamic_shapes", false);
         shapesInitialized = !hasDynamicShapes;
@@ -86,10 +91,10 @@ public:
         if (inputs[0].dims == 3)
         {
             // Pool1D
-            kernel_size.assign(1, kernel_size[0]);
-            strides.assign(1, strides[0]);
-            pads_begin.assign(1, pads_begin[0]);
-            pads_end.assign(1, pads_end[0]);
+            kernel_size.resize(1, kernel_size[0]);
+            strides.resize(1, strides[0]);
+            pads_begin.resize(1, pads_begin[0]);
+            pads_end.resize(1, pads_end[0]);
         }
     }
 
@@ -104,6 +109,28 @@ public:
             else
                 return false;
         }
+        else if (backendId == DNN_BACKEND_TIMVX && haveTimVX())
+        {
+            // Only pool 2d and pool 1d were supported.
+            if (kernel_size.size() == 3)
+            {
+                // fallback to CPU implementation.
+                preferableTarget = DNN_TARGET_CPU;
+                return false;
+            }
+            if (!avePoolPaddedArea) // TimVX does not support exclude padding.
+                return false;
+            if (globalPooling) // TODO support globalPooling in TimVX backend.
+                return false;
+            if (kernel_size.size() == 2)
+                return type == MAX || type == AVE;
+            return false;
+        }
+        else if (backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH)
+        {
+            return true;
+        }
+
         return false;
     }
 
@@ -117,8 +144,6 @@ public:
         return false;
     }
 
-<<<<<<< HEAD
-=======
 
     virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
                                        const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
@@ -295,7 +320,6 @@ public:
     }
 #endif  // HAVE_DNN_NGRAPH
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     void forward(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr, OutputArrayOfArrays internals_arr) CV_OVERRIDE
     {
         CV_TRACE_FUNCTION();
@@ -608,17 +632,17 @@ public:
                                                  (int)srcData[index + stride_w*10], (int)srcData[index + stride_w*11]);
                                     v_int32x4 v3((int)srcData[index + stride_w*12], (int)srcData[index + stride_w*13],
                                                  (int)srcData[index + stride_w*14], (int)srcData[index + stride_w*15]);
-                                    sum_val0 += v0;
-                                    sum_val1 += v1;
-                                    sum_val2 += v2;
-                                    sum_val3 += v3;
+                                    sum_val0 = v_add(sum_val0, v0);
+                                    sum_val1 = v_add(sum_val1, v1);
+                                    sum_val2 = v_add(sum_val2, v2);
+                                    sum_val3 = v_add(sum_val3, v3);
                                 }
                             }
 
-                            sum_val0 = v_round(v_cvt_f32(sum_val0)*ikarea) + voutzp;
-                            sum_val1 = v_round(v_cvt_f32(sum_val1)*ikarea) + voutzp;
-                            sum_val2 = v_round(v_cvt_f32(sum_val2)*ikarea) + voutzp;
-                            sum_val3 = v_round(v_cvt_f32(sum_val3)*ikarea) + voutzp;
+                            sum_val0 = v_add(v_round(v_mul(v_cvt_f32(sum_val0), ikarea)), voutzp);
+                            sum_val1 = v_add(v_round(v_mul(v_cvt_f32(sum_val1), ikarea)), voutzp);
+                            sum_val2 = v_add(v_round(v_mul(v_cvt_f32(sum_val2), ikarea)), voutzp);
+                            sum_val3 = v_add(v_round(v_mul(v_cvt_f32(sum_val3), ikarea)), voutzp);
 
                             v_store(dstData + x0, v_pack(v_pack(sum_val0, sum_val1), v_pack(sum_val2, sum_val3)));
                             x0 += 15;

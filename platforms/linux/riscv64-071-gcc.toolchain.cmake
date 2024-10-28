@@ -1,14 +1,9 @@
-set(CMAKE_SYSTEM_NAME "Linux")
-set(CMAKE_C_COMPILER  riscv64-unknown-linux-gnu-gcc)
+set(CMAKE_SYSTEM_NAME Linux)
+set(CMAKE_SYSTEM_PROCESSOR riscv64)
+
 set(CMAKE_CXX_COMPILER riscv64-unknown-linux-gnu-g++)
+set(CMAKE_C_COMPILER  riscv64-unknown-linux-gnu-gcc)
 
-<<<<<<< HEAD
-set(CMAKE_CXX_FLAGS ""    CACHE STRING "")
-set(CMAKE_C_FLAGS ""    CACHE STRING "")
-
-set(CMAKE_CXX_FLAGS "-static -march=rv64gcvxthead -mabi=lp64v -pthread -D__riscv_vector_071")
-set(CMAKE_C_FLAGS "-static -march=rv64gcvxthead -mabi=lp64v -pthread -D__riscv_vector_071")
-=======
 # MangoPi MQ Pro - C906FD, C906FDV
 # Lichee Pi 4A - C910, C910V (?)
 # CanMV K230 - C908, C908V
@@ -60,4 +55,3 @@ if(ENABLE_GCOV)
   set(CMAKE_CXX_FLAGS_INIT "${CMAKE_CXX_FLAGS_INIT} -fprofile-arcs -ftest-coverage")
   set(CMAKE_C_FLAGS_INIT "${CMAKE_C_FLAGS_INIT} -fprofile-arcs -ftest-coverage")
 endif()
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d

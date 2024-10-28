@@ -171,7 +171,7 @@ using GRunArgs = std::vector<GRunArg>;
  * It's an ordinary overload of addition assignment operator.
  *
  * Example of usage:
- * @snippet modules/gapi/samples/dynamic_graph.cpp GRunArgs usage
+ * @snippet samples/cpp/tutorial_code/gapi/doc_snippets/dynamic_graph_snippets.cpp GRunArgs usage
  *
  */
 inline GRunArgs& operator += (GRunArgs &lhs, const GRunArgs &rhs)
@@ -223,7 +223,7 @@ using GRunArgsP = std::vector<GRunArgP>;
  * It's an ordinary overload of addition assignment operator.
  *
  * Example of usage:
- * @snippet modules/gapi/samples/dynamic_graph.cpp GRunArgsP usage
+ * @snippet samples/cpp/tutorial_code/gapi/doc_snippets/dynamic_graph_snippets.cpp GRunArgsP usage
  *
  */
 inline GRunArgsP& operator += (GRunArgsP &lhs, const GRunArgsP &rhs)
@@ -241,26 +241,28 @@ namespace gapi
  *
  * @brief G-API functions and classes for serialization and deserialization.
  */
+
 /** @brief Wraps deserialized output GRunArgs to GRunArgsP which can be used by GCompiled.
  *
  * Since it's impossible to get modifiable output arguments from deserialization
  * it needs to be wrapped by this function.
  *
  * Example of usage:
- * @snippet modules/gapi/samples/api_ref_snippets.cpp bind after deserialization
+ * @snippet samples/cpp/tutorial_code/gapi/doc_snippets/api_ref_snippets.cpp bind after deserialization
  *
  * @param out_args deserialized GRunArgs.
  * @return the same GRunArgs wrapped in GRunArgsP.
  * @see deserialize
  */
 GAPI_EXPORTS cv::GRunArgsP bind(cv::GRunArgs &out_args);
+
 /** @brief Wraps output GRunArgsP available during graph execution to GRunArgs which can be serialized.
  *
  * GRunArgsP is pointer-to-value, so to be serialized they need to be binded to real values
  * which this function does.
  *
  * Example of usage:
- * @snippet modules/gapi/samples/api_ref_snippets.cpp bind before serialization
+ * @snippet samples/cpp/tutorial_code/gapi/doc_snippets/api_ref_snippets.cpp bind before serialization
  *
  * @param out output GRunArgsP available during graph execution.
  * @return the same GRunArgsP wrapped in serializable GRunArgs.

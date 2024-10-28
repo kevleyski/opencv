@@ -474,7 +474,7 @@ static void test_threshold( const Mat& _src, Mat& _dst,
         }
         break;
     default:
-        assert(0);
+        CV_Assert(0);
     }
 }
 
@@ -511,8 +511,6 @@ TEST(Imgproc_Threshold, regression_THRESH_TOZERO_IPP_16085)
     EXPECT_EQ(0, cv::norm(result, NORM_INF));
 }
 
-<<<<<<< HEAD
-=======
 TEST(Imgproc_Threshold, regression_THRESH_TOZERO_IPP_21258)
 {
     Size sz(16, 16);
@@ -597,5 +595,4 @@ TEST(Imgproc_AdaptiveThreshold, gauss_inv)
     EXPECT_EQ(0, cv::norm(result, gt, NORM_INF));
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }} // namespace

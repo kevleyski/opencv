@@ -4,12 +4,8 @@
 
 #include "../precomp.hpp"
 #include "layers_common.hpp"
-<<<<<<< HEAD
-#include <opencv2/dnn/shape_utils.hpp>
-=======
 #include "../op_timvx.hpp"
 #include "../ie_ngraph.hpp"
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 namespace cv
 {
@@ -108,7 +104,13 @@ public:
 
     virtual bool supportBackend(int backendId) CV_OVERRIDE
     {
-        return backendId == DNN_BACKEND_OPENCV;
+        if (backendId == DNN_BACKEND_TIMVX && haveTimVX())
+        {
+            return true;
+        }
+
+        return backendId == DNN_BACKEND_OPENCV ||
+               backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH;
     }
 
     bool setActivation(const Ptr<ActivationLayer>& layer) CV_OVERRIDE
@@ -121,8 +123,6 @@ public:
         return false;
     }
 
-<<<<<<< HEAD
-=======
     virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
                                        const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
                                        const std::vector<Ptr<BackendWrapper> > &outputsWrapper,
@@ -259,7 +259,6 @@ public:
     }
 #endif  // HAVE_DNN_NGRAPH
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     void forward(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr, OutputArrayOfArrays internals_arr) CV_OVERRIDE
     {
         CV_TRACE_FUNCTION();

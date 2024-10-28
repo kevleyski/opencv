@@ -1057,11 +1057,7 @@ Mat CvCapture_OpenNI2::retrieveGrayImage()
 
     cv::Mat rgbImage;
     getBGRImageFromMetaData(streamFrames[CV_COLOR_STREAM], rgbImage);
-<<<<<<< HEAD
-    cv::cvtColor( rgbImage, outputMaps[CV_CAP_OPENNI_GRAY_IMAGE].mat, CV_BGR2GRAY );
-=======
     cv::cvtColor( rgbImage, outputMaps[CAP_OPENNI_GRAY_IMAGE], cv::COLOR_BGR2GRAY );
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     return outputMaps[CAP_OPENNI_GRAY_IMAGE];
 }

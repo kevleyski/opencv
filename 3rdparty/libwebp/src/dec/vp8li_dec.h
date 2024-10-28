@@ -52,7 +52,7 @@ typedef struct {
   uint32_t*       huffman_image_;
   int             num_htree_groups_;
   HTreeGroup*     htree_groups_;
-  HuffmanCode*    huffman_tables_;
+  HuffmanTables   huffman_tables_;
 } VP8LMetadata;
 
 typedef struct VP8LDecoder VP8LDecoder;
@@ -128,8 +128,6 @@ void VP8LClear(VP8LDecoder* const dec);
 // Clears and deallocate a lossless decoder instance.
 void VP8LDelete(VP8LDecoder* const dec);
 
-<<<<<<< HEAD
-=======
 // Helper function for reading the different Huffman codes and storing them in
 // 'huffman_tables' and 'htree_groups'.
 // If mapping is NULL 'num_htree_groups_max' must equal 'num_htree_groups'.
@@ -142,7 +140,6 @@ WEBP_NODISCARD int ReadHuffmanCodesHelper(
     const int* const mapping, VP8LDecoder* const dec,
     HuffmanTables* const huffman_tables, HTreeGroup** const htree_groups);
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 //------------------------------------------------------------------------------
 
 #ifdef __cplusplus

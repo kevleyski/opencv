@@ -182,8 +182,6 @@ TEST(Imgcodecs_Jpeg, encode_decode_rst_jpeg)
     EXPECT_EQ(0, remove(output_normal.c_str()));
 }
 
-<<<<<<< HEAD
-=======
 // See https://github.com/opencv/opencv/issues/25274
 typedef testing::TestWithParam<int> Imgcodecs_Jpeg_decode_cmyk;
 TEST_P(Imgcodecs_Jpeg_decode_cmyk, regression25274)
@@ -380,7 +378,6 @@ INSTANTIATE_TEST_CASE_P( /* nothing */,
                             testing::Values(70, 95, 100),    // IMWRITE_JPEG_LUMA_QUALITY
                             testing::Values(70, 95, 100) )); // IMWRITE_JPEG_CHROMA_QUALITY
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif // HAVE_JPEG
 
 }} // namespace

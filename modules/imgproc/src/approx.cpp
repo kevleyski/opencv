@@ -120,7 +120,7 @@ CvSeq* icvApproximateChainTC89( CvChain* chain, int header_size,
         }
     }
 
-    //assert( pt.x == chain->origin.x && pt.y == chain->origin.y );
+    //CV_Assert( pt.x == chain->origin.x && pt.y == chain->origin.y );
 
     if( method <= cv::CHAIN_APPROX_SIMPLE )
         return cvEndWriteSeq( &writer );
@@ -130,7 +130,7 @@ CvSeq* icvApproximateChainTC89( CvChain* chain, int header_size,
     len = i;
     current = temp.next;
 
-    assert( current );
+    CV_Assert( current );
 
     /* Pass 1.
        Determines support region for all the remained points */
@@ -149,7 +149,7 @@ CvSeq* icvApproximateChainTC89( CvChain* chain, int header_size,
             int dx, dy;
             Cv32suf d;
 
-            assert( k <= len );
+            CV_Assert( k <= len );
 
             /* calc indices */
             i1 = i - k;
@@ -206,7 +206,7 @@ CvSeq* icvApproximateChainTC89( CvChain* chain, int header_size,
                                    ((double)dx2 * dx2 + (double)dy2 * dy2) ));
                 sk.f = (float) (temp_num + 1.1);
 
-                assert( 0 <= sk.f && sk.f <= 2.2 );
+                CV_Assert( 0 <= sk.f && sk.f <= 2.2 );
                 if( j < k && sk.i <= s )
                     break;
 
@@ -259,7 +259,7 @@ CvSeq* icvApproximateChainTC89( CvChain* chain, int header_size,
     /* Pass 3.
        Removes non-dominant points with 1-length support region */
     current = temp.next;
-    assert( current );
+    CV_Assert( current );
     prev_current = &temp;
 
     do
@@ -294,7 +294,7 @@ CvSeq* icvApproximateChainTC89( CvChain* chain, int header_size,
 
     /* Pass 4.
        Cleans remained couples of points */
-    assert( temp.next );
+    CV_Assert( temp.next );
 
     if( array[0].s != 0 && array[len - 1].s != 0 )      /* specific case */
     {
@@ -363,7 +363,7 @@ copy_vect:
 
     // gather points
     current = temp.next;
-    assert( current );
+    CV_Assert( current );
 
     do
     {
@@ -440,7 +440,7 @@ cvApproxChains( CvSeq*              src_seq,
 
         if( src_seq->v_next && len >= minimal_perimeter )
         {
-            assert( prev_contour != 0 );
+            CV_Assert( prev_contour != 0 );
             parent = prev_contour;
             prev_contour = 0;
             src_seq = src_seq->v_next;
@@ -591,7 +591,7 @@ approxPolyDP_( const Point_<T>* src_contour, int count0, Point_<T>* dst_contour,
             dx = end_pt.x - start_pt.x;
             dy = end_pt.y - start_pt.y;
 
-            assert( dx != 0 || dy != 0 );
+            CV_Assert( dx != 0 || dy != 0 );
 
             while( pos != slice.end )
             {
@@ -816,7 +816,7 @@ cvApproxPoly( const void* array, int header_size,
             CV_Error( cv::Error::StsBadArg, "Invalid approximation method" );
         }
 
-        assert( contour );
+        CV_Assert( contour );
 
         if( header_size >= (int)sizeof(CvContour))
             cvBoundingRect( contour, 1 );
@@ -837,7 +837,7 @@ cvApproxPoly( const void* array, int header_size,
 
         if( src_seq->v_next )
         {
-            assert( prev_contour != 0 );
+            CV_Assert( prev_contour != 0 );
             parent = prev_contour;
             prev_contour = 0;
             src_seq = src_seq->v_next;

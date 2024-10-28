@@ -44,17 +44,15 @@
 #define __OPENCV_PRECOMP_H__
 
 #include "opencv2/objdetect.hpp"
+#include "opencv2/objdetect/barcode.hpp"
 #include "opencv2/imgproc.hpp"
 
 #include "opencv2/core/utility.hpp"
 #include "opencv2/core/ocl.hpp"
 #include "opencv2/core/private.hpp"
 
-<<<<<<< HEAD
-=======
 #include <numeric>
 #include <array>
 #include <vector>
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif

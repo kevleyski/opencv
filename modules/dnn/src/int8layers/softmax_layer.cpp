@@ -4,6 +4,8 @@
 
 #include "../precomp.hpp"
 #include "layers_common.hpp"
+#include "../op_timvx.hpp"
+#include "../ie_ngraph.hpp"
 
 #include <algorithm>
 #include <stdlib.h>
@@ -16,14 +18,34 @@ namespace dnn
 class SoftMaxLayerInt8Impl CV_FINAL : public SoftmaxLayerInt8
 {
 public:
+    float input_sc;
+    int input_zp;
 
     SoftMaxLayerInt8Impl(const LayerParams& params)
     {
-        axisRaw = params.get<int>("axis", 1);
+        setParamsFrom(params);
+
+        axis = params.get<int>("axis", 1);
         logSoftMax = params.get<bool>("log_softmax", false);
+        coerced_2d = params.get<bool>("coerced_2d", false);
+
+        input_sc = params.get<float>("input_scale");
+        input_zp = params.get<int>("input_zeropoint");
+
         output_sc = params.get<float>("scales");
         output_zp = params.get<int>("zeropoints");
-        setParamsFrom(params);
+
+        if (blobs.empty()) // if no lookUpTable is found
+        {
+            Mat lookUpTable(1, 256, CV_32F);
+            float* table = lookUpTable.ptr<float>();
+            for (int i = -128; i < 128; i++)
+            {
+                float x = input_sc * (i - 127); // ensures exp(x) is always between (0, 1)
+                table[i + 128] = std::exp(x);
+            }
+            blobs.push_back(lookUpTable);
+        }
     }
 
     bool getMemoryShapes(const std::vector<MatShape> &inputs,
@@ -33,15 +55,44 @@ public:
     {
         bool inplace = Layer::getMemoryShapes(inputs, requiredOutputs, outputs, internals);
         MatShape shape = inputs[0];
-        int cAxis = normalize_axis(axisRaw, shape.size());
-        shape[cAxis] = 1;
         internals.assign(1, shape);
         return inplace;
     }
 
+    virtual void finalize(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr) CV_OVERRIDE {
+        std::vector<Mat> inputs;
+        inputs_arr.getMatVector(inputs);
+        auto src = inputs[0];
+        auto dims_src = src.dims;
+        auto shape_src = shape(src);
+        axis = normalize_axis(axis, dims_src);
+
+        if (!coerced_2d) {
+            is_transpose_needed = (axis == dims_src - 1) ? false : true;
+            if (is_transpose_needed) {
+                permutation.resize(dims_src);
+                std::iota(permutation.begin(), permutation.end(), 0);
+                permutation[axis] = dims_src - 1;
+                permutation[dims_src - 1] = axis;
+
+                transposed_shape.resize(dims_src);
+                std::transform(permutation.begin(), permutation.end(), transposed_shape.begin(), [&shape_src](int axis) { return shape_src[axis]; });
+                N = std::accumulate(transposed_shape.begin(), transposed_shape.end() - 1, 1, std::multiplies<int>());
+                D = transposed_shape.back();
+
+                return;
+            }
+        }
+
+        N = src.total(0, axis);
+        D = src.total(axis);
+    }
+
     virtual bool supportBackend(int backendId) CV_OVERRIDE
     {
-        return backendId == DNN_BACKEND_OPENCV;
+        return backendId == DNN_BACKEND_OPENCV ||
+            (backendId == DNN_BACKEND_TIMVX && haveTimVX()) ||
+            backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH;
     }
 
     virtual bool tryFuse(Ptr<Layer>& top) CV_OVERRIDE
@@ -50,8 +101,6 @@ public:
         return !dequantize_layer.empty() && preferableTarget != DNN_TARGET_OPENCL_FP16;
     }
 
-<<<<<<< HEAD
-=======
    virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
                                        const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
                                        const std::vector<Ptr<BackendWrapper> > &outputsWrapper,
@@ -310,104 +359,45 @@ public:
         }
     };
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     void forward(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr, OutputArrayOfArrays internals_arr) CV_OVERRIDE
     {
         CV_TRACE_FUNCTION();
         CV_TRACE_ARG_VALUE(name, "name", name.c_str());
 
-        std::vector<Mat> inputs, outputs, internals;
+        std::vector<Mat> inputs, outputs;
         inputs_arr.getMatVector(inputs);
         outputs_arr.getMatVector(outputs);
-        internals_arr.getMatVector(internals);
 
-        const Mat &src = inputs[0];
-        Mat &dst = outputs[0];
+        Mat src, dst;
 
-        int axis = normalize_axis(axisRaw, src.dims);
-        size_t outerSize = src.total(0, axis), channels = src.size[axis],
-               innerSize = src.total(axis + 1);
-
-        CV_Assert(src.type() == CV_8S && (dst.type() == CV_8S || dst.type() == CV_32F));
-        CV_Assert(src.isContinuous() && dst.isContinuous());
-
-        size_t outerStep = src.total(axis);
-        size_t cnStep = src.total(axis + 1);
-        const int8_t *srcPtr = src.ptr<int8_t>();
-        const float *expPtr = blobs[0].ptr<float>();
-
-        if (dst.type() == CV_32F)
-        {
-            float *dstPtr = dst.ptr<float>();
-            for (size_t outerDim = 0; outerDim < outerSize; outerDim++)
-            {
-                size_t srcOffset = outerDim * outerStep;
-                std::vector<float> expSum(innerSize, 0.f);
-
-                // sum exp along axis
-                for (size_t cnDim = 0; cnDim < channels; cnDim++)
-                {
-                    const int offset = srcOffset + cnDim * cnStep;
-                    for (size_t i = 0; i < innerSize; i++)
-                        expSum[i] += expPtr[srcPtr[offset + i] + 128];
-                }
-
-                // divide by computed sum
-                for (size_t cnDim = 0; cnDim < channels; cnDim++)
-                {
-                    const int offset = srcOffset + cnDim * cnStep;
-                    for (size_t i = 0; i < innerSize; i++)
-                        dstPtr[offset + i] = expPtr[srcPtr[offset + i] + 128]/expSum[i];
-                }
-
-                if (logSoftMax)
-                {
-                    for (size_t cnDim = 0; cnDim < channels; cnDim++)
-                    {
-                        const int offset = srcOffset + cnDim * cnStep;
-                        for (size_t i = 0; i < innerSize; i++)
-                            dstPtr[offset + i] = log(dstPtr[offset + i]);
-                    }
-                }
-            }
+        if (!coerced_2d && is_transpose_needed) {
+            transposeND(inputs[0], permutation, src);
+            dst = Mat::zeros(transposed_shape.size(), transposed_shape.data(), outputs[0].type());
+        } else {
+            src = inputs[0];
+            dst = outputs[0];
         }
-        else
-        {
-            const float inv_scale = 1.f/output_sc;
-            int8_t *dstPtr = dst.ptr<int8_t>();
-            for (size_t outerDim = 0; outerDim < outerSize; outerDim++)
-            {
-                size_t srcOffset = outerDim * outerStep;
-                std::vector<float> expSum(innerSize, 0.f);
 
-                // sum exp along axis
-                for (size_t cnDim = 0; cnDim < channels; cnDim++)
-                {
-                    const int offset = srcOffset + cnDim * cnStep;
-                    for (size_t i = 0; i < innerSize; i++)
-                        expSum[i] += expPtr[srcPtr[offset + i] + 128];
+        switch (dst.type()) {
+            case CV_8S: {
+                if (logSoftMax) {
+                    SoftmaxInt8Invoker<true>::run(src, dst, blobs[0], N, D, output_sc, output_zp);
+                } else {
+                    SoftmaxInt8Invoker<false>::run(src, dst, blobs[0], N, D, output_sc, output_zp);
                 }
+            } break;
+            case CV_32F: {
+                if (logSoftMax) {
+                    SoftmaxInt8OutputFloatInvoker<true>::run(src, dst, blobs[0], N, D);
+                } else {
+                    SoftmaxInt8OutputFloatInvoker<false>::run(src, dst, blobs[0], N, D);
+                }
+            } break;
+            default: CV_Error(cv::Error::BadDepth, "DNN/SoftmaxInt8: Unsupported output type");
+        }
 
-                // divide by computed sum and quantize to int8
-                if (logSoftMax)
-                {
-                    for (size_t cnDim = 0; cnDim < channels; cnDim++)
-                    {
-                        const int offset = srcOffset + cnDim * cnStep;
-                        for (size_t i = 0; i < innerSize; i++)
-                            dstPtr[offset + i] = saturate_cast<int8_t>(output_zp + std::round(inv_scale*log(expPtr[srcPtr[offset + i] + 128]/expSum[i])));
-                    }
-                }
-                else
-                {
-                    for (size_t cnDim = 0; cnDim < channels; cnDim++)
-                    {
-                        const int offset = srcOffset + cnDim * cnStep;
-                        for (size_t i = 0; i < innerSize; i++)
-                            dstPtr[offset + i] = saturate_cast<int8_t>(output_zp + std::round(inv_scale*(expPtr[srcPtr[offset + i] + 128]/expSum[i])));
-                    }
-                }
-            }
+        if (!coerced_2d && is_transpose_needed) {
+            transposeND(dst, permutation, outputs[0]);
         }
     }
 
@@ -425,7 +415,14 @@ public:
         return flops;
     }
 
-    int axisRaw;
+private:
+    int axis;
+    int N;
+    int D;
+    bool coerced_2d;
+    bool is_transpose_needed;
+    std::vector<int> permutation;
+    std::vector<int> transposed_shape;
 };
 
 Ptr<SoftmaxLayerInt8> SoftmaxLayerInt8::create(const LayerParams& params)

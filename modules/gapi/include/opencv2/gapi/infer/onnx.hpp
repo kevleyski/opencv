@@ -19,6 +19,7 @@
 
 #include <opencv2/core/cvdef.h>     // GAPI_EXPORTS
 #include <opencv2/gapi/gkernel.hpp> // GKernelPackage
+#include <opencv2/gapi/infer.hpp>   // Generic
 
 namespace cv {
 namespace gapi {
@@ -28,8 +29,6 @@ namespace gapi {
  */
 namespace onnx {
 
-<<<<<<< HEAD
-=======
 /**
  * @brief This namespace contains Execution Providers structures for G-API ONNX Runtime backend.
  */
@@ -301,7 +300,6 @@ using EP = cv::util::variant< cv::util::monostate
 
 } // namespace ep
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 GAPI_EXPORTS cv::gapi::GBackend backend();
 
 enum class TraitAs: int {
@@ -343,8 +341,6 @@ struct ParamDesc {
     std::vector<bool> normalize; //!< Vector of bool values that enabled or disabled normalize of input data.
 
     std::vector<std::string> names_to_remap; //!< Names of output layers that will be processed in PostProc function.
-<<<<<<< HEAD
-=======
 
     bool is_generic;
 
@@ -360,7 +356,6 @@ struct ParamDesc {
     std::vector<cv::gapi::onnx::ep::EP> execution_providers;
     bool disable_mem_pattern;
     cv::util::optional<int> opt_level;
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 };
 } // namespace detail
 
@@ -397,7 +392,9 @@ public:
         desc.model_path = model;
         desc.num_in  = std::tuple_size<typename Net::InArgs>::value;
         desc.num_out = std::tuple_size<typename Net::OutArgs>::value;
-    };
+        desc.is_generic = false;
+        desc.disable_mem_pattern = false;
+    }
 
     /** @brief Specifies sequence of network input layers names for inference.
 
@@ -420,7 +417,7 @@ public:
 
      The function is used to associate data of graph outputs with output layers of
     network topology. If a network has only one output layer, there is no need to call it
-    as the layer is associated with ouput automatically but this doesn't prevent
+    as the layer is associated with output automatically but this doesn't prevent
     you from doing it yourself. Count of names has to match to number of network
     outputs or you can set your own output but for this case you have to
     additionally use @ref cfgPostProc function.
@@ -561,8 +558,6 @@ public:
         return *this;
     }
 
-<<<<<<< HEAD
-=======
     /** @brief Adds execution provider for runtime.
 
     The function is used to add ONNX Runtime OpenVINO Execution Provider options.
@@ -666,7 +661,6 @@ public:
         return *this;
     }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     // BEGIN(G-API's network parametrization API)
     GBackend      backend() const { return cv::gapi::onnx::backend(); }
     std::string   tag()     const { return Net::tag(); }
@@ -677,8 +671,6 @@ protected:
     detail::ParamDesc desc;
 };
 
-<<<<<<< HEAD
-=======
 /*
 * @brief This structure provides functions for generic network type that
 * fill inference parameters.
@@ -760,7 +752,6 @@ protected:
     std::string m_tag;
 };
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 } // namespace onnx
 } // namespace gapi
 } // namespace cv

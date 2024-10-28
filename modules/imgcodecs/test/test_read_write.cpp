@@ -28,7 +28,7 @@ const tuple<string, Size> images[] =
 #ifdef HAVE_JPEG
     make_tuple<string, Size>("../cv/imgproc/stuff.jpg", Size(640, 480)),
 #endif
-#ifdef HAVE_PNG
+#if defined(HAVE_PNG) || defined(HAVE_SPNG)
     make_tuple<string, Size>("../cv/shared/pic1.png", Size(400, 300)),
 #endif
     make_tuple<string, Size>("../highgui/readwrite/ordinary.bmp", Size(480, 272)),
@@ -148,7 +148,7 @@ typedef string Ext;
 typedef testing::TestWithParam<Ext> Imgcodecs_Image;
 
 const string exts[] = {
-#ifdef HAVE_PNG
+#if defined(HAVE_PNG) || defined(HAVE_SPNG)
     "png",
 #endif
 #ifdef HAVE_TIFF
@@ -343,8 +343,6 @@ TEST(Imgcodecs_Image, write_umat)
     EXPECT_EQ(0, remove(dst_name.c_str()));
 }
 
-<<<<<<< HEAD
-=======
 #ifdef HAVE_TIFF
 TEST(Imgcodecs_Image, multipage_collection_size)
 {
@@ -614,5 +612,4 @@ TEST(Imgcodecs_Params, imencode_regression_22752)
     EXPECT_ANY_THROW(cv::imencode("test.jpg", img, buf, params));  // parameters size or missing JPEG codec
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }} // namespace

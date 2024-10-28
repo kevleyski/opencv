@@ -3,8 +3,10 @@
  *
  * This file was part of the Independent JPEG Group's software:
  * Copyright (C) 1994-1996, Thomas G. Lane.
+ * Lossless JPEG Modifications:
  * Copyright (C) 1999, Ken Murchison.
- * to libjpeg-turbo.
+ * libjpeg-turbo Modifications:
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -295,7 +297,7 @@ create_context_buffer(j_compress_ptr cinfo)
                      cinfo->max_h_samp_factor) / compptr->h_samp_factor),
        (JDIMENSION)(3 * rgroup_height));
     /* Copy true buffer row pointers into the middle of the fake row array */
-    MEMCOPY(fake_buffer + rgroup_height, true_buffer,
+    memcpy(fake_buffer + rgroup_height, true_buffer,
            3 * rgroup_height * sizeof(_JSAMPROW));
     /* Fill in the above and below wraparound pointers */
     for (i = 0; i < rgroup_height; i++) {

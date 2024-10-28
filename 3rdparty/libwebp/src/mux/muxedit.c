@@ -66,12 +66,6 @@ void WebPMuxDelete(WebPMux* mux) {
 
 // Handy MACRO, makes MuxSet() very symmetric to MuxGet().
 #define SWITCH_ID_LIST(INDEX, LIST)                                            \
-<<<<<<< HEAD
-  if (idx == (INDEX)) {                                                        \
-    err = ChunkAssignData(&chunk, data, copy_data, tag);                       \
-    if (err == WEBP_MUX_OK) {                                                  \
-      err = ChunkSetHead(&chunk, (LIST));                                      \
-=======
   do {                                                                         \
     if (idx == (INDEX)) {                                                      \
       err = ChunkAssignData(&chunk, data, copy_data, tag);                     \
@@ -80,7 +74,6 @@ void WebPMuxDelete(WebPMux* mux) {
         if (err != WEBP_MUX_OK) ChunkRelease(&chunk);                          \
       }                                                                        \
       return err;                                                              \
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }                                                                          \
   } while (0)
 
@@ -245,7 +238,6 @@ WebPMuxError WebPMuxSetImage(WebPMux* mux, const WebPData* bitstream,
   WebPMuxImage wpi;
   WebPMuxError err;
 
-  // Sanity checks.
   if (mux == NULL || bitstream == NULL || bitstream->bytes == NULL ||
       bitstream->size > MAX_CHUNK_PAYLOAD) {
     return WEBP_MUX_INVALID_ARGUMENT;
@@ -277,7 +269,6 @@ WebPMuxError WebPMuxPushFrame(WebPMux* mux, const WebPMuxFrameInfo* info,
   WebPMuxImage wpi;
   WebPMuxError err;
 
-  // Sanity checks.
   if (mux == NULL || info == NULL) return WEBP_MUX_INVALID_ARGUMENT;
 
   if (info->id != WEBP_CHUNK_ANMF) return WEBP_MUX_INVALID_ARGUMENT;
@@ -566,7 +557,8 @@ static WebPMuxError MuxCleanup(WebPMux* const mux) {
   if (num_frames == 1) {
     WebPMuxImage* frame = NULL;
     err = MuxImageGetNth((const WebPMuxImage**)&mux->images_, 1, &frame);
-    assert(err == WEBP_MUX_OK);  // We know that one frame does exist.
+    if (err != WEBP_MUX_OK) return err;
+    // We know that one frame does exist.
     assert(frame != NULL);
     if (frame->header_ != NULL &&
         ((mux->canvas_width_ == 0 && mux->canvas_height_ == 0) ||

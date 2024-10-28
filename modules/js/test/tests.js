@@ -43,11 +43,6 @@ testrunner.options.maxBlockDuration = 20000; // cause opencv_js.js need time to 
 
 testrunner.run(
     {
-<<<<<<< HEAD
-        code: 'opencv.js',
-        tests: ['test_mat.js', 'test_utils.js', 'test_imgproc.js',
-                'test_objdetect.js', 'test_video.js', 'test_features2d.js',
-=======
         code: {path: "opencv.js", namespace: "cv"},
         tests: ['init_cv.js',
                 'test_mat.js',
@@ -57,9 +52,8 @@ testrunner.run(
                 'test_objdetect.js',
                 'test_video.js',
                 'test_features2d.js',
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                 'test_photo.js',
-                'test_calib3d.js'
+                'test_calib3d.js',
         ],
     },
     function(err, report) {

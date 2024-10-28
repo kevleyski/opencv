@@ -34,7 +34,12 @@ Adding --dynamic parameter will build {framework_name}.framework as App Store dy
 from __future__ import print_function, unicode_literals
 import glob, os, os.path, shutil, string, sys, argparse, traceback, multiprocessing, codecs, io
 from subprocess import check_call, check_output, CalledProcessError
-from distutils.dir_util import copy_tree
+
+if sys.version_info >= (3, 8): # Python 3.8+
+    def copy_tree(src, dst):
+        shutil.copytree(src, dst, dirs_exist_ok=True)
+else:
+    from distutils.dir_util import copy_tree
 
 sys.path.insert(0, os.path.abspath(os.path.abspath(os.path.dirname(__file__))+'/../apple'))
 from cv_build_utils import execute, print_error, get_xcode_major, get_xcode_setting, get_xcode_version, get_cmake_version
@@ -113,7 +118,7 @@ class Builder:
             if xcode_ver >= 7 and target[1] == 'Catalyst':
                 sdk_path = check_output(["xcodebuild", "-version", "-sdk", "macosx", "Path"]).decode('utf-8').rstrip()
                 c_flags = [
-                    "-target %s-apple-ios13.0-macabi" % target[0],  # e.g. x86_64-apple-ios13.2-macabi # -mmacosx-version-min=10.15
+                    "-target %s-apple-ios14.0-macabi" % target[0],  # e.g. x86_64-apple-ios13.2-macabi # -mmacosx-version-min=10.15
                     "-isysroot %s" % sdk_path,
                     "-iframework %s/System/iOSSupport/System/Library/Frameworks" % sdk_path,
                     "-isystem %s/System/iOSSupport/usr/include" % sdk_path,
@@ -356,7 +361,7 @@ class Builder:
             link_target = target[:target.find("-")] + "-apple-ios" + os.environ['IPHONEOS_DEPLOYMENT_TARGET'] + ("-simulator" if target.endswith("simulator") else "")
         else:
             if target_platform == "catalyst":
-                link_target = "%s-apple-ios13.0-macabi" % target[:target.find("-")]
+                link_target = "%s-apple-ios14.0-macabi" % target[:target.find("-")]
             else:
                 link_target = "%s-apple-darwin" % target[:target.find("-")]
         bitcode_flags = ["-fembed-bitcode", "-Xlinker", "-bitcode_verify"] if is_device and not self.bitcodedisabled else []
@@ -377,8 +382,6 @@ class Builder:
                 "-framework", "CoreImage", "-framework", "CoreMedia", "-framework", "QuartzCore",
                 "-framework", "Accelerate", "-framework", "OpenCL",
             ]
-<<<<<<< HEAD
-=======
         elif target_platform == "iphoneos" or target_platform == "iphonesimulator" or  target_platform == "xros" or target_platform == "xrsimulator":
             framework_options = [
                 "-iframework", "%s/System/iOSSupport/System/Library/Frameworks" % sdk_dir,
@@ -386,7 +389,6 @@ class Builder:
                 "-framework", "CoreImage", "-framework", "CoreMedia", "-framework", "QuartzCore",
                 "-framework", "Accelerate", "-framework", "UIKit", "-framework", "CoreVideo",
             ]
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         execute([
             "clang++",
             "-Xlinker", "-rpath",
@@ -419,11 +421,11 @@ class Builder:
             for dirname, dirs, files in os.walk(os.path.join(dstdir, "Headers")):
                 for filename in files:
                     filepath = os.path.join(dirname, filename)
-                    with open(filepath) as file:
+                    with codecs.open(filepath, "r", "utf-8") as file:
                         body = file.read()
                     body = body.replace("include \"opencv2/", "include \"" + name + "/")
                     body = body.replace("include <opencv2/", "include <" + name + "/")
-                    with open(filepath, "w") as file:
+                    with codecs.open(filepath, "w", "utf-8") as file:
                         file.write(body)
         if self.build_objc_wrapper:
             copy_tree(os.path.join(builddirs[0], "install", "lib", name + ".framework", "Headers"), os.path.join(dstdir, "Headers"))

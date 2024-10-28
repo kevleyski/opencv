@@ -29,10 +29,7 @@ public:
     }
 
     void processNet(std::string weights, std::string proto, std::string halide_scheduler,
-                    const Mat& input, const std::string& outputLayer = "")
-    {
-        randu(input, 0.0f, 1.0f);
-
+                    const std::vector<std::tuple<Mat, std::string>>& inputs, const std::string& outputLayer = ""){
         weights = findDataFile(weights, false);
         if (!proto.empty())
             proto = findDataFile(proto);
@@ -43,17 +40,12 @@ public:
             if (!halide_scheduler.empty())
                 halide_scheduler = findDataFile(std::string("dnn/halide_scheduler_") + (target == DNN_TARGET_OPENCL ? "opencl_" : "") + halide_scheduler, true);
         }
-<<<<<<< HEAD
-        net = readNet(proto, weights);
-        net.setInput(blobFromImage(input, 1.0, Size(), Scalar(), false));
-=======
         net = readNet(weights, proto);
         // Set multiple inputs
         for(auto &inp: inputs){
             net.setInput(std::get<0>(inp), std::get<1>(inp));
         }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         net.setPreferableBackend(backend);
         net.setPreferableTarget(target);
         if (backend == DNN_BACKEND_HALIDE)
@@ -61,10 +53,14 @@ public:
             net.setHalideScheduler(halide_scheduler);
         }
 
-        MatShape netInputShape = shape(1, 3, input.rows, input.cols);
+        // Calculate multiple inputs memory consumption
+        std::vector<MatShape> netMatShapes;
+        for(auto &inp: inputs){
+            netMatShapes.push_back(shape(std::get<0>(inp)));
+        }
         size_t weightsMemory = 0, blobsMemory = 0;
-        net.getMemoryConsumption(netInputShape, weightsMemory, blobsMemory);
-        int64 flops = net.getFLOPS(netInputShape);
+        net.getMemoryConsumption(netMatShapes, weightsMemory, blobsMemory);
+        int64 flops = net.getFLOPS(netMatShapes);
         CV_Assert(flops > 0);
 
         net.forward(outputLayer); // warmup
@@ -80,30 +76,45 @@ public:
 
         SANITY_CHECK_NOTHING();
     }
+
+    void processNet(std::string weights, std::string proto, std::string halide_scheduler,
+                    Mat &input, const std::string& outputLayer = "")
+    {
+        processNet(weights, proto, halide_scheduler, {std::make_tuple(input, "")}, outputLayer);
+    }
+
+    void processNet(std::string weights, std::string proto, std::string halide_scheduler,
+                    Size inpSize, const std::string& outputLayer = "")
+    {
+        Mat input_data(inpSize, CV_32FC3);
+        randu(input_data, 0.0f, 1.0f);
+        Mat input = blobFromImage(input_data, 1.0, Size(), Scalar(), false);
+        processNet(weights, proto, halide_scheduler, input, outputLayer);
+    }
 };
 
 PERF_TEST_P_(DNNTestNetwork, AlexNet)
 {
     processNet("dnn/bvlc_alexnet.caffemodel", "dnn/bvlc_alexnet.prototxt",
-            "alexnet.yml", Mat(cv::Size(227, 227), CV_32FC3));
+            "alexnet.yml", cv::Size(227, 227));
 }
 
 PERF_TEST_P_(DNNTestNetwork, GoogLeNet)
 {
     processNet("dnn/bvlc_googlenet.caffemodel", "dnn/bvlc_googlenet.prototxt",
-            "", Mat(cv::Size(224, 224), CV_32FC3));
+            "", cv::Size(224, 224));
 }
 
 PERF_TEST_P_(DNNTestNetwork, ResNet_50)
 {
     processNet("dnn/ResNet-50-model.caffemodel", "dnn/ResNet-50-deploy.prototxt",
-            "resnet_50.yml", Mat(cv::Size(224, 224), CV_32FC3));
+            "resnet_50.yml", cv::Size(224, 224));
 }
 
 PERF_TEST_P_(DNNTestNetwork, SqueezeNet_v1_1)
 {
     processNet("dnn/squeezenet_v1.1.caffemodel", "dnn/squeezenet_v1.1.prototxt",
-            "squeezenet_v1_1.yml", Mat(cv::Size(227, 227), CV_32FC3));
+            "squeezenet_v1_1.yml", cv::Size(227, 227));
 }
 
 PERF_TEST_P_(DNNTestNetwork, Inception_5h)
@@ -111,7 +122,7 @@ PERF_TEST_P_(DNNTestNetwork, Inception_5h)
     if (backend == DNN_BACKEND_INFERENCE_ENGINE_NN_BUILDER_2019) throw SkipTestException("");
     processNet("dnn/tensorflow_inception_graph.pb", "",
             "inception_5h.yml",
-            Mat(cv::Size(224, 224), CV_32FC3), "softmax2");
+            cv::Size(224, 224), "softmax2");
 }
 
 PERF_TEST_P_(DNNTestNetwork, ENet)
@@ -124,7 +135,7 @@ PERF_TEST_P_(DNNTestNetwork, ENet)
         throw SkipTestException("");
 #endif
     processNet("dnn/Enet-model-best.net", "", "enet.yml",
-            Mat(cv::Size(512, 256), CV_32FC3));
+            cv::Size(512, 256));
 }
 
 PERF_TEST_P_(DNNTestNetwork, SSD)
@@ -132,7 +143,7 @@ PERF_TEST_P_(DNNTestNetwork, SSD)
     applyTestTag(CV_TEST_TAG_DEBUG_VERYLONG);
 
     processNet("dnn/VGG_ILSVRC2016_SSD_300x300_iter_440000.caffemodel", "dnn/ssd_vgg16.prototxt", "disabled",
-            Mat(cv::Size(300, 300), CV_32FC3));
+            cv::Size(300, 300));
 }
 
 PERF_TEST_P_(DNNTestNetwork, OpenFace)
@@ -144,15 +155,15 @@ PERF_TEST_P_(DNNTestNetwork, OpenFace)
         throw SkipTestException("");
 #endif
     processNet("dnn/openface_nn4.small2.v1.t7", "", "",
-            Mat(cv::Size(96, 96), CV_32FC3));
+            cv::Size(96, 96));
 }
 
 PERF_TEST_P_(DNNTestNetwork, MobileNet_SSD_Caffe)
 {
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
-    processNet("dnn/MobileNetSSD_deploy.caffemodel", "dnn/MobileNetSSD_deploy.prototxt", "",
-            Mat(cv::Size(300, 300), CV_32FC3));
+    processNet("dnn/MobileNetSSD_deploy_19e3ec3.caffemodel", "dnn/MobileNetSSD_deploy_19e3ec3.prototxt", "",
+            cv::Size(300, 300));
 }
 
 PERF_TEST_P_(DNNTestNetwork, MobileNet_SSD_v1_TensorFlow)
@@ -160,7 +171,7 @@ PERF_TEST_P_(DNNTestNetwork, MobileNet_SSD_v1_TensorFlow)
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
     processNet("dnn/ssd_mobilenet_v1_coco_2017_11_17.pb", "ssd_mobilenet_v1_coco_2017_11_17.pbtxt", "",
-            Mat(cv::Size(300, 300), CV_32FC3));
+            cv::Size(300, 300));
 }
 
 PERF_TEST_P_(DNNTestNetwork, MobileNet_SSD_v2_TensorFlow)
@@ -168,7 +179,7 @@ PERF_TEST_P_(DNNTestNetwork, MobileNet_SSD_v2_TensorFlow)
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
     processNet("dnn/ssd_mobilenet_v2_coco_2018_03_29.pb", "ssd_mobilenet_v2_coco_2018_03_29.pbtxt", "",
-            Mat(cv::Size(300, 300), CV_32FC3));
+            cv::Size(300, 300));
 }
 
 PERF_TEST_P_(DNNTestNetwork, DenseNet_121)
@@ -176,7 +187,7 @@ PERF_TEST_P_(DNNTestNetwork, DenseNet_121)
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
     processNet("dnn/DenseNet_121.caffemodel", "dnn/DenseNet_121.prototxt", "",
-               Mat(cv::Size(224, 224), CV_32FC3));
+               cv::Size(224, 224));
 }
 
 PERF_TEST_P_(DNNTestNetwork, OpenPose_pose_mpi_faster_4_stages)
@@ -189,7 +200,7 @@ PERF_TEST_P_(DNNTestNetwork, OpenPose_pose_mpi_faster_4_stages)
     // The same .caffemodel but modified .prototxt
     // See https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/src/openpose/pose/poseParameters.cpp
     processNet("dnn/openpose_pose_mpi.caffemodel", "dnn/openpose_pose_mpi_faster_4_stages.prototxt", "",
-               Mat(cv::Size(368, 368), CV_32FC3));
+               cv::Size(368, 368));
 }
 
 PERF_TEST_P_(DNNTestNetwork, opencv_face_detector)
@@ -197,7 +208,7 @@ PERF_TEST_P_(DNNTestNetwork, opencv_face_detector)
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
     processNet("dnn/opencv_face_detector.caffemodel", "dnn/opencv_face_detector.prototxt", "",
-               Mat(cv::Size(300, 300), CV_32FC3));
+               cv::Size(300, 300));
 }
 
 PERF_TEST_P_(DNNTestNetwork, Inception_v2_SSD_TensorFlow)
@@ -207,18 +218,15 @@ PERF_TEST_P_(DNNTestNetwork, Inception_v2_SSD_TensorFlow)
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
     processNet("dnn/ssd_inception_v2_coco_2017_11_17.pb", "ssd_inception_v2_coco_2017_11_17.pbtxt", "",
-            Mat(cv::Size(300, 300), CV_32FC3));
+            cv::Size(300, 300));
 }
 
 PERF_TEST_P_(DNNTestNetwork, YOLOv3)
 {
-<<<<<<< HEAD
-=======
     applyTestTag(
         CV_TEST_TAG_MEMORY_2GB,
         CV_TEST_TAG_DEBUG_VERYLONG
     );
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
 #if defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2020040000)  // nGraph compilation failure
@@ -233,21 +241,16 @@ PERF_TEST_P_(DNNTestNetwork, YOLOv3)
 #endif
 
     Mat sample = imread(findDataFile("dnn/dog416.png"));
-    cvtColor(sample, sample, COLOR_BGR2RGB);
-    Mat inp;
-    sample.convertTo(inp, CV_32FC3, 1.0f / 255, 0);
+    Mat inp = blobFromImage(sample, 1.0 / 255.0, Size(), Scalar(), true);
     processNet("dnn/yolov3.weights", "dnn/yolov3.cfg", "", inp);
 }
 
 PERF_TEST_P_(DNNTestNetwork, YOLOv4)
 {
-<<<<<<< HEAD
-=======
     applyTestTag(
         CV_TEST_TAG_MEMORY_2GB,
         CV_TEST_TAG_DEBUG_VERYLONG
     );
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
     if (target == DNN_TARGET_MYRIAD)  // not enough resources
@@ -259,9 +262,7 @@ PERF_TEST_P_(DNNTestNetwork, YOLOv4)
         throw SkipTestException("Test is disabled in OpenVINO 2020.4");
 #endif
     Mat sample = imread(findDataFile("dnn/dog416.png"));
-    cvtColor(sample, sample, COLOR_BGR2RGB);
-    Mat inp;
-    sample.convertTo(inp, CV_32FC3, 1.0f / 255, 0);
+    Mat inp = blobFromImage(sample, 1.0 / 255.0, Size(), Scalar(), true);
     processNet("dnn/yolov4.weights", "dnn/yolov4.cfg", "", inp);
 }
 
@@ -274,12 +275,6 @@ PERF_TEST_P_(DNNTestNetwork, YOLOv4_tiny)
         throw SkipTestException("");
 #endif
     Mat sample = imread(findDataFile("dnn/dog416.png"));
-<<<<<<< HEAD
-    cvtColor(sample, sample, COLOR_BGR2RGB);
-    Mat inp;
-    sample.convertTo(inp, CV_32FC3, 1.0f / 255, 0);
-    processNet("dnn/yolov4-tiny.weights", "dnn/yolov4-tiny.cfg", "", inp);
-=======
     Mat inp = blobFromImage(sample, 1.0 / 255.0, Size(), Scalar(), true);
     processNet("dnn/yolov4-tiny-2020-12.weights", "dnn/yolov4-tiny-2020-12.cfg", "", inp);
 }
@@ -311,7 +306,6 @@ PERF_TEST_P_(DNNTestNetwork, YOLOX) {
     Mat sample = imread(findDataFile("dnn/dog416.png"));
     Mat inp = blobFromImage(sample, 1.0 / 255.0, Size(640, 640), Scalar(), true);
     processNet("dnn/yolox_s.onnx", "", "", inp);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }
 
 PERF_TEST_P_(DNNTestNetwork, EAST_text_detection)
@@ -320,7 +314,7 @@ PERF_TEST_P_(DNNTestNetwork, EAST_text_detection)
 
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
-    processNet("dnn/frozen_east_text_detection.pb", "", "", Mat(cv::Size(320, 320), CV_32FC3));
+    processNet("dnn/frozen_east_text_detection.pb", "", "", cv::Size(320, 320));
 }
 
 PERF_TEST_P_(DNNTestNetwork, FastNeuralStyle_eccv16)
@@ -329,7 +323,7 @@ PERF_TEST_P_(DNNTestNetwork, FastNeuralStyle_eccv16)
 
     if (backend == DNN_BACKEND_HALIDE)
         throw SkipTestException("");
-    processNet("dnn/fast_neural_style_eccv16_starry_night.t7", "", "", Mat(cv::Size(320, 240), CV_32FC3));
+    processNet("dnn/fast_neural_style_eccv16_starry_night.t7", "", "", cv::Size(320, 240));
 }
 
 PERF_TEST_P_(DNNTestNetwork, Inception_v2_Faster_RCNN)
@@ -354,7 +348,7 @@ PERF_TEST_P_(DNNTestNetwork, Inception_v2_Faster_RCNN)
         throw SkipTestException("");
     processNet("dnn/faster_rcnn_inception_v2_coco_2018_01_28.pb",
                "dnn/faster_rcnn_inception_v2_coco_2018_01_28.pbtxt", "",
-               Mat(cv::Size(800, 600), CV_32FC3));
+               cv::Size(800, 600));
 }
 
 PERF_TEST_P_(DNNTestNetwork, EfficientDet)
@@ -362,14 +356,10 @@ PERF_TEST_P_(DNNTestNetwork, EfficientDet)
     if (backend == DNN_BACKEND_HALIDE || target != DNN_TARGET_CPU)
         throw SkipTestException("");
     Mat sample = imread(findDataFile("dnn/dog416.png"));
-    resize(sample, sample, Size(512, 512));
-    Mat inp;
-    sample.convertTo(inp, CV_32FC3, 1.0/255);
+    Mat inp = blobFromImage(sample, 1.0 / 255.0, Size(512, 512), Scalar(), true);
     processNet("dnn/efficientdet-d0.pb", "dnn/efficientdet-d0.pbtxt", "", inp);
 }
 
-<<<<<<< HEAD
-=======
 PERF_TEST_P_(DNNTestNetwork, EfficientNet)
 {
     Mat sample = imread(findDataFile("dnn/dog416.png"));
@@ -455,7 +445,6 @@ PERF_TEST_P_(DNNTestNetwork, VIT_B_32)
     processNet("dnn/onnx/models/vit_b_32.onnx", "", "", cv::Size(224, 224));
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 INSTANTIATE_TEST_CASE_P(/*nothing*/, DNNTestNetwork, dnnBackendsAndTargets());
 
 } // namespace

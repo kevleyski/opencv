@@ -37,8 +37,6 @@ file(WRITE "${OPENCV_DOWNLOAD_LOG}" "#use_cache \"${OPENCV_DOWNLOAD_PATH}\"\n")
 file(REMOVE "${OPENCV_DOWNLOAD_WITH_CURL}")
 file(REMOVE "${OPENCV_DOWNLOAD_WITH_WGET}")
 
-<<<<<<< HEAD
-=======
 ocv_check_environment_variables(OPENCV_DOWNLOAD_MIRROR_ID)
 
 function(ocv_init_download_mirror)
@@ -86,7 +84,6 @@ function(ocv_init_download_mirror)
   endif()
 endfunction()
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 function(ocv_download)
   cmake_parse_arguments(DL "UNPACK;RELATIVE_URL" "FILENAME;HASH;DESTINATION_DIR;ID;STATUS" "URL" ${ARGN})
 
@@ -116,6 +113,8 @@ function(ocv_download)
   if(DEFINED DL_STATUS)
     set(${DL_STATUS} TRUE PARENT_SCOPE)
   endif()
+
+  ocv_cmake_hook(OPENCV_DOWNLOAD_PRE)
 
   # Check CMake cache for already processed tasks
   string(FIND "${DL_DESTINATION_DIR}" "${CMAKE_BINARY_DIR}" DL_BINARY_PATH_POS)
@@ -165,7 +164,7 @@ function(ocv_download)
   if(DL_ID)
     set(__msg_prefix "${DL_ID}: ")
   endif()
-  message(STATUS "${__msg_prefix}Download: ${DL_FILENAME}")
+  message(STATUS "${__msg_prefix}Downloading ${DL_FILENAME} from ${DL_URL}")
 
   # Copy mode: check if copy destination exists and is correct
   if(NOT DL_UNPACK)
@@ -302,3 +301,8 @@ ${OPENCV_DOWNLOAD_LOG}
     set(${OCV_DOWNLOAD_HASH_NAME} "${DL_HASH}" CACHE INTERNAL "")
   endif()
 endfunction()
+
+# ----------------------------------------------------------------------------
+#  Initialize download in case mirror is used
+# ----------------------------------------------------------------------------
+ocv_init_download_mirror()

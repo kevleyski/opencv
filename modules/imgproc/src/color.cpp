@@ -90,6 +90,20 @@ static bool ocl_cvtColor( InputArray _src, OutputArray _dst, int code, int dcn )
 
         return oclCvtColorOnePlaneYUV2BGR(_src, _dst, dcn, bidx, uidx, yidx);
     }
+    case COLOR_RGB2YUV_UYVY: case COLOR_BGR2YUV_UYVY: case COLOR_RGBA2YUV_UYVY: case COLOR_BGRA2YUV_UYVY:
+    case COLOR_RGB2YUV_YUY2: case COLOR_BGR2YUV_YUY2: case COLOR_RGB2YUV_YVYU: case COLOR_BGR2YUV_YVYU:
+    case COLOR_RGBA2YUV_YUY2: case COLOR_BGRA2YUV_YUY2: case COLOR_RGBA2YUV_YVYU: case COLOR_BGRA2YUV_YVYU:
+    {
+        int yidx = (code==COLOR_RGB2YUV_UYVY || code==COLOR_RGBA2YUV_UYVY ||
+                    code==COLOR_BGR2YUV_UYVY || code==COLOR_BGRA2YUV_UYVY) ? 1 : 0;
+        int uidx = (code==COLOR_RGB2YUV_YVYU || code==COLOR_RGBA2YUV_YVYU ||
+                    code==COLOR_BGR2YUV_YVYU || code==COLOR_BGRA2YUV_YVYU) ? 2 : 0;
+        uidx = 1 - yidx + uidx;
+
+        bool res = oclCvtColorOnePlaneBGR2YUV(_src, _dst, dcn, bidx, uidx, yidx);
+
+        return res;
+    }
     case COLOR_BGR2YCrCb:
     case COLOR_RGB2YCrCb:
         return oclCvtColorBGR2YCrCb(_src, _dst, bidx);
@@ -342,8 +356,6 @@ void cvtColor( InputArray _src, OutputArray _dst, int code, int dcn, AlgorithmHi
                 break;
             }
 
-<<<<<<< HEAD
-=======
         case COLOR_RGB2YUV_UYVY: case COLOR_BGR2YUV_UYVY: case COLOR_RGBA2YUV_UYVY: case COLOR_BGRA2YUV_UYVY:
         case COLOR_RGB2YUV_YUY2: case COLOR_BGR2YUV_YUY2: case COLOR_RGB2YUV_YVYU: case COLOR_BGR2YUV_YVYU:
         case COLOR_RGBA2YUV_YUY2: case COLOR_BGRA2YUV_YUY2: case COLOR_RGBA2YUV_YVYU: case COLOR_BGRA2YUV_YVYU:
@@ -357,7 +369,6 @@ void cvtColor( InputArray _src, OutputArray _dst, int code, int dcn, AlgorithmHi
                 break;
             }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         case COLOR_YUV2GRAY_UYVY:
         case COLOR_YUV2GRAY_YUY2:
             cvtColorYUV2Gray_ch(_src, _dst, code == COLOR_YUV2GRAY_UYVY ? 1 : 0);

@@ -4,20 +4,12 @@
 
     <application
         android:label="@string/app_name"
-<<<<<<< HEAD
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.AppCompat.NoActionBar">  <!--Full screen mode-->
-        <activity android:name=".MainActivity"
-            android:screenOrientation="landscape">  <!--Screen orientation-->
-=======
         android:icon="@drawable/icon">
         <!-- //! [mobilenet_tutorial] -->
         <activity
                   android:exported="true"
                   android:name=".MainActivity"
                   android:screenOrientation="landscape">  <!--Screen orientation-->
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

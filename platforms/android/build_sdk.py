@@ -161,11 +161,8 @@ class Builder:
         self.hwasan = True if config.hwasan else False
         self.opencl = True if config.opencl else False
         self.no_kotlin = True if config.no_kotlin else False
-<<<<<<< HEAD
-=======
         self.shared = True if config.shared else False
         self.disable = args.disable
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     def get_cmake(self):
         if not self.config.use_android_buildtools and check_executable(['cmake', '--version']):
@@ -250,6 +247,9 @@ class Builder:
 
         if self.no_kotlin:
             cmake_vars['BUILD_KOTLIN_EXTENSIONS'] = "OFF"
+
+        if self.shared:
+            cmake_vars['BUILD_SHARED_LIBS'] = "ON"
 
         if self.config.modules_list is not None:
             cmake_vars['BUILD_LIST'] = '%s' % self.config.modules_list
@@ -389,13 +389,10 @@ if __name__ == "__main__":
     parser.add_argument('--no_samples_build', action="store_true", help="Do not build samples (speeds up build)")
     parser.add_argument('--opencl', action="store_true", help="Enable OpenCL support")
     parser.add_argument('--no_kotlin', action="store_true", help="Disable Kotlin extensions")
-<<<<<<< HEAD
-=======
     parser.add_argument('--shared', action="store_true", help="Build shared libraries")
     parser.add_argument('--no_media_ndk', action="store_true", help="Do not link Media NDK (required for video I/O support)")
     parser.add_argument('--hwasan', action="store_true", help="Enable Hardware Address Sanitizer on ARM64")
     parser.add_argument('--disable', metavar='FEATURE', default=[], action='append', help='OpenCV features to disable (add WITH_*=OFF). To disable multiple, specify this flag again, e.g. "--disable TBB --disable OPENMP"')
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     args = parser.parse_args()
 
     log.basicConfig(format='%(message)s', level=log.DEBUG)

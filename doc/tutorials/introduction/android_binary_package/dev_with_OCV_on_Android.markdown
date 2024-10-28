@@ -169,34 +169,8 @@ In this section we'll extend our empty OpenCV app created in the previous sectio
 
     This can also be done in Code or Split mode by removing the `TextView` block from XML file.
 
-<<<<<<< HEAD
--#  Either use @ref tutorial_android_dev_intro_ndk "manual"  ndk-build invocation or
-    @ref tutorial_android_dev_intro_eclipse "setup Eclipse CDT Builder" to build native JNI lib
-    before (re)building the Java part and creating
-    an APK.
-
-Hello OpenCV Sample
--------------------
-
-Here are basic steps to guide you trough the process of creating a simple OpenCV-centric
-application. It will be capable of accessing camera output, processing it and displaying the result.
-
--#  Open Eclipse IDE, create a new clean workspace, create a new Android project
-    File --\> New --\> Android Project
--#  Set name, target, package and minSDKVersion accordingly. The minimal SDK version for build with
-    OpenCV4Android SDK is 11. Minimal device API Level (for application manifest) is 8.
--#  Allow Eclipse to create default activity. Lets name the activity HelloOpenCvActivity.
--#  Choose Blank Activity with full screen layout. Lets name the layout HelloOpenCvLayout.
--#  Import OpenCV library project to your workspace.
--#  Reference OpenCV library within your project properties.
-
-    ![](images/dev_OCV_reference.png)
-
--#  Edit your layout file as xml file and pass the following layout there:
-=======
 3. Add camera view to the layout:
     1. Add a scheme into layout description:
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     @code{.xml}
     xmlns:opencv="http://schemas.android.com/apk/res-auto"
     @endcode

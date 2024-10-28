@@ -163,16 +163,6 @@ void eltwise_op(const Stream& stream, TensorSpan<T> output, TensorView<T> x, Ten
          * x: [1, 256, 32, 32] -> [256, 32, 32]
          * y: [1, 256, 1, 1] -> [256, 1, 1]
          */
-<<<<<<< HEAD
-        for (int r = 0; r < output.rank(); r++)
-        {
-            while (x.get_axis_size(r) == 1 && y.get_axis_size(r) == 1) {
-                CV_Assert(output.get_axis_size(r) == 1);
-
-                x.squeeze(r);
-                y.squeeze(r);
-                output.squeeze(r);
-=======
         int eliminate_times = 0;
         for (std::size_t i = 0; i < outShape.size(); i++) {
             if (inShape1[i] == 1 && inShape2[i] == 1 && outShape[i] == 1 && i != (outShape.size() - 1)) {
@@ -186,7 +176,6 @@ void eltwise_op(const Stream& stream, TensorSpan<T> output, TensorView<T> x, Ten
                 inShape1.erase(inShape1.begin());
                 inShape2.erase(inShape2.begin());
                 outShape.erase(outShape.begin());
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             }
         }
 
@@ -210,6 +199,9 @@ void eltwise_op(const Stream& stream, TensorSpan<T> output, TensorView<T> x, Ten
                     auto new_size = inShape1[i] * inShape1[j];
                     inShape1[i] = new_size;
                     inShape2[i] = new_size;
+                    // outShape should be changed after merged
+                    auto output_new_size = outShape[i] * outShape[j];
+                    outShape[i] = output_new_size;
 
                     /* delete axis `j` */
                     inShape1.erase(std::begin(inShape1) + j);

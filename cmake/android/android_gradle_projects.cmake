@@ -2,13 +2,8 @@
 set(ANDROID_GRADLE_PLUGIN_VERSION "7.3.1" CACHE STRING "Android Gradle Plugin version")
 message(STATUS "Android Gradle Plugin version: ${ANDROID_GRADLE_PLUGIN_VERSION}")
 
-<<<<<<< HEAD
-set(KOTLIN_PLUGIN_VERSION "1.4.10" CACHE STRING "Kotlin Plugin version")
-message(STATUS "kotlin Plugin version: ${KOTLIN_GRADLE_PLUGIN_VERSION}")
-=======
 set(KOTLIN_PLUGIN_VERSION "1.8.20" CACHE STRING "Kotlin Plugin version")
 message(STATUS "Kotlin Plugin version: ${KOTLIN_PLUGIN_VERSION}")
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 if(BUILD_KOTLIN_EXTENSIONS)
   set(KOTLIN_PLUGIN_DECLARATION "apply plugin: 'kotlin-android'" CACHE STRING "Kotlin Plugin version")
@@ -55,9 +50,11 @@ endif()
 #string(REPLACE "\n" "\n${__spaces}" ANDROID_ABI_FILTER "${__spaces}${ANDROID_BUILD_ABI_FILTER}")
 #string(REPLACE REGEX "[ ]+$" "" ANDROID_ABI_FILTER "${ANDROID_ABI_FILTER}")
 set(ANDROID_ABI_FILTER "${ANDROID_BUILD_ABI_FILTER}")
+set(ANDROID_STRICT_BUILD_CONFIGURATION "true")
 configure_file("${OpenCV_SOURCE_DIR}/samples/android/build.gradle.in" "${ANDROID_BUILD_BASE_DIR}/build.gradle" @ONLY)
 
 set(ANDROID_ABI_FILTER "${ANDROID_INSTALL_ABI_FILTER}")
+set(ANDROID_STRICT_BUILD_CONFIGURATION "false")
 configure_file("${OpenCV_SOURCE_DIR}/samples/android/build.gradle.in" "${ANDROID_TMP_INSTALL_BASE_DIR}/${ANDROID_INSTALL_SAMPLES_DIR}/build.gradle" @ONLY)
 install(FILES "${ANDROID_TMP_INSTALL_BASE_DIR}/${ANDROID_INSTALL_SAMPLES_DIR}/build.gradle" DESTINATION "${ANDROID_INSTALL_SAMPLES_DIR}" COMPONENT samples)
 
@@ -85,8 +82,6 @@ foreach(fname ${GRADLE_WRAPPER_FILES})
   install(FILES "${OpenCV_SOURCE_DIR}/platforms/android/gradle-wrapper/${fname}" DESTINATION "${ANDROID_INSTALL_SAMPLES_DIR}/${__dir}" COMPONENT samples ${__permissions})
 endforeach()
 
-<<<<<<< HEAD
-=======
 # set build.gradle namespace
 if(NOT (ANDROID_GRADLE_PLUGIN_VERSION VERSION_LESS "7.3.0"))
   ocv_update(OPENCV_ANDROID_NAMESPACE_DECLARATION "namespace 'org.opencv'")
@@ -113,7 +108,6 @@ if(NOT OPENCV_SKIP_ANDROID_FORCE_CMAKE)
   ocv_update_file("${ANDROID_BUILD_BASE_DIR}/local.properties" "cmake.dir=${_CMAKE_INSTALL_DIR}\nndk.dir=${ANDROID_NDK}")
 endif()
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 file(WRITE "${ANDROID_BUILD_BASE_DIR}/settings.gradle" "
 gradle.ext {
     // possible options: 'maven_central', 'maven_local', 'sdk_path'
@@ -146,12 +140,9 @@ if (gradle.opencv_source == 'sdk_path') {
 }
 ")
 
-<<<<<<< HEAD
-=======
 ocv_check_environment_variables(OPENCV_GRADLE_VERBOSE_OPTIONS)
 ocv_update(OPENCV_GRADLE_VERBOSE_OPTIONS "-i")
 separate_arguments(OPENCV_GRADLE_VERBOSE_OPTIONS UNIX_COMMAND "${OPENCV_GRADLE_VERBOSE_OPTIONS}")
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 macro(add_android_project target path)
   get_filename_component(__dir "${path}" NAME)

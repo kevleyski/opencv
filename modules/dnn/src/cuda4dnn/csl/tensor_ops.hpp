@@ -18,6 +18,7 @@
 #include "cudnn/softmax.hpp"
 #include "cudnn/transform.hpp"
 #include "cudnn/transpose_convolution.hpp"
+#include "cudnn/recurrent.hpp"
 
 #include <opencv2/core.hpp>
 
@@ -497,8 +498,6 @@ namespace cv { namespace dnn { namespace cuda4dnn { namespace csl {
         TensorTransformDescriptor transDesc;
     };
 
-<<<<<<< HEAD
-=======
     template<class T>
     class LSTM
     {
@@ -654,7 +653,6 @@ namespace cv { namespace dnn { namespace cuda4dnn { namespace csl {
 #endif
     };
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }}}} /* namespace cv::dnn::cuda4dnn::csl */
 
 #endif /* OPENCV_DNN_SRC_CUDA4DNN_CSL_TENSOR_OPS_HPP */

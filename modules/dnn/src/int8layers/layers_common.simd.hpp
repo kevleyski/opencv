@@ -633,8 +633,6 @@ void fastGEMM1T( const int8_t* vec, const int8_t* weights,
 }
 #endif // CV_CPU_OPTIMIZATION_DECLARATIONS_ONLY
 
-<<<<<<< HEAD
-=======
 
 #if !defined(CV_CPU_OPTIMIZATION_DECLARATIONS_ONLY) && CV_LASX
 
@@ -1694,6 +1692,5 @@ void fastGEMM1T( const int8_t* vec, const int8_t* weights,
 
 #endif // CV_RVV
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 CV_CPU_OPTIMIZATION_NAMESPACE_END
 }} // namespace

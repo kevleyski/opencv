@@ -43,8 +43,6 @@ typedef struct {
                     // or non-literal symbol otherwise
 } HuffmanCode32;
 
-<<<<<<< HEAD
-=======
 // Contiguous memory segment of HuffmanCodes.
 typedef struct HuffmanTablesSegment {
   HuffmanCode* start;
@@ -69,7 +67,6 @@ WEBP_NODISCARD int VP8LHuffmanTablesAllocate(int size,
                                              HuffmanTables* huffman_tables);
 void VP8LHuffmanTablesDeallocate(HuffmanTables* const huffman_tables);
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #define HUFFMAN_PACKED_BITS 6
 #define HUFFMAN_PACKED_TABLE_SIZE (1u << HUFFMAN_PACKED_BITS)
 
@@ -105,17 +102,10 @@ void VP8LHtreeGroupsFree(HTreeGroup* const htree_groups);
 // the huffman table.
 // Returns built table size or 0 in case of error (invalid tree or
 // memory error).
-<<<<<<< HEAD
-// If root_table is NULL, it returns 0 if a lookup cannot be built, something
-// > 0 otherwise (but not the table size).
-int VP8LBuildHuffmanTable(HuffmanCode* const root_table, int root_bits,
-                          const int code_lengths[], int code_lengths_size);
-=======
 WEBP_NODISCARD int VP8LBuildHuffmanTable(HuffmanTables* const root_table,
                                          int root_bits,
                                          const int code_lengths[],
                                          int code_lengths_size);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #ifdef __cplusplus
 }    // extern "C"

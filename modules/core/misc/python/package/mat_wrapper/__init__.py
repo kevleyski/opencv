@@ -1,14 +1,7 @@
 __all__ = []
 
-import sys
 import numpy as np
 import cv2 as cv
-<<<<<<< HEAD
-
-# NumPy documentation: https://numpy.org/doc/stable/user/basics.subclassing.html
-
-class Mat(np.ndarray):
-=======
 from typing import TYPE_CHECKING, Any
 
 # Same as cv2.typing.NumPyArrayNumeric, but avoids circular dependencies
@@ -21,7 +14,6 @@ else:
 
 
 class Mat(_NumPyArrayNumeric):
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     '''
     cv.Mat wrapper for numpy array.
 

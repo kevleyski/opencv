@@ -9,6 +9,8 @@
 
 #include "opencv2/core/hal/hal.hpp"
 #include "opencv2/core/hal/intrin.hpp"
+#include "../op_timvx.hpp"
+#include "../ie_ngraph.hpp"
 #include <iostream>
 #include <numeric>
 
@@ -17,7 +19,7 @@ namespace cv
 namespace dnn
 {
 
-#if CV_SIMD
+#if CV_SIMD128
 static inline void v_expand_mul_add(const v_int8x16& a, const v_int8x16& b,
                                     v_int32x4& out0, v_int32x4& out1, v_int32x4& out2, v_int32x4& out3)
 {
@@ -27,10 +29,10 @@ static inline void v_expand_mul_add(const v_int8x16& a, const v_int8x16& b,
 
     v_int32x4 t0, t1;
     v_mul_expand(a0, b0, t0, t1);
-    out0 += t0; out1 += t1;
+    out0 = v_add(out0, t0); out1 = v_add(out1, t1);
 
     v_mul_expand(a1, b1, t0, t1);
-    out2 += t0; out3 += t1;
+    out2 = v_add(out2, t0); out3 = v_add(out3, t1);
 }
 #endif
 
@@ -40,15 +42,17 @@ public:
     BaseConvolutionLayerInt8Impl(const LayerParams &params)
     {
         setParamsFrom(params);
-        getConvolutionKernelParams(params, kernel_size, pads_begin, pads_end, strides, dilations, padMode, adjust_pads);
+        getConvolutionKernelParams(params, kernel_size, pads_begin, pads_end, strides, dilations, padMode, adjust_pads, useWinograd);
 
         numOutput = params.get<int>("num_output");
         int ngroups = params.get<int>("group", 1);
         CV_Assert(numOutput % ngroups == 0);
 
+        input_sc = params.get<float>("input_scale");
         input_zp = params.get<int>("input_zeropoint");
         output_zp = params.get<int>("zeropoints");
         output_sc = params.get<float>("scales");
+        per_channel = params.get<bool>("per_channel", true);
 
         if (kernel_size.size() == 2) {
             kernel = Size(kernel_size[1], kernel_size[0]);
@@ -84,11 +88,11 @@ public:
         CV_Assert(inputs[0].dims == outputs[0].dims);
         if (weightShape.dims() == 3)
         {
-            kernel_size.assign(1, kernel_size[0]);
-            strides.assign(1, strides[0]);
-            dilations.assign(1, dilations[0]);
-            pads_begin.assign(1, pads_begin[0]);
-            pads_end.assign(1, pads_end[0]);
+            kernel_size.resize(1, kernel_size[0]);
+            strides.resize(1, strides[0]);
+            dilations.resize(1, dilations[0]);
+            pads_begin.resize(1, pads_begin[0]);
+            pads_end.resize(1, pads_end[0]);
         }
         CV_Assert(weightShape.dims() == kernel_size.size() + 2);
         for (int i = 0; i < kernel_size.size(); i++) {
@@ -181,8 +185,19 @@ public:
     virtual bool supportBackend(int backendId) CV_OVERRIDE
     {
         size_t ksize = kernel_size.size();
+
+#ifdef HAVE_TIMVX
+        if (backendId == DNN_BACKEND_TIMVX)
+        {
+            /* only Conv1d and Conv2d supported. */
+            if (ksize == 2 || ksize == 1)
+                return true;
+            return false;
+        }
+#endif
         // Only default backend and Conv1D/Conv2D/Conv3D are supported
-        return backendId == DNN_BACKEND_OPENCV && ksize >= 1 && ksize <= 3;
+        return (backendId == DNN_BACKEND_OPENCV && ksize >= 1 && ksize <= 3) ||
+               backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH;
     }
 
     bool getMemoryShapes(const std::vector<MatShape> &inputs,
@@ -261,6 +276,11 @@ public:
 
     bool setActivation(const Ptr<ActivationLayer>& layer) CV_OVERRIDE
     {
+        // TODO! add activation in convolution.
+#ifdef HAVE_TIMVX
+        if (preferableTarget == DNN_TARGET_NPU)
+            return false;
+#endif
         Ptr<ActivationLayerInt8> activ_int8 = layer.dynamicCast<ActivationLayerInt8>();
         if (!activ_int8.empty())
         {
@@ -300,8 +320,6 @@ public:
         outputMultiplier[outCn] = outputMultiplier[outCn+1] = outputMultiplier[outCn-1];
     }
 
-<<<<<<< HEAD
-=======
     virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
                                        const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
                                        const std::vector<Ptr<BackendWrapper> > &outputsWrapper,
@@ -665,7 +683,6 @@ public:
     }
 #endif  // HAVE_DNN_NGRAPH
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     class ParallelConv : public cv::ParallelLoopBody
     {
     public:
@@ -684,22 +701,15 @@ public:
         bool is1x1_;
         bool useAVX2;
         bool useAVX512;
-<<<<<<< HEAD
-=======
         bool useLASX;
         bool useRVV;
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         int blk_size_cn;
         int inpZp, outZp;
         const std::vector<float>* multiplier;
 
         ParallelConv()
             : input_(0), weights_(0), output_(0), ngroups_(0), nstripes_(0),
-<<<<<<< HEAD
-              biasvec_(0), activLUT_(0), activ_(0), is1x1_(false), useAVX2(false), useAVX512(false)
-=======
               biasvec_(0), activLUT_(0), activ_(0), is1x1_(false), useAVX2(false), useAVX512(false), useLASX(false), useRVV(false)
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             , blk_size_cn(0), inpZp(0), outZp(0), multiplier(0)
         {}
 
@@ -755,12 +765,9 @@ public:
             p.useAVX2   = checkHardwareSupport(CPU_AVX2) && isConv2D;
             p.useAVX512 = CV_CPU_HAS_SUPPORT_AVX512_SKX  && isConv2D;
 
-<<<<<<< HEAD
-=======
             p.useLASX   = checkHardwareSupport(CPU_LASX) && isConv2D;
             p.useRVV   = checkHardwareSupport(CPU_RVV) && isConv2D;
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             int kernel_d = isConv3D? kernel_size[0] : 1;
             int kernel_h = isConv1D? 1 : kernel_size[kernel_size.size() - 2];
             int kernel_w = kernel_size.back();
@@ -958,8 +965,6 @@ public:
                                     biasptr, multptr, inptr_, height, width, outptr_, out_d, outH, outW, inpZp, outZp);
                             else
                         #endif
-<<<<<<< HEAD
-=======
                         #if CV_TRY_LASX
                             if(useLASX)
                                 opt_LASX::fastDepthwiseConv(wptr, kernel_h, kernel_w,
@@ -981,7 +986,6 @@ public:
                                     biasptr, multptr, inptr_, height, width, outptr_, out_d, outH, outW, inpZp, outZp);
                             else
                         #endif
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                             {
                                 const int8_t w00_ = wptr[0], w01_ = wptr[1], w02_ = wptr[2],
                                              w10 = wptr[3], w11 = wptr[4], w12 = wptr[5],
@@ -1027,7 +1031,7 @@ public:
                                         outptr[0] = std::min(std::max(out1, -128), 127);
                                         out_j = 1;
                                     }
-                                #if CV_SIMD
+                                #if CV_SIMD128
                                     if( stride_w == 1 )
                                     {
                                         const int out_delta = 16;
@@ -1067,10 +1071,10 @@ public:
                                             v_expand_mul_add(v21, vw21, vout0, vout1, vout2, vout3);
                                             v_expand_mul_add(v22, vw22, vout0, vout1, vout2, vout3);
 
-                                            vout0 = voutzp + v_round(v_cvt_f32(vout0)*vmult);
-                                            vout1 = voutzp + v_round(v_cvt_f32(vout1)*vmult);
-                                            vout2 = voutzp + v_round(v_cvt_f32(vout2)*vmult);
-                                            vout3 = voutzp + v_round(v_cvt_f32(vout3)*vmult);
+                                            vout0 = v_add(voutzp, v_round(v_mul(v_cvt_f32(vout0), vmult)));
+                                            vout1 = v_add(voutzp, v_round(v_mul(v_cvt_f32(vout1), vmult)));
+                                            vout2 = v_add(voutzp, v_round(v_mul(v_cvt_f32(vout2), vmult)));
+                                            vout3 = v_add(voutzp, v_round(v_mul(v_cvt_f32(vout3), vmult)));
 
                                             vout0 = v_min(v_max(vout0, outmin), outmax);
                                             vout1 = v_min(v_max(vout1, outmin), outmax);
@@ -1355,8 +1359,6 @@ public:
                                           outShape, bsz, vsz, vsz_a, outZp, multptr, cn0 == 0, cn1 == inpCn);
                         else
                     #endif
-<<<<<<< HEAD
-=======
                     #if CV_TRY_LASX
                         if(useLASX)
                             opt_LASX::fastConv(wptr, wstep, biasptr, rowbuf0, data_out0 + ofs0,
@@ -1375,7 +1377,6 @@ public:
                                           outShape, bsz, vsz, vsz_a, outZp, multptr, cn0 == 0, cn1 == inpCn);
                         else
                     #endif
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                         for( int i = 0; i < outCn; i += 2 )
                         {
                             const int8_t* wptr0 = wptr + i*wstep;
@@ -1435,12 +1436,12 @@ public:
                                     vs12 = v_dotprod_expand_fast(w1, r2, vs12);
                                     vs13 = v_dotprod_expand_fast(w1, r3, vs13);
                                 }
-                                s0 += v_int32x4(v_reduce_sum(vs00), v_reduce_sum(vs01), v_reduce_sum(vs02), v_reduce_sum(vs03));
-                                s1 += v_int32x4(v_reduce_sum(vs10), v_reduce_sum(vs11), v_reduce_sum(vs12), v_reduce_sum(vs13));
+                                s0 = v_add(s0, v_int32x4(v_reduce_sum(vs00), v_reduce_sum(vs01), v_reduce_sum(vs02), v_reduce_sum(vs03)));
+                                s1 = v_add(s1, v_int32x4(v_reduce_sum(vs10), v_reduce_sum(vs11), v_reduce_sum(vs12), v_reduce_sum(vs13)));
                                 if( cn1 == inpCn )
                                 {
-                                    s0 = voutzp + v_round(v_cvt_f32(s0)*vmult0);
-                                    s1 = voutzp + v_round(v_cvt_f32(s1)*vmult1);
+                                    s0 = v_add(voutzp, v_round(v_mul(v_cvt_f32(s0), vmult0)));
+                                    s1 = v_add(voutzp, v_round(v_mul(v_cvt_f32(s1), vmult1)));
 
                                     s0 = v_min(v_max(s0, outmin), outmax);
                                     s1 = v_min(v_max(s1, outmin), outmax);

@@ -341,19 +341,31 @@ class JSWrapperGenerator(object):
             sys.exit(-1)
         self.classes[class_info.name] = class_info
 
-        if class_info.bases:
-            chunks = class_info.bases[0].split('::')
-            base = '_'.join(chunks)
-            while base not in self.classes and len(chunks) > 1:
-                del chunks[-2]
+    def resolve_class_inheritance(self):
+        new_classes = {}
+        for name, class_info in self.classes.items():
+
+            if not hasattr(class_info, 'bases'):
+                new_classes[name] = class_info
+                continue # not class
+
+            if class_info.bases:
+                chunks = class_info.bases[0].split('::')
                 base = '_'.join(chunks)
-            if base not in self.classes:
-                print("Generator error: unable to resolve base %s for %s"
-                      % (class_info.bases[0], class_info.name))
-                sys.exit(-1)
-            else:
-                class_info.bases[0] = "::".join(chunks)
-                class_info.isalgorithm |= self.classes[base].isalgorithm
+                while base not in self.classes and len(chunks) > 1:
+                    del chunks[-2]
+                    base = '_'.join(chunks)
+                if base not in self.classes:
+                    print("Generator error: unable to resolve base %s for %s"
+                        % (class_info.bases[0], class_info.name))
+                    sys.exit(-1)
+                else:
+                    class_info.bases[0] = "::".join(chunks)
+                    class_info.isalgorithm |= self.classes[base].isalgorithm
+
+            new_classes[name] = class_info
+
+        self.classes = new_classes
 
     def split_decl_name(self, name):
         chunks = name.split('.')
@@ -507,7 +519,7 @@ class JSWrapperGenerator(object):
                 arg_types.append(arg_type)
                 unwrapped_arg_types.append(arg_type)
 
-            # Function attribure
+            # Function attribute
             func_attribs = ''
             if '*' in ''.join(arg_types):
                 func_attribs += ', allow_raw_pointers()'
@@ -702,7 +714,7 @@ class JSWrapperGenerator(object):
                     def_args.append(arg.defval)
                 arg_types.append(orig_arg_types[-1])
 
-            # Function attribure
+            # Function attribute
             func_attribs = ''
             if '*' in ''.join(orig_arg_types):
                 func_attribs += ', allow_raw_pointers()'
@@ -781,6 +793,8 @@ class JSWrapperGenerator(object):
                 else:  # class/global function
                     self.add_func(decl)
 
+        self.resolve_class_inheritance()
+
         # step 2: generate bindings
         # Global functions
         for ns_name, ns in sorted(self.namespaces.items()):
@@ -834,6 +848,7 @@ class JSWrapperGenerator(object):
         for name, class_info in sorted(self.classes.items()):
             class_bindings = []
             if not name in white_list:
+                #print('Not in whitelist: "{}" from ns={}'.format(name, ns_name))
                 continue
 
             # Generate bindings for methods

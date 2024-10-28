@@ -62,7 +62,6 @@
 #include "opencv2/core/ocl.hpp"
 #endif
 
-#include <assert.h>
 #include <ctype.h>
 #include <float.h>
 #include <limits.h>
@@ -109,12 +108,36 @@ extern const uchar g_Saturate8u[];
 #define CV_MIN_8U(a,b)       ((a) - CV_FAST_CAST_8U((a) - (b)))
 #define CV_MAX_8U(a,b)       ((a) + CV_FAST_CAST_8U((b) - (a)))
 
+template<typename T1, typename T2=T1, typename T3=T1> struct OpNop
+{
+    typedef T1 type1;
+    typedef T2 type2;
+    typedef T3 rtype;
+    T3 operator ()(const T1 a) const { return saturate_cast<T3>(a); }
+};
+
+template<typename T1, typename T2=T1, typename T3=T1> struct OpSqr
+{
+    typedef T1 type1;
+    typedef T2 type2;
+    typedef T3 rtype;
+    T3 operator ()(const T1 a) const { return saturate_cast<T3>(a)*saturate_cast<T3>(a); }
+};
+
 template<typename T1, typename T2=T1, typename T3=T1> struct OpAdd
 {
     typedef T1 type1;
     typedef T2 type2;
     typedef T3 rtype;
     T3 operator ()(const T1 a, const T2 b) const { return saturate_cast<T3>(a + b); }
+};
+
+template<typename T1, typename T2=T1, typename T3=T1> struct OpAddSqr
+{
+    typedef T1 type1;
+    typedef T2 type2;
+    typedef T3 rtype;
+    T3 operator ()(const T1 a, const T2 b) const { return saturate_cast<T3>(a + saturate_cast<T3>(b)*saturate_cast<T3>(b)); }
 };
 
 template<typename T1, typename T2=T1, typename T3=T1> struct OpSub
@@ -366,7 +389,12 @@ extern CV_EXPORTS
 bool __termination;  // skip some cleanups, because process is terminating
                      // (for example, if ExitProcess() was already called)
 
+CV_EXPORTS
 cv::Mutex& getInitializationMutex();
+
+/// @brief Returns timestamp in nanoseconds since program launch
+int64 getTimestampNS();
+
 
 #define CV_SINGLETON_LAZY_INIT_(TYPE, INITIALIZER, RET_VALUE) \
     static TYPE* const instance = INITIALIZER; \

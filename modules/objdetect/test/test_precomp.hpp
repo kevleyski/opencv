@@ -7,9 +7,6 @@
 #include "opencv2/ts.hpp"
 #include "opencv2/objdetect.hpp"
 
-<<<<<<< HEAD
-=======
 #include <random>
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif

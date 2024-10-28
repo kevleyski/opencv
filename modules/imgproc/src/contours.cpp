@@ -98,7 +98,7 @@ cvReadChainPoint( CvChainPtReader * reader )
 
         reader->ptr = ptr;
         reader->code = (schar)code;
-        assert( (code & ~7) == 0 );
+        CV_Assert( (code & ~7) == 0 );
         reader->pt.x = pt.x + icvCodeDeltas[code].x;
         reader->pt.y = pt.y + icvCodeDeltas[code].y;
     }
@@ -170,9 +170,6 @@ typedef struct _CvContourScanner
     _CvContourInfo *cinfo_table[128];
 }
 _CvContourScanner;
-
-#define _CV_FIND_CONTOURS_FLAGS_EXTERNAL_ONLY    1
-#define _CV_FIND_CONTOURS_FLAGS_HIERARCHIC       2
 
 /*
    Initializes scanner structure.
@@ -1081,7 +1078,7 @@ cvFindNextContour( CvContourScanner scanner )
             }
             else
             {
-#if CV_SIMD
+#if (CV_SIMD || CV_SIMD_SCALABLE)
                 if ((p = img[x]) != prev)
                 {
                     goto _next_contour;
@@ -1089,9 +1086,9 @@ cvFindNextContour( CvContourScanner scanner )
                 else
                 {
                     v_uint8 v_prev = vx_setall_u8((uchar)prev);
-                    for (; x <= width - v_uint8::nlanes; x += v_uint8::nlanes)
+                    for (; x <= width - VTraits<v_uint8>::vlanes(); x += VTraits<v_uint8>::vlanes())
                     {
-                        v_uint8 vmask = (vx_load((uchar*)(img + x)) != v_prev);
+                        v_uint8 vmask = (v_ne(vx_load((uchar *)(img + x)), v_prev));
                         if (v_check_any(vmask))
                         {
                             p = img[(x += v_scan_forward(vmask))];
@@ -1106,7 +1103,7 @@ cvFindNextContour( CvContourScanner scanner )
 
             if( x >= width )
                 break;
-#if CV_SIMD
+#if (CV_SIMD || CV_SIMD_SCALABLE)
         _next_contour:
 #endif
             {
@@ -1188,7 +1185,7 @@ cvFindNextContour( CvContourScanner scanner )
                     }
 
                     /* hole flag of the parent must differ from the flag of the contour */
-                    assert( par_info->is_hole != is_hole );
+                    CV_Assert( par_info->is_hole != is_hole );
                     if( par_info->contour == 0 )        /* removed contour */
                         goto resume_scan;
                 }
@@ -1354,11 +1351,11 @@ CvLinkedRunPoint;
 
 inline int findStartContourPoint(uchar *src_data, CvSize img_size, int j)
 {
-#if CV_SIMD
+#if (CV_SIMD || CV_SIMD_SCALABLE)
     v_uint8 v_zero = vx_setzero_u8();
-    for (; j <= img_size.width - v_uint8::nlanes; j += v_uint8::nlanes)
+    for (; j <= img_size.width - VTraits<v_uint8>::vlanes(); j += VTraits<v_uint8>::vlanes())
     {
-        v_uint8 vmask = (vx_load((uchar*)(src_data + j)) != v_zero);
+        v_uint8 vmask = (v_ne(vx_load((uchar *)(src_data + j)), v_zero));
         if (v_check_any(vmask))
         {
             j += v_scan_forward(vmask);
@@ -1373,7 +1370,7 @@ inline int findStartContourPoint(uchar *src_data, CvSize img_size, int j)
 
 inline int findEndContourPoint(uchar *src_data, CvSize img_size, int j)
 {
-#if CV_SIMD
+#if (CV_SIMD || CV_SIMD_SCALABLE)
     if (j < img_size.width && !src_data[j])
     {
         return j;
@@ -1381,9 +1378,9 @@ inline int findEndContourPoint(uchar *src_data, CvSize img_size, int j)
     else
     {
         v_uint8 v_zero = vx_setzero_u8();
-        for (; j <= img_size.width - v_uint8::nlanes; j += v_uint8::nlanes)
+        for (; j <= img_size.width - VTraits<v_uint8>::vlanes(); j += VTraits<v_uint8>::vlanes())
         {
-            v_uint8 vmask = (vx_load((uchar*)(src_data + j)) == v_zero);
+            v_uint8 vmask = (v_eq(vx_load((uchar *)(src_data + j)), v_zero));
             if (v_check_any(vmask))
             {
                 j += v_scan_forward(vmask);

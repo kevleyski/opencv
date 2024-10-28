@@ -126,11 +126,7 @@ bool LogisticRegressionImpl::train(const Ptr<TrainData>& trainData, int)
     int num_classes = (int) this->forward_mapper.size();
     if(num_classes < 2)
     {
-<<<<<<< HEAD
-        CV_Error( CV_StsBadArg, "data should have atleast 2 classes" );
-=======
         CV_Error( cv::Error::StsBadArg, "data should have at least 2 classes" );
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 
     // add a column of ones to the data (bias/intercept term)

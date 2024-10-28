@@ -32,11 +32,7 @@ extern "C" {
 
 // version numbers
 #define DEC_MAJ_VERSION 1
-<<<<<<< HEAD
-#define DEC_MIN_VERSION 2
-=======
 #define DEC_MIN_VERSION 4
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #define DEC_REV_VERSION 0
 
 // YUV-cache parameters. Cache is 32-bytes wide (= one cacheline).

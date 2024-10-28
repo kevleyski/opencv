@@ -36,6 +36,14 @@ String dumpInt(int argument)
 }
 
 CV_WRAP static inline
+String dumpInt64(int64 argument)
+{
+    std::ostringstream oss("Int64: ", std::ios::ate);
+    oss << argument;
+    return oss.str();
+}
+
+CV_WRAP static inline
 String dumpSizeT(size_t argument)
 {
     std::ostringstream oss("size_t: ", std::ios::ate);
@@ -102,8 +110,6 @@ String dumpRange(const Range& argument)
     }
 }
 
-<<<<<<< HEAD
-=======
 CV_EXPORTS_W String dumpVectorOfInt(const std::vector<int>& vec);
 
 CV_EXPORTS_W String dumpVectorOfDouble(const std::vector<double>& vec);
@@ -142,7 +148,6 @@ std::vector<RotatedRect> testRotatedRectVector(float x, float y, float w, float 
     return result;
 }
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 CV_WRAP static inline
 int testOverwriteNativeMethod(int argument)
 {
@@ -225,8 +230,6 @@ AsyncArray testAsyncException()
     return p.getArrayResult();
 }
 
-<<<<<<< HEAD
-=======
 CV_WRAP static inline
 String dumpVec2i(const cv::Vec2i value = cv::Vec2i(42, 24)) {
     return format("Vec2i(%d, %d)", value[0], value[1]);
@@ -325,7 +328,6 @@ typedef OriginalClassName::Params OriginalClassName_Params;
 
 //! @endcond IGNORED
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 namespace fs {
     CV_EXPORTS_W cv::String getCacheDirectoryForDownloads();
 } // namespace fs

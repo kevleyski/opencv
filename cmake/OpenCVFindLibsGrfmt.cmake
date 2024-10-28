@@ -36,8 +36,10 @@ else()
     unset(_zlib_ORIG_CMAKE_FIND_LIBRARY_SUFFIXES)
   endif()
   if(ZLIB_FOUND AND ANDROID)
-    if(ZLIB_LIBRARIES MATCHES "/usr/lib.*/libz.so$")
+    if(ZLIB_LIBRARY MATCHES "/usr/lib.*/libz.so$")
+      set(ZLIB_LIBRARY z)
       set(ZLIB_LIBRARIES z)
+      set(ZLIB_LIBRARY_RELEASE z)
     endif()
   endif()
   endif()
@@ -52,6 +54,16 @@ else()
     set(ZLIB_LIBRARIES ${ZLIB_LIBRARY})
 
     ocv_parse_header_version(ZLIB "${${ZLIB_LIBRARY}_SOURCE_DIR}/zlib.h" ZLIB_VERSION)
+  endif()
+endif()
+
+# --- libavif (optional) ---
+
+if(WITH_AVIF)
+  ocv_clear_internal_cache_vars(AVIF_LIBRARY AVIF_INCLUDE_DIR)
+  include(cmake/OpenCVFindAVIF.cmake)
+  if(AVIF_FOUND)
+    set(HAVE_AVIF 1)
   endif()
 endif()
 
@@ -252,8 +264,6 @@ if(WITH_JASPER AND NOT HAVE_OPENJPEG)
   endif()
 endif()
 
-<<<<<<< HEAD
-=======
 if(WITH_SPNG)
   if(BUILD_SPNG)
     ocv_clear_vars(PNG_FOUND)
@@ -289,9 +299,8 @@ if(WITH_SPNG)
   endif()
 endif()
 
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 # --- libpng (optional, should be searched after zlib) ---
-if(WITH_PNG)
+if(NOT HAVE_SPNG AND WITH_PNG)
   if(BUILD_PNG)
     ocv_clear_vars(PNG_FOUND)
   else()
@@ -313,6 +322,7 @@ if(WITH_PNG)
   set(HAVE_PNG YES)
 endif()
 
+
 # --- OpenEXR (optional) ---
 if(WITH_OPENEXR)
   ocv_clear_vars(HAVE_OPENEXR)
@@ -329,7 +339,9 @@ if(WITH_OPENEXR)
     set(OPENEXR_LIBRARIES IlmImf)
     add_subdirectory("${OpenCV_SOURCE_DIR}/3rdparty/openexr")
     if(OPENEXR_VERSION)  # check via TARGET doesn't work
+      set(BUILD_OPENEXR ON)
       set(HAVE_OPENEXR YES)
+      set(BUILD_OPENEXR ON)
     endif()
   endif()
 endif()

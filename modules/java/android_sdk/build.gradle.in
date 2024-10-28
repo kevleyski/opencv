@@ -103,6 +103,7 @@ def openCVersionCode = ((@OPENCV_VERSION_MAJOR@ * 100 + @OPENCV_VERSION_MINOR@) 
 println "OpenCV: " +openCVersionName + " " + project.buildscript.sourceFile
 
 android {
+    @OPENCV_ANDROID_NAMESPACE_DECLARATION@
     compileSdkVersion @ANDROID_COMPILE_SDK_VERSION@
 
     defaultConfig {
@@ -119,11 +120,7 @@ android {
             }
         }
     }
-<<<<<<< HEAD
-
-=======
     @BUILD_GRADLE_COMPILE_OPTIONS@
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     buildTypes {
         debug {
             packagingOptions {

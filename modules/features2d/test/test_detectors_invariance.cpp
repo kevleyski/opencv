@@ -37,11 +37,7 @@ INSTANTIATE_TEST_CASE_P(AKAZE_DESCRIPTOR_KAZE, DetectorRotationInvariance,
  */
 
 INSTANTIATE_TEST_CASE_P(SIFT, DetectorScaleInvariance,
-<<<<<<< HEAD
-                        Value(IMAGE_BIKES, SIFT::create(0, 3, 0.09), 0.65f, 0.98f));
-=======
                         Value(IMAGE_BIKES, []() { return SIFT::create(0, 3, 0.09); }, 0.60f, 0.98f));
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 INSTANTIATE_TEST_CASE_P(BRISK, DetectorScaleInvariance,
                         Value(IMAGE_BIKES, []() { return BRISK::create(); }, 0.08f, 0.49f));

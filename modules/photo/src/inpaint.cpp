@@ -687,17 +687,13 @@ icvNSInpaintFMM(Mat &f, Mat &t, Mat &out, int range, CvPriorityQueueFloat *Heap)
       }\
    }
 
-namespace cv {
-template<> struct DefaultDeleter<IplConvKernel>{ void operator ()(IplConvKernel* obj) const { cvReleaseStructuringElement(&obj); } };
-}
-
 static void
 icvInpaint( const Mat &input_img, const Mat &inpaint_mask, Mat &output_img,
            double inpaintRange, int flags )
 {
     cv::Mat mask, band, f, t, out;
     cv::Ptr<CvPriorityQueueFloat> Heap, Out;
-    cv::Ptr<IplConvKernel> el_cross, el_range;
+    cv::Mat el_range, el_cross; // structuring elements for dilate
 
     int range=cvRound(inpaintRange);
     int erows, ecols;
@@ -722,33 +718,19 @@ icvInpaint( const Mat &input_img, const Mat &inpaint_mask, Mat &output_img,
     ecols = input_img.cols + 2;
     erows = input_img.rows + 2;
 
-<<<<<<< HEAD
-    f.reset(cvCreateMat(erows, ecols, CV_8UC1));
-    t.reset(cvCreateMat(erows, ecols, CV_32FC1));
-    band.reset(cvCreateMat(erows, ecols, CV_8UC1));
-    mask.reset(cvCreateMat(erows, ecols, CV_8UC1));
-    el_cross.reset(cvCreateStructuringElementEx(3,3,1,1,CV_SHAPE_CROSS,NULL));
-=======
     f.create(erows, ecols, CV_8UC1);
     t.create(erows, ecols, CV_32FC1);
     band.create(erows, ecols, CV_8UC1);
     mask.create(erows, ecols, CV_8UC1);
     el_cross = cv::getStructuringElement(cv::MORPH_CROSS, cv::Size(3, 3), cv::Point(1, 1));
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     input_img.copyTo( output_img );
     mask.setTo(Scalar(KNOWN,0,0,0));
     COPY_MASK_BORDER1_C1(inpaint_mask,mask,uchar);
     SET_BORDER1_C1(mask,uchar,0);
-<<<<<<< HEAD
-    cvSet(f,cvScalar(KNOWN,0,0,0));
-    cvSet(t,cvScalar(1.0e6f,0,0,0));
-    cvDilate(mask,band,el_cross,1);   // image with narrow band
-=======
     f.setTo(Scalar(KNOWN,0,0,0));
     t.setTo(Scalar(1.0e6f,0,0,0));
     cv::dilate(mask, band, el_cross, cv::Point(1, 1));
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     Heap=cv::makePtr<CvPriorityQueueFloat>();
     subtract(band, mask, band);
     SET_BORDER1_C1(band,uchar,0);
@@ -761,18 +743,10 @@ icvInpaint( const Mat &input_img, const Mat &inpaint_mask, Mat &output_img,
 
     if( flags == cv::INPAINT_TELEA )
     {
-<<<<<<< HEAD
-        out.reset(cvCreateMat(erows, ecols, CV_8UC1));
-        el_range.reset(cvCreateStructuringElementEx(2*range+1,2*range+1,
-            range,range,CV_SHAPE_RECT,NULL));
-        cvDilate(mask,out,el_range,1);
-        cvSub(out,mask,out,NULL);
-=======
         out.create(erows, ecols, CV_8UC1);
         el_range = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(2 * range + 1, 2 * range + 1));
         cv::dilate(mask, out, el_range);
         subtract(out, mask, out);
->>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         Out=cv::makePtr<CvPriorityQueueFloat>();
         if (!Out->Add(band))
             return;

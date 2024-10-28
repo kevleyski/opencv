@@ -36,9 +36,8 @@ function(pad_number NUMBER OUTPUT_LEN)
   endif()
 endfunction()
 pad_number(VERSION_MINOR 3)
-set(VERSION_REVISION 3)
+pad_number(VERSION_REVISION 3)
 set(LIBJPEG_TURBO_VERSION_NUMBER ${VERSION_MAJOR}${VERSION_MINOR}${VERSION_REVISION})
-set(LIBJPEG_TURBO_VERSION_NUMBER 2001003)
 
 string(TIMESTAMP BUILD "opencv-${OPENCV_VERSION}-libjpeg-turbo")
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -47,10 +46,52 @@ endif()
 
 message(STATUS "libjpeg-turbo: VERSION = ${VERSION}, BUILD = ${BUILD}")
 
-string(TOLOWER ${CMAKE_SYSTEM_PROCESSOR} CMAKE_SYSTEM_PROCESSOR_LC)
-OCV_OPTION(ENABLE_LIBJPEG_TURBO_SIMD "Include SIMD extensions for libjpeg-turbo, if available for this platform" (NOT CV_DISABLE_OPTIMIZATION)
+math(EXPR BITS "${CMAKE_SIZEOF_VOID_P} * 8")
+string(TOLOWER "${CMAKE_SYSTEM_PROCESSOR}" CMAKE_SYSTEM_PROCESSOR_LC)
+
+if(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "x86_64" OR
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "amd64" OR
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "i[0-9]86" OR
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "x86" OR
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "ia32")
+  if(BITS EQUAL 64 OR CMAKE_C_COMPILER_ABI MATCHES "ELF X32")
+    set(CPU_TYPE x86_64)
+  else()
+    set(CPU_TYPE i386)
+  endif()
+  if(NOT CMAKE_SYSTEM_PROCESSOR STREQUAL ${CPU_TYPE})
+    set(CMAKE_SYSTEM_PROCESSOR ${CPU_TYPE})
+  endif()
+elseif(CMAKE_SYSTEM_PROCESSOR_LC STREQUAL "aarch64" OR
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "^arm")
+  if(BITS EQUAL 64)
+    set(CPU_TYPE arm64)
+  else()
+    set(CPU_TYPE arm)
+  endif()
+elseif(CMAKE_SYSTEM_PROCESSOR_LC MATCHES "^ppc" OR
+  CMAKE_SYSTEM_PROCESSOR_LC MATCHES "^powerpc")
+  set(CPU_TYPE powerpc)
+else()
+  set(CPU_TYPE ${CMAKE_SYSTEM_PROCESSOR_LC})
+endif()
+if(CMAKE_OSX_ARCHITECTURES MATCHES "x86_64" OR
+  CMAKE_OSX_ARCHITECTURES MATCHES "arm64" OR
+  CMAKE_OSX_ARCHITECTURES MATCHES "i386")
+  set(CPU_TYPE ${CMAKE_OSX_ARCHITECTURES})
+endif()
+if(CMAKE_OSX_ARCHITECTURES MATCHES "ppc")
+  set(CPU_TYPE powerpc)
+endif()
+if(MSVC_IDE AND CMAKE_GENERATOR_PLATFORM MATCHES "arm64")
+  set(CPU_TYPE arm64)
+endif()
+
+OCV_OPTION(ENABLE_LIBJPEG_TURBO_SIMD "Include SIMD extensions for libjpeg-turbo, if available for this platform" (NOT CV_DISABLE_OPTIMIZATION))
 option(WITH_ARITH_ENC "Include arithmetic encoding support when emulating the libjpeg v6b API/ABI" TRUE)
 option(WITH_ARITH_DEC "Include arithmetic decoding support when emulating the libjpeg v6b API/ABI" TRUE)
+set(WITH_SIMD 1)
+set(HAVE_LIBJPEG_TURBO_SIMD 0 PARENT_SCOPE)
 
 include(CheckCSourceCompiles)
 include(CheckIncludeFiles)
@@ -108,20 +149,18 @@ endif()
 
 include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-set(JPEG_SOURCES
-set(JPEG_SOURCES jcapimin.c jcapistd.c jccoefct.c jccolor.c jcdctmgr.c jchuff.c
-        jcicc.c jcinit.c jcmainct.c jcmarker.c jcmaster.c jcomapi.c jcparam.c
-        jcphuff.c jcprepct.c jcsample.c jctrans.c jdapimin.c jdapistd.c jdatadst.c
+set(JPEG16_SOURCES jcapistd.c jccolor.c jcdiffct.c jclossls.c jcmainct.c
+    jcprepct.c jcsample.c jdapistd.c jdcolor.c jddiffct.c jdlossls.c jdmainct.c
     jdpostct.c jdsample.c jutils.c)
 
 set(JPEG12_SOURCES ${JPEG16_SOURCES} jccoefct.c jcdctmgr.c jdcoefct.c
-        jdatasrc.c jdcoefct.c jdcolor.c jddctmgr.c jdhuff.c jdicc.c jdinput.c
+    jddctmgr.c jdmerge.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c jidctint.c
     jidctred.c jquant1.c jquant2.c)
 
 set(JPEG_SOURCES ${JPEG12_SOURCES} jcapimin.c jchuff.c jcicc.c jcinit.c
-        jdmainct.c jdmarker.c jdmaster.c jdmerge.c jdphuff.c jdpostct.c jdsample.c
-        jdtrans.c jerror.c jfdctflt.c jfdctfst.c jfdctint.c jidctflt.c jidctfst.c
-        jidctint.c jidctred.c jquant1.c jquant2.c jutils.c jmemmgr.c jmemnobs.c)
+    jclhuff.c jcmarker.c jcmaster.c jcomapi.c jcparam.c jcphuff.c jctrans.c
+    jdapimin.c jdatadst.c jdatasrc.c jdhuff.c jdicc.c jdinput.c jdlhuff.c
+    jdmarker.c jdmaster.c jdphuff.c jdtrans.c jerror.c jfdctflt.c jmemmgr.c
     jmemnobs.c jpeg_nbits.c)
 
 if(WITH_ARITH_ENC OR WITH_ARITH_DEC)
@@ -136,21 +175,60 @@ if(WITH_ARITH_DEC)
   set(JPEG_SOURCES ${JPEG_SOURCES} jdarith.c)
 endif()
 
-if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID STREQUAL "Clang")
-# No SIMD
-set(JPEG_SOURCES ${JPEG_SOURCES} jsimd_none.c)
+if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+  # Use the maximum optimization level for release builds
+  foreach(var CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO)
+    if(${var} MATCHES "-O2")
+      string(REGEX REPLACE "-O2" "-O3" ${var} "${${var}}")
+    endif()
+  endforeach()
+endif()
+
+if(CMAKE_SYSTEM_NAME STREQUAL "SunOS")
+  if(CMAKE_C_COMPILER_ID MATCHES "SunPro")
+    # Use the maximum optimization level for release builds
+    foreach(var CMAKE_C_FLAGS_RELEASE CMAKE_C_FLAGS_RELWITHDEBINFO)
+      if(${var} MATCHES "-xO3")
+        string(REGEX REPLACE "-xO3" "-xO5" ${var} "${${var}}")
+      endif()
+      if(${var} MATCHES "-xO2")
+        string(REGEX REPLACE "-xO2" "-xO5" ${var} "${${var}}")
+      endif()
+    endforeach()
+  endif()
+endif()
 
 include(CheckTypeSize)
 check_type_size("size_t" SIZE_T)
 check_type_size("unsigned long" UNSIGNED_LONG)
 
+if(ENABLE_LIBJPEG_TURBO_SIMD)
+  add_subdirectory(src/simd)
+  if(NEON_INTRINSICS)
+    add_definitions(-DNEON_INTRINSICS)
+  endif()
 else()
+  set(WITH_SIMD 0)
+endif()
+
+if(WITH_SIMD)
+  message(STATUS "SIMD extensions: ${CPU_TYPE} (WITH_SIMD = ${WITH_SIMD})")
+  set(HAVE_LIBJPEG_TURBO_SIMD 1 PARENT_SCOPE)
+  if(MSVC_IDE OR XCODE)
+    set_source_files_properties(${SIMD_OBJS} PROPERTIES GENERATED 1)
+  endif()
+  set(SIMD_TARGET_OBJECTS $<TARGET_OBJECTS:simd>)
+endif()
+
 configure_file(jversion.h.in jversion.h)
 configure_file(jconfig.h.in jconfig.h)
 configure_file(jconfigint.h.in jconfigint.h)
+
 ocv_list_add_prefix(JPEG16_SOURCES src/)
 ocv_list_add_prefix(JPEG12_SOURCES src/)
 ocv_list_add_prefix(JPEG_SOURCES src/)
+
+set(JPEG_SOURCES ${JPEG_SOURCES} ${SIMD_OBJS})
 
 add_library(jpeg12-static OBJECT ${JPEG12_SOURCES})
 set_property(TARGET jpeg12-static PROPERTY COMPILE_FLAGS
@@ -158,7 +236,7 @@ set_property(TARGET jpeg12-static PROPERTY COMPILE_FLAGS
 add_library(jpeg16-static OBJECT ${JPEG16_SOURCES})
 set_property(TARGET jpeg16-static PROPERTY COMPILE_FLAGS
   "-DBITS_IN_JSAMPLE=16")
-add_library(${JPEG_LIBRARY} STATIC ${OPENCV_3RDPARTY_EXCLUDE_FROM_ALL} ${JPEG_SOURCES} $<TARGET_OBJECTS:jsimd> ${SIMD_OBJS})
+add_library(${JPEG_LIBRARY} STATIC ${JPEG_SOURCES} ${SIMD_TARGET_OBJECTS}
   ${SIMD_OBJS} $<TARGET_OBJECTS:jpeg12-static>
   $<TARGET_OBJECTS:jpeg16-static>)
 

@@ -65,7 +65,7 @@ std::vector<BackendInfo>& getBuiltinBackendsInfo()
 #endif
     };
     return g_backends;
-};
+}
 
 static
 bool sortByPriority(const BackendInfo &lhs, const BackendInfo &rhs)
