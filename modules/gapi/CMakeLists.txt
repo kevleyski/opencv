@@ -29,12 +29,23 @@ ocv_add_module(gapi
 )
 
 if(MSVC)
+<<<<<<< HEAD
   # Disable obsollete warning C4503 popping up on MSVC <<2017
   # https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4503?view=vs-2019
   ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4503)
   if (OPENCV_GAPI_INF_ENGINE AND NOT INF_ENGINE_RELEASE VERSION_GREATER "2021000000")
     # Disable IE deprecated code warning C4996 for releases < 2021.1
     ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4996)
+=======
+  if(MSVC_VERSION LESS 1910)
+    # Disable obsolete warning C4503 popping up on MSVC << 15 2017
+    # https://docs.microsoft.com/en-us/cpp/error-messages/compiler-warnings/compiler-warning-level-1-c4503?view=vs-2019
+    # and IE deprecated code warning C4996
+    ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4503 /wd4996)
+  endif()
+  if((MSVC_VERSION LESS 1920) OR ARM OR AARCH64) # MSVS 2015/2017 on x86 and ARM
+    ocv_warnings_disable(CMAKE_CXX_FLAGS /wd4702)  # 'unreachable code'
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   endif()
 endif()
 
@@ -67,6 +78,7 @@ set(gapi_srcs
     src/api/gframe.cpp
     src/api/gkernel.cpp
     src/api/gbackend.cpp
+    src/api/gcommon.cpp
     src/api/gproto.cpp
     src/api/gnode.cpp
     src/api/gcall.cpp
@@ -76,6 +88,7 @@ set(gapi_srcs
     src/api/kernels_imgproc.cpp
     src/api/kernels_video.cpp
     src/api/kernels_nnparsers.cpp
+    src/api/kernels_ot.cpp
     src/api/kernels_streaming.cpp
     src/api/kernels_stereo.cpp
     src/api/render.cpp
@@ -106,8 +119,10 @@ set(gapi_srcs
     # Executor
     src/executor/gexecutor.cpp
     src/executor/gtbbexecutor.cpp
+    src/executor/gthreadedexecutor.cpp
     src/executor/gstreamingexecutor.cpp
     src/executor/gasync.cpp
+    src/executor/thread_pool.cpp
 
     # CPU Backend (currently built-in)
     src/backends/cpu/gcpubackend.cpp
@@ -116,6 +131,7 @@ set(gapi_srcs
     src/backends/cpu/gcpustereo.cpp
     src/backends/cpu/gcpuvideo.cpp
     src/backends/cpu/gcpucore.cpp
+    src/backends/cpu/gcpuot.cpp
     src/backends/cpu/gnnparsers.cpp
 
     # Fluid Backend (also built-in, FIXME:move away)
@@ -138,6 +154,11 @@ set(gapi_srcs
 
     # ONNX backend
     src/backends/onnx/gonnxbackend.cpp
+<<<<<<< HEAD
+=======
+    src/backends/onnx/dml_ep.cpp
+    src/backends/onnx/coreml_ep.cpp
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     # Render backend
     src/backends/render/grenderocv.cpp
@@ -183,16 +204,23 @@ set(gapi_srcs
     src/utils/itt.cpp
     )
 
+file(GLOB_RECURSE gapi_3rdparty_srcs
+    "${CMAKE_CURRENT_LIST_DIR}/src/3rdparty/vasot/src/*.cpp"
+)
+
 ocv_add_dispatched_file(backends/fluid/gfluidimgproc_func SSE4_1 AVX2)
 
 ocv_list_add_prefix(gapi_srcs "${CMAKE_CURRENT_LIST_DIR}/")
 
 # For IDE users
-ocv_source_group("Src"     FILES ${gapi_srcs})
+ocv_source_group("Src"     FILES ${gapi_srcs} ${gapi_3rdparty_srcs})
 ocv_source_group("Include" FILES ${gapi_ext_hdrs})
 
-ocv_set_module_sources(HEADERS ${gapi_ext_hdrs} SOURCES ${gapi_srcs})
+ocv_set_module_sources(HEADERS ${gapi_ext_hdrs} SOURCES ${gapi_srcs} ${gapi_3rdparty_srcs})
 ocv_module_include_directories("${CMAKE_CURRENT_LIST_DIR}/src")
+
+# VAS Object Tracking includes
+ocv_module_include_directories(${CMAKE_CURRENT_LIST_DIR}/src/3rdparty/vasot/include)
 
 ocv_create_module()
 
@@ -270,6 +298,10 @@ if(WIN32)
   ocv_target_link_libraries(${the_module} PRIVATE wsock32 ws2_32)
 endif()
 
+if(HAVE_DIRECTML)
+  ocv_target_compile_definitions(${the_module} PRIVATE HAVE_DIRECTML=1)
+endif()
+
 if(HAVE_ONNX)
   ocv_target_link_libraries(${the_module} PRIVATE ${ONNX_LIBRARY})
   ocv_target_compile_definitions(${the_module} PRIVATE HAVE_ONNX=1)
@@ -279,5 +311,48 @@ if(HAVE_ONNX)
   endif()
 endif()
 
+ocv_install_3rdparty_licenses(vasot "${CMAKE_CURRENT_SOURCE_DIR}/src/3rdparty/vasot/LICENSE.txt")
+
 ocv_add_perf_tests()
 ocv_add_samples()
+<<<<<<< HEAD
+=======
+
+# Required for sample with inference on host
+if(TARGET example_gapi_onevpl_infer_with_advanced_device_selection)
+  if(TARGET ocv.3rdparty.openvino AND OPENCV_GAPI_WITH_OPENVINO)
+    ocv_target_link_libraries(example_gapi_onevpl_infer_with_advanced_device_selection PRIVATE ocv.3rdparty.openvino)
+  endif()
+  if(HAVE_DIRECTX AND HAVE_D3D11)
+    ocv_target_link_libraries(example_gapi_onevpl_infer_with_advanced_device_selection PRIVATE d3d11 dxgi)
+  endif()
+  if(HAVE_D3D11 AND HAVE_OPENCL)
+    ocv_target_include_directories(example_gapi_onevpl_infer_with_advanced_device_selection SYSTEM PRIVATE ${OPENCL_INCLUDE_DIRS})
+  endif()
+  if(UNIX AND HAVE_VA)
+    message(STATUS "GAPI VPL samples with VAAPI")
+    ocv_target_include_directories(example_gapi_onevpl_infer_with_advanced_device_selection SYSTEM PRIVATE ${VA_INCLUDE_DIR})
+    ocv_target_link_libraries(example_gapi_onevpl_infer_with_advanced_device_selection PRIVATE ${VA_LIBRARIES})
+  endif()
+endif()
+
+if(TARGET example_gapi_pipeline_modeling_tool)
+  if(WIN32)
+    ocv_target_link_libraries(example_gapi_pipeline_modeling_tool winmm.lib)
+  endif()
+endif()
+
+# perf test dependencies postprocessing
+if(HAVE_GAPI_ONEVPL)
+  # NB: TARGET opencv_perf_gapi doesn't exist before `ocv_add_perf_tests`
+  # src/ is specified to include dirs for INTERNAL tests only.
+  if(TARGET opencv_perf_gapi)
+    target_include_directories(opencv_perf_gapi PRIVATE "${CMAKE_CURRENT_LIST_DIR}/src")
+    ocv_target_compile_definitions(opencv_perf_gapi PRIVATE -DHAVE_ONEVPL)
+    ocv_target_link_libraries(opencv_perf_gapi PRIVATE ${VPL_IMPORTED_TARGETS})
+    if(HAVE_D3D11 AND HAVE_OPENCL)
+        ocv_target_include_directories(opencv_perf_gapi SYSTEM PRIVATE ${OPENCL_INCLUDE_DIRS})
+    endif()
+  endif()
+endif()
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d

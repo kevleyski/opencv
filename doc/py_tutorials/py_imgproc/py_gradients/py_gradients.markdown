@@ -101,9 +101,3 @@ plt.show()
 Check the result below:
 
 ![image](images/double_edge.jpg)
-
-Additional Resources
---------------------
-
-Exercises
----------

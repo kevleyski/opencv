@@ -290,9 +290,15 @@ struct StreamDataProvider : public cv::gapi::wip::onevpl::IDataProvider {
         EXPECT_TRUE(in);
     }
 
+<<<<<<< HEAD
     size_t fetch_data(size_t out_data_size, void* out_data_buf) override {
         data_stream.read(reinterpret_cast<char*>(out_data_buf), out_data_size);
         return (size_t)data_stream.gcount();
+=======
+    static std::string exception_msg()
+    {
+        return "InvalidSource successfully failed!";
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
     bool empty() const override {
         return data_stream.eof() || data_stream.bad();
@@ -300,6 +306,28 @@ struct StreamDataProvider : public cv::gapi::wip::onevpl::IDataProvider {
 private:
     std::istream& data_stream;
 };
+<<<<<<< HEAD
+=======
+
+G_TYPED_KERNEL(GThrowExceptionOp, <GMat(GMat)>, "org.opencv.test.throw_error_op")
+{
+     static GMatDesc outMeta(GMatDesc in) { return in; }
+};
+
+GAPI_OCV_KERNEL(GThrowExceptionKernel, GThrowExceptionOp)
+{
+    static std::string exception_msg()
+    {
+        return "GThrowExceptionKernel successfully failed";
+    }
+
+    static void run(const cv::Mat&, cv::Mat&)
+    {
+        throw std::logic_error(GThrowExceptionKernel::exception_msg());
+    }
+};
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 } // anonymous namespace
 
 TEST_P(GAPI_Streaming, SmokeTest_ConstInput_GMat)
@@ -648,14 +676,16 @@ TEST_P(GAPI_Streaming, SmokeTest_AutoMeta_VideoScalar)
     EXPECT_EQ(165u, test_frames);
 }
 
+// Instantiate tests with different backends, but default queue capacity
 INSTANTIATE_TEST_CASE_P(TestStreaming, GAPI_Streaming,
-                        Combine(Values(  KernelPackage::OCV
-                                    //, KernelPackage::OCL // FIXME: Fails bit-exactness check, maybe relax it?
-                                      , KernelPackage::OCV_FLUID
-                                    //, KernelPackage::OCL // FIXME: Fails bit-exactness check, maybe relax it?
-                                ),
-                                Values(cv::optional<size_t>{}, 1u, 4u))
-                        );
+                        Combine(Values( KernelPackage::OCV
+                                      , KernelPackage::OCV_FLUID),
+                                Values(cv::optional<size_t>{})));
+
+// Instantiate tests with the same backend but various queue capacity
+INSTANTIATE_TEST_CASE_P(TestStreaming_QC, GAPI_Streaming,
+                        Combine(Values(KernelPackage::OCV_FLUID),
+                                Values(1u, 4u)));
 
 namespace TypesTest
 {

@@ -241,7 +241,7 @@ public:
                     opt_AVX::fastGEMM1T( sptr, wptr, wstep, biasptr, dptr, nw, vecsize);
                 else
             #endif
-            #if CV_TRY_RVV
+            #if CV_TRY_RVV && CV_RVV
                 if( useRVV )
                     opt_RVV::fastGEMM1T( sptr, wptr, wstep, biasptr, dptr, nw, vecsize);
                 else
@@ -315,7 +315,7 @@ public:
         std::vector<UMat> inputs;
         std::vector<UMat> outputs;
 
-        bool use_half = (inps.depth() == CV_16S);
+        bool use_half = (inps.depth() == CV_16F);
         inps.getUMatVector(inputs);
         outs.getUMatVector(outputs);
 
@@ -343,9 +343,9 @@ public:
 
                 if (use_half)
                 {
-                    convertFp16(A, A_fp32);
-                    convertFp16(B, B_fp32);
-                    convertFp16(C, C_fp32);
+                    A.convertTo(A_fp32, CV_32F);
+                    B.convertTo(B_fp32, CV_32F);
+                    C.convertTo(C_fp32, CV_32F);
                 }
                 else
                 {
@@ -356,9 +356,9 @@ public:
                 cv::gemm(A_fp32, B_fp32, 1, noArray(), 0, C_fp32);
                 if (use_half)
                 {
-                    convertFp16(A_fp32, A);
-                    convertFp16(B_fp32, B);
-                    convertFp16(C_fp32, C);
+                    A_fp32.convertTo(A, CV_16F);
+                    B_fp32.convertTo(B, CV_16F);
+                    C_fp32.convertTo(C, CV_16F);
                 }
             }
             return true;
@@ -389,7 +389,7 @@ public:
                 for (int i = 0; i < umat_blobs.size(); i++)
                 {
                     if (!umat_blobs[i].empty())
-                        convertFp16(umat_blobs[i], half_blobs[i]);
+                        umat_blobs[i].convertTo(half_blobs[i], CV_16F);
                 }
             }
 
@@ -413,13 +413,6 @@ public:
                 ret = false;
                 break;
             }
-
-            if (!use_half && bias && (outerSize > 1))
-            {
-                UMat biasOnesMat = UMat::ones(outerSize, 1, umat_blobs[0].type());
-                UMat& biases = umat_blobs[1];
-                cv::gemm(biasOnesMat, biases, 1, dstMat, 1, dstMat, 0);
-            }
         }
 
         if (ret) return true;
@@ -437,8 +430,8 @@ public:
 
             if (use_half)
             {
-                convertFp16(srcMat, srcMat_fp32);
-                convertFp16(dstMat, dstMat_fp32);
+                srcMat.convertTo(srcMat_fp32, CV_32F);
+                dstMat.convertTo(dstMat_fp32, CV_32F);
             }
             else
             {
@@ -456,8 +449,8 @@ public:
             }
             if (use_half)
             {
-                convertFp16(srcMat_fp32, srcMat);
-                convertFp16(dstMat_fp32, dstMat);
+                srcMat_fp32.convertTo(srcMat, CV_16F);
+                dstMat_fp32.convertTo(dstMat, CV_16F);
             }
         }
 
@@ -473,7 +466,7 @@ public:
         CV_OCL_RUN(IS_DNN_OPENCL_TARGET(preferableTarget),
                    forward_ocl(inputs_arr, outputs_arr, internals_arr))
 
-        if (inputs_arr.depth() == CV_16S)
+        if (inputs_arr.depth() == CV_16F)
         {
             forward_fallback(inputs_arr, outputs_arr, internals_arr);
             return;
@@ -591,11 +584,12 @@ public:
                                         const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
     {
         auto& ieInpNode = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
-        std::shared_ptr<ngraph::Node> matmul;
+        std::shared_ptr<ov::Node> matmul;
 
         if (nodes.size() == 2)
         {
             auto& inp2 = nodes[1].dynamicCast<InfEngineNgraphNode>()->node;
+<<<<<<< HEAD
             matmul = std::make_shared<ngraph::op::MatMul>(ieInpNode, inp2, false, false);
         }
         else
@@ -607,12 +601,34 @@ public:
             std::vector<size_t> weight_shape{(size_t)blobs[0].size[0], (size_t)blobs[0].size[1]};
             auto ieWeights = std::make_shared<ngraph::op::Constant>(ngraph::element::f32, weight_shape, blobs[0].data);
             matmul = std::make_shared<ngraph::op::MatMul>(inp, ieWeights, false, true);
+=======
+            matmul = std::make_shared<ov::op::v0::MatMul>(ieInpNode, inp2, transA, transB);
+        }
+        else
+        {
+            std::vector<int> shape(1 + normalize_axis(axis, ieInpNode.get_shape().size()), 0);
+            shape[shape.size() - 1] = -1;
+            auto inp = std::make_shared<ov::op::v1::Reshape>(
+                ieInpNode,
+                std::make_shared<ov::op::v0::Constant>(ov::element::i32, ov::Shape{shape.size()}, shape.data()),
+                true
+            );
+
+            std::vector<size_t> weight_shape;
+            if (isMatMul) {
+                weight_shape = getShape<size_t>(oriMat);
+            } else {
+                weight_shape = {(size_t)blobs[0].size[0], (size_t)blobs[0].size[1]};
+            }
+            auto ieWeights = std::make_shared<ov::op::v0::Constant>(ov::element::f32, weight_shape, blobs[0].data);
+            matmul = std::make_shared<ov::op::v0::MatMul>(inp, ieWeights, transA, transB);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
 
         if (bias) {
-            auto bias_node = std::make_shared<ngraph::op::Constant>(ngraph::element::f32,
-                                              ngraph::Shape{(size_t)blobs[1].size[1]}, blobs[1].data);
-            matmul = std::make_shared<ngraph::op::v1::Add>(matmul, bias_node, ngraph::op::AutoBroadcastType::NUMPY);
+            auto bias_node = std::make_shared<ov::op::v0::Constant>(ov::element::f32,
+                                              ov::Shape{(size_t)blobs[1].size[1]}, blobs[1].data);
+            matmul = std::make_shared<ov::op::v1::Add>(matmul, bias_node, ov::op::AutoBroadcastType::NUMPY);
         }
         return Ptr<BackendNode>(new InfEngineNgraphNode(matmul));
     }

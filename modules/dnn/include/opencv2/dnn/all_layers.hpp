@@ -256,13 +256,28 @@ CV__DNN_INLINE_NS_BEGIN
     {
     public:
         static Ptr<BaseConvolutionLayer> create(const LayerParams& params);
+<<<<<<< HEAD
+=======
+        bool fusedActivation = false;
+        bool fusedAdd = false;
+        bool useWinograd = true; // Flag whether to use Winograd to speed up 3x3 convolution.
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     };
 
     class CV_EXPORTS ConvolutionLayerInt8 : public BaseConvolutionLayer
     {
     public:
         int input_zp, output_zp;
+<<<<<<< HEAD
         float output_sc;
+=======
+        float input_sc, output_sc;
+
+        // quantization type flag. The perChannel default is true, that means it contains the parameters
+        // of per-Channel quantization. Otherwise, that means this layer contains per-Tensor quantized parameters.
+        bool per_channel;
+        bool useWinograd = false; // Flag whether to use Winograd to speed up 3x3 convolution.
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         static Ptr<BaseConvolutionLayer> create(const LayerParams& params);
     };
 
@@ -824,6 +839,91 @@ CV__DNN_INLINE_NS_BEGIN
         static Ptr<CumSumLayer> create(const LayerParams& params);
     };
 
+<<<<<<< HEAD
+=======
+    class CV_EXPORTS ScatterLayer : public Layer
+    {
+    public:
+        static Ptr<ScatterLayer> create(const LayerParams& params);
+    };
+
+    class CV_EXPORTS ScatterNDLayer : public Layer
+    {
+    public:
+        static Ptr<ScatterNDLayer> create(const LayerParams& params);
+    };
+
+    class CV_EXPORTS TileLayer : public Layer
+    {
+    public:
+        static Ptr<TileLayer> create(const LayerParams& params);
+    };
+
+    class CV_EXPORTS LayerNormLayer : public Layer
+    {
+    public:
+        CV_DEPRECATED_EXTERNAL bool hasBias; // Deprecated, preserve for compatibility
+        int axis;
+        float epsilon;
+
+        static Ptr<LayerNormLayer> create(const LayerParams& params);
+    };
+
+    class CV_EXPORTS GemmLayer : public Layer {
+    public:
+        bool trans_a;
+        bool trans_b;
+        float alpha;
+        float beta;
+
+        static Ptr<GemmLayer> create(const LayerParams& params);
+    };
+
+    class CV_EXPORTS MatMulLayer : public Layer {
+     public:
+        static Ptr<MatMulLayer> create(const LayerParams &params);
+    };
+
+    class CV_EXPORTS ExpandLayer : public Layer
+    {
+    public:
+        static Ptr<ExpandLayer> create(const LayerParams &params);
+    };
+
+    class CV_EXPORTS InstanceNormLayer : public Layer {
+    public:
+        float epsilon;
+
+        static Ptr<InstanceNormLayer> create(const LayerParams &params);
+    };
+
+    class CV_EXPORTS AttentionLayer : public Layer {
+     public:
+        static Ptr<AttentionLayer> create(const LayerParams &params);
+    };
+
+    class CV_EXPORTS GroupNormLayer : public Layer {
+    public:
+        static Ptr<GroupNormLayer> create(const LayerParams &params);
+    };
+
+    class CV_EXPORTS DepthToSpaceLayer : public Layer {
+    public:
+        static Ptr<DepthToSpaceLayer> create(const LayerParams &params);
+    };
+
+    class CV_EXPORTS SpaceToDepthLayer : public Layer {
+    public:
+        static Ptr<SpaceToDepthLayer> create(const LayerParams &params);
+    };
+
+    class CV_EXPORTS TopKLayer : public Layer
+    {
+    public:
+        static Ptr<TopKLayer> create(const LayerParams& params);
+    };
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 //! @}
 //! @}
 CV__DNN_INLINE_NS_END

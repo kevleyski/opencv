@@ -45,7 +45,7 @@ Theory
 
     ![](images/Remap_Tutorial_Theory_0.jpg)
 
-    observe how the red circle changes positions with respect to x (considering \f$x\f$ the horizontal
+    observe how the red circle changes positions with respect to \f$x\f$ (considering \f$x\f$ the horizontal
     direction):
 
     ![](images/Remap_Tutorial_Theory_1.jpg)
@@ -62,20 +62,35 @@ Code
     -   Wait for the user to exit the program
 
 @add_toggle_cpp
+<<<<<<< HEAD
 -   The tutorial code's is shown lines below. You can also download it from
     [here](https://github.com/opencv/opencv/tree/master/samples/cpp/tutorial_code/ImgTrans/Remap_Demo.cpp)
+=======
+-   The tutorial code is shown lines below. You can also download it from
+    [here](https://github.com/opencv/opencv/tree/4.x/samples/cpp/tutorial_code/ImgTrans/Remap_Demo.cpp)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     @include samples/cpp/tutorial_code/ImgTrans/Remap_Demo.cpp
 @end_toggle
 
 @add_toggle_java
+<<<<<<< HEAD
 -   The tutorial code's is shown lines below. You can also download it from
     [here](https://github.com/opencv/opencv/tree/master/samples/java/tutorial_code/ImgTrans/remap/RemapDemo.java)
+=======
+-   The tutorial code is shown lines below. You can also download it from
+    [here](https://github.com/opencv/opencv/tree/4.x/samples/java/tutorial_code/ImgTrans/remap/RemapDemo.java)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     @include samples/java/tutorial_code/ImgTrans/remap/RemapDemo.java
 @end_toggle
 
 @add_toggle_python
+<<<<<<< HEAD
 -   The tutorial code's is shown lines below. You can also download it from
     [here](https://github.com/opencv/opencv/tree/master/samples/python/tutorial_code/ImgTrans/remap/Remap_Demo.py)
+=======
+-   The tutorial code is shown lines below. You can also download it from
+    [here](https://github.com/opencv/opencv/tree/4.x/samples/python/tutorial_code/ImgTrans/remap/Remap_Demo.py)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     @include samples/python/tutorial_code/ImgTrans/remap/Remap_Demo.py
 @end_toggle
 

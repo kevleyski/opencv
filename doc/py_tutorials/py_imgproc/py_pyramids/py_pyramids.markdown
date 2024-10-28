@@ -136,6 +136,3 @@ Additional Resources
 --------------------
 
 -#  [Image Blending](http://pages.cs.wisc.edu/~csverma/CS766_09/ImageMosaic/imagemosaic.html)
-
-Exercises
----------

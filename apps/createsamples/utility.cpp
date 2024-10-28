@@ -1167,7 +1167,11 @@ void cvCreateTestSamples( const char* infoname,
             }
             else
             {
+<<<<<<< HEAD
                 filename++;
+=======
+                filename++; // get basename after last path delimiter
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             }
 
             count = MIN( count, cvbgdata->count );

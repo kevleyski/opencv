@@ -245,7 +245,11 @@ In the following section, we will vectorize a simple convolution function for si
 
 You may learn more about convolution from the previous tutorial. We use the same naive implementation from the previous tutorial and compare it to the vectorized version.
 
+<<<<<<< HEAD
 The full tutorial code is [here](https://github.com/opencv/opencv/tree/master/samples/cpp/tutorial_code/univ_intrin/univ_intrin.cpp).
+=======
+The full tutorial code is [here](https://github.com/opencv/opencv/tree/4.x/samples/cpp/tutorial_code/core/univ_intrin/univ_intrin.cpp).
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 ### Vectorizing Convolution
 

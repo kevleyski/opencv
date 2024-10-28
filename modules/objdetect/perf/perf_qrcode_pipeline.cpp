@@ -26,7 +26,6 @@ PERF_TEST_P_(Perf_Objdetect_QRCode, detect)
     SANITY_CHECK(corners);
 }
 
-#ifdef HAVE_QUIRC
 PERF_TEST_P_(Perf_Objdetect_QRCode, decode)
 {
     const std::string name_current_image = GetParam();
@@ -51,7 +50,6 @@ PERF_TEST_P_(Perf_Objdetect_QRCode, decode)
     SANITY_CHECK(straight_barcode);
 
 }
-#endif
 
 typedef ::perf::TestBaseWithParam< std::string > Perf_Objdetect_QRCode_Multi;
 
@@ -69,7 +67,6 @@ PERF_TEST_P_(Perf_Objdetect_QRCode_Multi, detectMulti)
     SANITY_CHECK(corners);
 }
 
-#ifdef HAVE_QUIRC
 PERF_TEST_P_(Perf_Objdetect_QRCode_Multi, decodeMulti)
 {
     const std::string name_current_image = GetParam();
@@ -101,7 +98,6 @@ PERF_TEST_P_(Perf_Objdetect_QRCode_Multi, decodeMulti)
     SANITY_CHECK(straight_barcode);
 
 }
-#endif
 
 INSTANTIATE_TEST_CASE_P(/*nothing*/, Perf_Objdetect_QRCode,
     ::testing::Values(
@@ -148,7 +144,6 @@ PERF_TEST_P_(Perf_Objdetect_Not_QRCode, detect)
     SANITY_CHECK_NOTHING();
 }
 
-#ifdef HAVE_QUIRC
 PERF_TEST_P_(Perf_Objdetect_Not_QRCode, decode)
 {
     Mat straight_barcode;
@@ -180,7 +175,6 @@ PERF_TEST_P_(Perf_Objdetect_Not_QRCode, decode)
     TEST_CYCLE() ASSERT_TRUE(qrcode.decode(not_qr_code, corners, straight_barcode).empty());
     SANITY_CHECK_NOTHING();
 }
-#endif
 
 INSTANTIATE_TEST_CASE_P(/*nothing*/, Perf_Objdetect_Not_QRCode,
       ::testing::Combine(

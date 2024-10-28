@@ -46,7 +46,11 @@
 
 set(CPU_ALL_OPTIMIZATIONS "SSE;SSE2;SSE3;SSSE3;SSE4_1;SSE4_2;POPCNT;AVX;FP16;AVX2;FMA3;AVX_512F")
 list(APPEND CPU_ALL_OPTIMIZATIONS "AVX512_COMMON;AVX512_KNL;AVX512_KNM;AVX512_SKX;AVX512_CNL;AVX512_CLX;AVX512_ICL")
+<<<<<<< HEAD
 list(APPEND CPU_ALL_OPTIMIZATIONS NEON VFPV3 FP16)
+=======
+list(APPEND CPU_ALL_OPTIMIZATIONS NEON VFPV3 FP16 NEON_DOTPROD NEON_FP16 NEON_BF16)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 list(APPEND CPU_ALL_OPTIMIZATIONS MSA)
 list(APPEND CPU_ALL_OPTIMIZATIONS VSX VSX3)
 list(APPEND CPU_ALL_OPTIMIZATIONS RVV)
@@ -99,7 +103,7 @@ ocv_optimization_process_obsolete_option(ENABLE_AVX2 AVX2 ON)
 ocv_optimization_process_obsolete_option(ENABLE_FMA3 FMA3 ON)
 
 ocv_optimization_process_obsolete_option(ENABLE_VFPV3 VFPV3 OFF)
-ocv_optimization_process_obsolete_option(ENABLE_NEON NEON OFF)
+ocv_optimization_process_obsolete_option(ENABLE_NEON NEON ON)
 
 ocv_optimization_process_obsolete_option(ENABLE_VSX VSX ON)
 
@@ -167,8 +171,30 @@ elseif(" ${CMAKE_CXX_FLAGS} " MATCHES " -march=native | -xHost | /QxHost ")
   set(CPU_BASELINE_DETECT ON)
 endif()
 
+# For platforms which don't allow enabling of extra instruction sets with separate compiler options.
+# E.g. GCC/Clang for RISC-V/AArch64 use suffixes for -march option. So we should avoid using existing
+# CPU features mechanisms and rely on cmake-toolchain files or flags provided via command-line.
+macro(ocv_default_baseline_detect_and_check_dispatch)
+  set(CPU_BASELINE "DETECT" CACHE STRING "${HELP_CPU_BASELINE}")
+  if(NOT CPU_BASELINE MATCHES "^(DETECT|NATIVE|)$")
+    message(WARNING "CPU_BASELINE is set to '${CPU_BASELINE}', but '${CMAKE_SYSTEM_PROCESSOR}' "
+                    "platform is designed to work with DETECT|NATIVE|<empty>, "
+                    "otherwise target CPU architecture may be changed unexpectedly. "
+                    "Please check your resulting compiler flags in the CMake output.")
+  endif()
+  foreach(opt ${CPU_DISPATCH})
+    if(NOT DEFINED CPU_${opt}_FLAGS_ON)
+      message(WARNING "${opt} is in the CPU_DISPATCH list, but 'CPU_${opt}_FLAGS_ON' is not set. "
+                      "Please provide feature-specific compiler options explicitly.")
+    endif()
+  endforeach()
+endmacro()
+
+#===================================================================================================
+
 if(X86 OR X86_64)
-  ocv_update(CPU_KNOWN_OPTIMIZATIONS "SSE;SSE2;SSE3;SSSE3;SSE4_1;POPCNT;SSE4_2;FP16;FMA3;AVX;AVX2;AVX_512F;AVX512_COMMON;AVX512_KNL;AVX512_KNM;AVX512_SKX;AVX512_CNL;AVX512_CLX;AVX512_ICL")
+
+  ocv_update(CPU_KNOWN_OPTIMIZATIONS "SSE;SSE2;SSE3;SSSE3;SSE4_1;POPCNT;SSE4_2;AVX;FP16;AVX2;FMA3;AVX_512F;AVX512_COMMON;AVX512_KNL;AVX512_KNM;AVX512_SKX;AVX512_CNL;AVX512_CLX;AVX512_ICL")
 
   ocv_update(CPU_AVX512_COMMON_GROUP "AVX_512F;AVX_512CD")
   ocv_update(CPU_AVX512_KNL_GROUP "AVX512_COMMON;AVX512_KNL_EXTRA")
@@ -327,6 +353,7 @@ if(X86 OR X86_64)
   endif()
 
 elseif(ARM OR AARCH64)
+
   ocv_update(CPU_NEON_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_neon.cpp")
   ocv_update(CPU_FP16_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_fp16.cpp")
   if(NOT AARCH64)
@@ -340,17 +367,40 @@ elseif(ARM OR AARCH64)
     endif()
     ocv_update(CPU_FP16_IMPLIES "NEON")
   else()
+<<<<<<< HEAD
     ocv_update(CPU_KNOWN_OPTIMIZATIONS "NEON;FP16")
     ocv_update(CPU_NEON_FLAGS_ON "")
     ocv_update(CPU_FP16_IMPLIES "NEON")
     set(CPU_BASELINE "NEON;FP16" CACHE STRING "${HELP_CPU_BASELINE}")
+=======
+    ocv_update(CPU_KNOWN_OPTIMIZATIONS "NEON;FP16;NEON_DOTPROD;NEON_FP16;NEON_BF16")
+    ocv_update(CPU_FP16_IMPLIES "NEON")
+    ocv_update(CPU_NEON_DOTPROD_IMPLIES "NEON")
+    ocv_update(CPU_NEON_FP16_IMPLIES "NEON")
+    ocv_update(CPU_NEON_BF16_IMPLIES "NEON")
+    if(MSVC)
+      ocv_update(CPU_NEON_DOTPROD_FLAGS_ON "")
+      ocv_update(CPU_NEON_FP16_FLAGS_ON "")
+      ocv_update(CPU_NEON_BF16_FLAGS_ON "")
+    else()
+      ocv_update(CPU_NEON_DOTPROD_FLAGS_ON "-march=armv8.2-a+dotprod")
+      ocv_update(CPU_NEON_FP16_FLAGS_ON "-march=armv8.2-a+fp16")
+      ocv_update(CPU_NEON_BF16_FLAGS_ON "-march=armv8.2-a+bf16")
+    endif()
+    set(CPU_DISPATCH "NEON_FP16;NEON_BF16;NEON_DOTPROD" CACHE STRING "${HELP_CPU_DISPATCH}")
+    ocv_default_baseline_detect_and_check_dispatch()
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   endif()
+
 elseif(MIPS)
+
   ocv_update(CPU_MSA_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_msa.cpp")
   ocv_update(CPU_KNOWN_OPTIMIZATIONS "MSA")
   ocv_update(CPU_MSA_FLAGS_ON "-mmsa")
   set(CPU_BASELINE "DETECT" CACHE STRING "${HELP_CPU_BASELINE}")
+
 elseif(PPC64LE)
+
   ocv_update(CPU_KNOWN_OPTIMIZATIONS "VSX;VSX3")
   ocv_update(CPU_VSX_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_vsx.cpp")
   ocv_update(CPU_VSX3_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_vsx3.cpp")
@@ -371,11 +421,28 @@ elseif(PPC64LE)
   set(CPU_BASELINE "VSX" CACHE STRING "${HELP_CPU_BASELINE}")
 
 elseif(RISCV)
+<<<<<<< HEAD
   ocv_update(CPU_RVV_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_rvv.cpp")
   ocv_update(CPU_KNOWN_OPTIMIZATIONS "RVV")
   ocv_update(CPU_RVV_FLAGS_ON "")
   set(CPU_DISPATCH "RVV" CACHE STRING "${HELP_CPU_DISPATCH}")
   set(CPU_BASELINE "RVV" CACHE STRING "${HELP_CPU_BASELINE}")
+=======
+
+  ocv_update(CPU_KNOWN_OPTIMIZATIONS "RVV")
+  ocv_update(CPU_RVV_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_rvv.cpp")
+  ocv_default_baseline_detect_and_check_dispatch()
+
+elseif(LOONGARCH64)
+
+  ocv_update(CPU_LSX_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_lsx.cpp")
+  ocv_update(CPU_LASX_TEST_FILE "${OpenCV_SOURCE_DIR}/cmake/checks/cpu_lasx.cpp")
+  ocv_update(CPU_KNOWN_OPTIMIZATIONS "LSX;LASX")
+  ocv_update(CPU_LSX_FLAGS_ON "-mlsx")
+  ocv_update(CPU_LASX_FLAGS_ON "-mlasx")
+  set(CPU_BASELINE "LSX" CACHE STRING "${HELP_CPU_BASELINE}")
+  set(CPU_DISPATCH "LASX" CACHE STRING "${HELP_CPU_DISPATCH}")
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 endif()
 
@@ -410,7 +477,7 @@ macro(ocv_check_compiler_optimization OPT)
       set(_varname "")
       if(CPU_${OPT}_TEST_FILE)
         set(__available 0)
-        if(CPU_BASELINE_DETECT)
+        if(NOT __is_disabled AND (__is_from_baseline OR CPU_BASELINE_DETECT))
           set(_varname "HAVE_CPU_${OPT}_SUPPORT")
           ocv_check_compiler_flag(CXX "${CPU_BASELINE_FLAGS}" "${_varname}" "${CPU_${OPT}_TEST_FILE}")
           if(${_varname})
@@ -530,7 +597,7 @@ foreach(OPT ${CPU_KNOWN_OPTIMIZATIONS})
   if(CPU_${OPT}_SUPPORTED)
     if(";${CPU_DISPATCH};" MATCHES ";${OPT};" AND NOT __is_from_baseline)
       list(APPEND CPU_DISPATCH_FINAL ${OPT})
-    elseif(__is_from_baseline)
+    elseif(__is_from_baseline AND NOT __is_disabled)
       if(NOT ";${CPU_BASELINE_FINAL};" MATCHES ";${OPT};")
         list(APPEND CPU_BASELINE_FINAL ${OPT})
       endif()

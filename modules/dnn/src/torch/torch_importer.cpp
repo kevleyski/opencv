@@ -81,7 +81,7 @@ enum TorchType
     TYPE_FLOAT  = CV_32F,
     TYPE_BYTE   = CV_8U,
     TYPE_CHAR   = CV_8S,
-    TYPE_SHORT  = CV_16S,
+    TYPE_SHORT  = CV_16F,
     TYPE_INT    = CV_32S,
     TYPE_LONG   = CV_32SC2
 };
@@ -271,7 +271,7 @@ struct TorchImporter
             THFile_readByteRaw(file, (uchar*)storageMat.data, size);
             break;
         case TYPE_SHORT:
-            storageMat.create(1, size, CV_16S);
+            storageMat.create(1, size, CV_16F);
             THFile_readShortRaw(file, (short*)storageMat.data, size);
             break;
         case TYPE_INT:
@@ -869,6 +869,9 @@ struct TorchImporter
             {
                 newModule->apiType = "Softmax";
                 layerParams.set("log_softmax", nnName == "LogSoftMax");
+                // set default axis to 1
+                if(!layerParams.has("axis"))
+                    layerParams.set("axis", 1);
                 curModule->modules.push_back(newModule);
             }
             else if (nnName == "SpatialCrossMapLRN")
@@ -894,7 +897,7 @@ struct TorchImporter
             {
                 readTorchTable(scalarParams, tensorParams);
 
-                float power;
+                float power = 1.0f;
                 if (nnName == "Square") power = 2.0f;
                 else if (nnName == "Sqrt") power = 0.5f;
                 else if (nnName == "Power") power = scalarParams.get<float>("pow", 1.0f);

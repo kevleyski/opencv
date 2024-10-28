@@ -81,6 +81,9 @@ bool cv::gapi::GBackend::Priv::allowsMerge(const cv::gimpl::GIslandModel::Graph 
     return true;
 }
 
+bool cv::gapi::GBackend::Priv::supportsConst(cv::GShape) const {
+    return false;
+}
 
 // GBackend public implementation //////////////////////////////////////////////
 cv::gapi::GBackend::GBackend()

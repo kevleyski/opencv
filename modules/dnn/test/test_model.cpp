@@ -40,6 +40,8 @@ public:
         model.setPreferableTarget(target);
 
         model.setNmsAcrossClasses(nmsAcrossClasses);
+        if (target == DNN_TARGET_CPU_FP16)
+            model.enableWinograd(false);
 
         std::vector<int> classIds;
         std::vector<float> confidences;
@@ -98,7 +100,7 @@ public:
     void testSegmentationModel(const std::string& weights_file, const std::string& config_file,
                                const std::string& inImgPath, const std::string& outImgPath,
                                float norm, const Size& size = {-1, -1}, Scalar mean = Scalar(),
-                               double scale = 1.0, bool swapRB = false, bool crop = false)
+                               double scale = 1.0, bool swapRB = false, bool crop = false, const std::string outname = "")
     {
         checkBackend();
 
@@ -110,6 +112,15 @@ public:
         model.setInputSize(size).setInputMean(mean).setInputScale(scale)
              .setInputSwapRB(swapRB).setInputCrop(crop);
 
+<<<<<<< HEAD
+=======
+        model.setPreferableBackend(backend);
+        model.setPreferableTarget(target);
+
+        if(!outname.empty())
+            model.setOutputNames({outname});
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         model.segment(frame, mask);
         normAssert(mask, exp, "", norm, norm);
     }
@@ -282,7 +293,15 @@ TEST_P(Test_Model, Classify)
 
 TEST_P(Test_Model, DetectRegion)
 {
+<<<<<<< HEAD
     applyTestTag(CV_TEST_TAG_LONG, CV_TEST_TAG_MEMORY_1GB);
+=======
+    applyTestTag(
+        CV_TEST_TAG_MEMORY_2GB,
+        CV_TEST_TAG_LONG,
+        CV_TEST_TAG_DEBUG_VERYLONG
+    );
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #if defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2020040000)  // nGraph compilation failure
     if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_OPENCL)
@@ -332,7 +351,15 @@ TEST_P(Test_Model, DetectRegion)
 
 TEST_P(Test_Model, DetectRegionWithNmsAcrossClasses)
 {
+<<<<<<< HEAD
     applyTestTag(CV_TEST_TAG_LONG, CV_TEST_TAG_MEMORY_1GB);
+=======
+    applyTestTag(
+        CV_TEST_TAG_MEMORY_2GB,
+        CV_TEST_TAG_LONG,
+        CV_TEST_TAG_DEBUG_VERYLONG
+    );
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #if defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2020040000)  // nGraph compilation failure
     if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_OPENCL)
@@ -384,7 +411,27 @@ TEST_P(Test_Model, DetectRegionWithNmsAcrossClasses)
 
 TEST_P(Test_Model, DetectionOutput)
 {
+<<<<<<< HEAD
 #if defined(INF_ENGINE_RELEASE)
+=======
+    applyTestTag(CV_TEST_TAG_DEBUG_VERYLONG);
+
+#if defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2022010000)
+    // Check 'backward_compatible_check || in_out_elements_equal' failed at core/src/op/reshape.cpp:427:
+    // While validating node 'v1::Reshape bbox_pred_reshape (ave_bbox_pred_rois[0]:f32{1,8,1,1}, Constant_388[0]:i64{4}) -> (f32{?,?,?,?})' with friendly_name 'bbox_pred_reshape':
+    // Requested output shape {1,300,8,1} is incompatible with input shape {1, 8, 1, 1}
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_MYRIAD)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_MYRIAD, CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+#elif defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2021040000)
+    // Exception: Function contains several inputs and outputs with one friendly name! (HETERO bug?)
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target != DNN_TARGET_CPU)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_MYRIAD)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_MYRIAD, CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+#elif defined(INF_ENGINE_RELEASE)
+    // FIXIT DNN_BACKEND_INFERENCE_ENGINE is misused
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     if (backend == DNN_BACKEND_INFERENCE_ENGINE && target == DNN_TARGET_OPENCL_FP16)
         applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_OPENCL_FP16);
 
@@ -582,18 +629,64 @@ TEST_P(Test_Model, Detection_normalized)
 
 TEST_P(Test_Model, Segmentation)
 {
+<<<<<<< HEAD
+=======
+    applyTestTag(
+        CV_TEST_TAG_MEMORY_2GB,
+        CV_TEST_TAG_DEBUG_VERYLONG
+    );
+
+    float norm = 0;
+
+#if defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2022010000)
+    // Failed to allocate graph: NC_ERROR
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_MYRIAD)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_MYRIAD, CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+    // accuracy
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && (target == DNN_TARGET_OPENCL || target == DNN_TARGET_OPENCL_FP16))
+    {
+        norm = 25.0f;  // depends on OS/OpenCL version
+    }
+#elif defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2021040000)
+    // Failed to allocate graph: NC_ERROR
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_MYRIAD)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_MYRIAD, CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+    // cnn_network_ngraph_impl.cpp:104 Function contains several inputs and outputs with one friendly name: 'upscore2'!
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_OPENCL)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_OPENCL, CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+    // cnn_network_ngraph_impl.cpp:104 Function contains several inputs and outputs with one friendly name: 'upscore2'!
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_OPENCL_FP16)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_OPENCL_FP16, CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+#elif defined(INF_ENGINE_RELEASE)
+    // Failed to allocate graph: NC_ERROR
+    if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_MYRIAD)
+        applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_MYRIAD, CV_TEST_TAG_DNN_SKIP_IE_NGRAPH, CV_TEST_TAG_DNN_SKIP_IE_VERSION);
+#endif
+
+    if ((backend == DNN_BACKEND_OPENCV && (target == DNN_TARGET_OPENCL_FP16 || target == DNN_TARGET_CPU_FP16))
+        || (backend == DNN_BACKEND_CUDA && target == DNN_TARGET_CUDA_FP16))
+    {
+        norm = 7.0f;  // l1 = 0.01 lInf = 7
+    }
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     std::string inp = _tf("dog416.png");
-    std::string weights_file = _tf("fcn8s-heavy-pascal.prototxt");
-    std::string config_file = _tf("fcn8s-heavy-pascal.caffemodel", false);
+    std::string weights_file = _tf("onnx/models/fcn-resnet50-12.onnx", false);
     std::string exp = _tf("segmentation_exp.png");
 
     Size size{128, 128};
+<<<<<<< HEAD
     float norm = 0;
     double scale = 1.0;
     Scalar mean = Scalar();
     bool swapRB = false;
+=======
+    double scale = 0.019;
+    Scalar mean = Scalar(0.485*255, 0.456*255, 0.406*255);
+    bool swapRB = true;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
-    testSegmentationModel(weights_file, config_file, inp, exp, norm, size, mean, scale, swapRB);
+    testSegmentationModel(weights_file, "", inp, exp, norm, size, mean, scale, swapRB, false, "out");
 }
 
 TEST_P(Test_Model, TextRecognition)
@@ -636,6 +729,8 @@ TEST_P(Test_Model, TextRecognitionWithCTCPrefixBeamSearch)
 
 TEST_P(Test_Model, TextDetectionByDB)
 {
+    applyTestTag(CV_TEST_TAG_DEBUG_VERYLONG);
+
     if (target == DNN_TARGET_OPENCL_FP16)
         applyTestTag(CV_TEST_TAG_DNN_SKIP_OPENCL_FP16);
 
@@ -662,6 +757,8 @@ TEST_P(Test_Model, TextDetectionByDB)
 
 TEST_P(Test_Model, TextDetectionByEAST)
 {
+    applyTestTag(CV_TEST_TAG_DEBUG_VERYLONG);
+
     std::string imgPath = _tf("text_det_test2.jpg");
     std::string weightPath = _tf("frozen_east_text_detection.pb", false);
 

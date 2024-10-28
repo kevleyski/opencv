@@ -109,15 +109,15 @@ bool LogisticRegressionImpl::train(const Ptr<TrainData>& trainData, int)
     CV_Assert( !_labels_i.empty() && !_data_i.empty());
     if(_labels_i.cols != 1)
     {
-        CV_Error( CV_StsBadArg, "labels should be a column matrix" );
+        CV_Error( cv::Error::StsBadArg, "labels should be a column matrix" );
     }
     if(_data_i.type() != CV_32FC1 || _labels_i.type() != CV_32FC1)
     {
-        CV_Error( CV_StsBadArg, "data and labels must be a floating point matrix" );
+        CV_Error( cv::Error::StsBadArg, "data and labels must be a floating point matrix" );
     }
     if(_labels_i.rows != _data_i.rows)
     {
-        CV_Error( CV_StsBadArg, "number of rows in data and labels should be equal" );
+        CV_Error( cv::Error::StsBadArg, "number of rows in data and labels should be equal" );
     }
 
     // class labels
@@ -126,7 +126,11 @@ bool LogisticRegressionImpl::train(const Ptr<TrainData>& trainData, int)
     int num_classes = (int) this->forward_mapper.size();
     if(num_classes < 2)
     {
+<<<<<<< HEAD
         CV_Error( CV_StsBadArg, "data should have atleast 2 classes" );
+=======
+        CV_Error( cv::Error::StsBadArg, "data should have at least 2 classes" );
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 
     // add a column of ones to the data (bias/intercept term)
@@ -174,7 +178,7 @@ bool LogisticRegressionImpl::train(const Ptr<TrainData>& trainData, int)
     this->learnt_thetas = thetas.clone();
     if( cvIsNaN( (double)sum(this->learnt_thetas)[0] ) )
     {
-        CV_Error( CV_StsBadArg, "check training parameters. Invalid training classifier" );
+        CV_Error( cv::Error::StsBadArg, "check training parameters. Invalid training classifier" );
     }
 
     // success
@@ -187,7 +191,7 @@ float LogisticRegressionImpl::predict(InputArray samples, OutputArray results, i
     // check if learnt_mats array is populated
     if(!this->isTrained())
     {
-        CV_Error( CV_StsBadArg, "classifier should be trained first" );
+        CV_Error( cv::Error::StsBadArg, "classifier should be trained first" );
     }
 
     // coefficient matrix
@@ -206,7 +210,7 @@ float LogisticRegressionImpl::predict(InputArray samples, OutputArray results, i
     Mat data = samples.getMat();
     if(data.type() != CV_32F)
     {
-        CV_Error( CV_StsBadArg, "data must be of floating type" );
+        CV_Error( cv::Error::StsBadArg, "data must be of floating type" );
     }
 
     // add a column of ones to the data (bias/intercept term)
@@ -327,7 +331,7 @@ double LogisticRegressionImpl::compute_cost(const Mat& _data, const Mat& _labels
 
     if(cvIsNaN( cost ) == 1)
     {
-        CV_Error( CV_StsBadArg, "check training parameters. Invalid training classifier" );
+        CV_Error( cv::Error::StsBadArg, "check training parameters. Invalid training classifier" );
     }
 
     return cost;
@@ -398,12 +402,12 @@ Mat LogisticRegressionImpl::batch_gradient_descent(const Mat& _data, const Mat& 
     // implements batch gradient descent
     if(this->params.alpha<=0)
     {
-        CV_Error( CV_StsBadArg, "check training parameters (learning rate) for the classifier" );
+        CV_Error( cv::Error::StsBadArg, "check training parameters (learning rate) for the classifier" );
     }
 
     if(this->params.num_iters <= 0)
     {
-        CV_Error( CV_StsBadArg, "number of iterations cannot be zero or a negative number" );
+        CV_Error( cv::Error::StsBadArg, "number of iterations cannot be zero or a negative number" );
     }
 
     int llambda = 0;
@@ -439,12 +443,12 @@ Mat LogisticRegressionImpl::mini_batch_gradient_descent(const Mat& _data, const 
 
     if(this->params.mini_batch_size <= 0 || this->params.alpha == 0)
     {
-        CV_Error( CV_StsBadArg, "check training parameters for the classifier" );
+        CV_Error( cv::Error::StsBadArg, "check training parameters for the classifier" );
     }
 
     if(this->params.num_iters <= 0)
     {
-        CV_Error( CV_StsBadArg, "number of iterations cannot be zero or a negative number" );
+        CV_Error( cv::Error::StsBadArg, "number of iterations cannot be zero or a negative number" );
     }
 
     Mat theta_p = _init_theta.clone();
@@ -551,7 +555,7 @@ void LogisticRegressionImpl::write(FileStorage& fs) const
     // check if open
     if(fs.isOpened() == 0)
     {
-        CV_Error(CV_StsBadArg,"file can't open. Check file path");
+        CV_Error(cv::Error::StsBadArg,"file can't open. Check file path");
     }
     writeFormat(fs);
     string desc = "Logistic Regression Classifier";
@@ -574,7 +578,7 @@ void LogisticRegressionImpl::read(const FileNode& fn)
     // check if empty
     if(fn.empty())
     {
-        CV_Error( CV_StsBadArg, "empty FileNode object" );
+        CV_Error( cv::Error::StsBadArg, "empty FileNode object" );
     }
 
     this->params.alpha = (double)fn["alpha"];

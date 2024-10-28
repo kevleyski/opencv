@@ -357,7 +357,7 @@ static RotatedRect fitEllipseNoDirect( InputArray _points )
     RotatedRect box;
 
     if( n < 5 )
-        CV_Error( CV_StsBadSize, "There should be at least 5 points to fit the ellipse" );
+        CV_Error( cv::Error::StsBadSize, "There should be at least 5 points to fit the ellipse" );
 
     // New fitellipse algorithm, contributed by Dr. Daniel Weiss
     Point2f c(0,0);
@@ -520,7 +520,7 @@ cv::RotatedRect cv::fitEllipseAMS( InputArray _points )
     RotatedRect box;
 
     if( n < 5 )
-        CV_Error( CV_StsBadSize, "There should be at least 5 points to fit the ellipse" );
+        CV_Error( cv::Error::StsBadSize, "There should be at least 5 points to fit the ellipse" );
 
     Point2f c(0,0);
 
@@ -705,7 +705,7 @@ cv::RotatedRect cv::fitEllipseDirect( InputArray _points )
     RotatedRect box;
 
     if( n < 5 )
-        CV_Error( CV_StsBadSize, "There should be at least 5 points to fit the ellipse" );
+        CV_Error( cv::Error::StsBadSize, "There should be at least 5 points to fit the ellipse" );
 
     Point2d c(0., 0.);
 
@@ -862,6 +862,7 @@ cv::RotatedRect cv::fitEllipseDirect( InputArray _points )
     return box;
 }
 
+<<<<<<< HEAD
 
 namespace cv
 {
@@ -1142,6 +1143,8 @@ cv::Rect cv::boundingRect(InputArray array)
     return m.depth() <= CV_8U ? maskBoundingRect(m) : pointSetBoundingRect(m);
 }
 
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 ////////////////////////////////////////////// C API ///////////////////////////////////////////
 
 CV_IMPL int
@@ -1364,7 +1367,7 @@ cvContourArea( const void *array, CvSlice slice, int oriented )
     {
         contour = (CvSeq*)array;
         if( !CV_IS_SEQ_POLYLINE( contour ))
-            CV_Error( CV_StsBadArg, "Unsupported sequence type" );
+            CV_Error( cv::Error::StsBadArg, "Unsupported sequence type" );
     }
     else
     {
@@ -1379,7 +1382,7 @@ cvContourArea( const void *array, CvSlice slice, int oriented )
     }
 
     if( CV_SEQ_ELTYPE( contour ) != CV_32SC2 )
-        CV_Error( CV_StsUnsupportedFormat,
+        CV_Error( cv::Error::StsUnsupportedFormat,
         "Only curves with integer coordinates are supported in case of contour slice" );
     area = icvContourSecArea( contour, slice );
     return oriented ? area : fabs(area);
@@ -1405,7 +1408,7 @@ cvArcLength( const void *array, CvSlice slice, int is_closed )
     {
         contour = (CvSeq*)array;
         if( !CV_IS_SEQ_POLYLINE( contour ))
-            CV_Error( CV_StsBadArg, "Unsupported sequence type" );
+            CV_Error( cv::Error::StsBadArg, "Unsupported sequence type" );
         if( is_closed < 0 )
             is_closed = CV_IS_SEQ_CLOSED( contour );
     }
@@ -1480,64 +1483,6 @@ cvFitEllipse2( const CvArr* array )
     cv::AutoBuffer<double> abuf;
     cv::Mat points = cv::cvarrToMat(array, false, false, 0, &abuf);
     return cvBox2D(cv::fitEllipse(points));
-}
-
-/* Calculates bounding rectangle of a point set or retrieves already calculated */
-CV_IMPL  CvRect
-cvBoundingRect( CvArr* array, int update )
-{
-    cv::Rect rect;
-    CvContour contour_header;
-    CvSeq* ptseq = 0;
-    CvSeqBlock block;
-
-    CvMat stub, *mat = 0;
-    int calculate = update;
-
-    if( CV_IS_SEQ( array ))
-    {
-        ptseq = (CvSeq*)array;
-        if( !CV_IS_SEQ_POINT_SET( ptseq ))
-            CV_Error( CV_StsBadArg, "Unsupported sequence type" );
-
-        if( ptseq->header_size < (int)sizeof(CvContour))
-        {
-            update = 0;
-            calculate = 1;
-        }
-    }
-    else
-    {
-        mat = cvGetMat( array, &stub );
-        if( CV_MAT_TYPE(mat->type) == CV_32SC2 ||
-            CV_MAT_TYPE(mat->type) == CV_32FC2 )
-        {
-            ptseq = cvPointSeqFromMat(CV_SEQ_KIND_GENERIC, mat, &contour_header, &block);
-            mat = 0;
-        }
-        else if( CV_MAT_TYPE(mat->type) != CV_8UC1 &&
-                CV_MAT_TYPE(mat->type) != CV_8SC1 )
-            CV_Error( CV_StsUnsupportedFormat,
-                "The image/matrix format is not supported by the function" );
-        update = 0;
-        calculate = 1;
-    }
-
-    if( !calculate )
-        return ((CvContour*)ptseq)->rect;
-
-    if( mat )
-    {
-        rect = cvRect(cv::maskBoundingRect(cv::cvarrToMat(mat)));
-    }
-    else if( ptseq->total )
-    {
-        cv::AutoBuffer<double> abuf;
-        rect = cvRect(cv::pointSetBoundingRect(cv::cvarrToMat(ptseq, false, false, 0, &abuf)));
-    }
-    if( update )
-        ((CvContour*)ptseq)->rect = cvRect(rect);
-    return cvRect(rect);
 }
 
 /* End of file. */

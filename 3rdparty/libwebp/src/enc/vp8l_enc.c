@@ -878,10 +878,17 @@ static WebPEncodingError EncodeImageNoHuffman(
 static WebPEncodingError EncodeImageInternal(
     VP8LBitWriter* const bw, const uint32_t* const argb,
     VP8LHashChain* const hash_chain, VP8LBackwardRefs refs_array[4], int width,
+<<<<<<< HEAD
     int height, int quality, int low_effort, int use_cache,
     const CrunchConfig* const config, int* cache_bits, int histogram_bits,
     size_t init_byte_position, int* const hdr_size, int* const data_size) {
   WebPEncodingError err = VP8_ENC_ERROR_OUT_OF_MEMORY;
+=======
+    int height, int quality, int low_effort, const CrunchConfig* const config,
+    int* cache_bits, int histogram_bits, size_t init_byte_position,
+    int* const hdr_size, int* const data_size, const WebPPicture* const pic,
+    int percent_range, int* const percent) {
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   const uint32_t histogram_image_xysize =
       VP8LSubSampleSize(width, histogram_bits) *
       VP8LSubSampleSize(height, histogram_bits);
@@ -915,6 +922,7 @@ static WebPEncodingError EncodeImageInternal(
                          low_effort)) {
     goto Error;
   }
+<<<<<<< HEAD
   if (use_cache) {
     // If the value is different from zero, it has been set during the
     // palette analysis.
@@ -922,6 +930,20 @@ static WebPEncodingError EncodeImageInternal(
   } else {
     cache_bits_init = 0;
   }
+=======
+
+  percent_range = remaining_percent / 5;
+  if (!VP8LHashChainFill(hash_chain, quality, argb, width, height,
+                         low_effort, pic, percent_range, percent)) {
+    goto Error;
+  }
+  percent_start += percent_range;
+  remaining_percent -= percent_range;
+
+  // If the value is different from zero, it has been set during the palette
+  // analysis.
+  cache_bits_init = (*cache_bits == 0) ? MAX_COLOR_CACHE_BITS : *cache_bits;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   // If several iterations will happen, clone into bw_best.
   if (!VP8LBitWriterInit(&bw_best, 0) ||
       ((config->sub_configs_size_ > 1 ||
@@ -1516,7 +1538,6 @@ typedef struct {
   const WebPPicture* picture_;
   VP8LBitWriter* bw_;
   VP8LEncoder* enc_;
-  int use_cache_;
   CrunchConfig crunch_configs_[CRUNCH_CONFIGS_MAX];
   int num_crunch_configs_;
   int red_and_blue_always_zero_;
@@ -1530,7 +1551,6 @@ static int EncodeStreamHook(void* input, void* data2) {
   const WebPPicture* const picture = params->picture_;
   VP8LBitWriter* const bw = params->bw_;
   VP8LEncoder* const enc = params->enc_;
-  const int use_cache = params->use_cache_;
   const CrunchConfig* const crunch_configs = params->crunch_configs_;
   const int num_crunch_configs = params->num_crunch_configs_;
   const int red_and_blue_always_zero = params->red_and_blue_always_zero_;
@@ -1609,7 +1629,7 @@ static int EncodeStreamHook(void* input, void* data2) {
       if (err != VP8_ENC_OK) goto Error;
       // If using a color cache, do not have it bigger than the number of
       // colors.
-      if (use_cache && enc->palette_size_ < (1 << MAX_COLOR_CACHE_BITS)) {
+      if (enc->palette_size_ < (1 << MAX_COLOR_CACHE_BITS)) {
         enc->cache_bits_ = BitsLog2Floor(enc->palette_size_) + 1;
       }
     }
@@ -1645,12 +1665,22 @@ static int EncodeStreamHook(void* input, void* data2) {
 
     // -------------------------------------------------------------------------
     // Encode and write the transformed image.
+<<<<<<< HEAD
     err = EncodeImageInternal(bw, enc->argb_, &enc->hash_chain_, enc->refs_,
                               enc->current_width_, height, quality, low_effort,
                               use_cache, &crunch_configs[idx],
                               &enc->cache_bits_, enc->histo_bits_,
                               byte_position, &hdr_size, &data_size);
     if (err != VP8_ENC_OK) goto Error;
+=======
+    if (!EncodeImageInternal(
+            bw, enc->argb_, &enc->hash_chain_, enc->refs_, enc->current_width_,
+            height, quality, low_effort, &crunch_configs[idx],
+            &enc->cache_bits_, enc->histo_bits_, byte_position, &hdr_size,
+            &data_size, picture, remaining_percent, &percent)) {
+      goto Error;
+    }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     // If we are better than what we already have.
     if (VP8LBitWriterNumBytes(bw) < best_size) {
@@ -1687,11 +1717,17 @@ Error:
   return (err == VP8_ENC_OK);
 }
 
+<<<<<<< HEAD
 WebPEncodingError VP8LEncodeStream(const WebPConfig* const config,
                                    const WebPPicture* const picture,
                                    VP8LBitWriter* const bw_main,
                                    int use_cache) {
   WebPEncodingError err = VP8_ENC_OK;
+=======
+int VP8LEncodeStream(const WebPConfig* const config,
+                     const WebPPicture* const picture,
+                     VP8LBitWriter* const bw_main) {
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   VP8LEncoder* const enc_main = VP8LEncoderNew(config, picture);
   VP8LEncoder* enc_side = NULL;
   CrunchConfig crunch_configs[CRUNCH_CONFIGS_MAX];
@@ -1706,6 +1742,19 @@ WebPEncodingError VP8LEncodeStream(const WebPConfig* const config,
   const WebPWorkerInterface* const worker_interface = WebPGetWorkerInterface();
   int ok_main;
 
+<<<<<<< HEAD
+=======
+  if (enc_main == NULL || !VP8LBitWriterInit(&bw_side, 0)) {
+    VP8LEncoderDelete(enc_main);
+    return WebPEncodingSetError(picture, VP8_ENC_ERROR_OUT_OF_MEMORY);
+  }
+
+  // Avoid "garbage value" error from Clang's static analysis tool.
+  if (!WebPPictureInit(&picture_side)) {
+    goto Error;
+  }
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   // Analyze image (entropy, num_palettes etc)
   if (enc_main == NULL ||
       !EncoderAnalyze(enc_main, crunch_configs, &num_crunch_configs_main,
@@ -1740,8 +1789,11 @@ WebPEncodingError VP8LEncodeStream(const WebPConfig* const config,
       StreamEncodeContext* const param =
           (idx == 0) ? &params_main : &params_side;
       param->config_ = config;
+<<<<<<< HEAD
       param->picture_ = picture;
       param->use_cache_ = use_cache;
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
       param->red_and_blue_always_zero_ = red_and_blue_always_zero;
       if (idx == 0) {
         param->stats_ = picture->stats;
@@ -1892,8 +1944,12 @@ int VP8LEncodeImage(const WebPConfig* const config,
   if (!WebPReportProgress(picture, 5, &percent)) goto UserAbort;
 
   // Encode main image stream.
+<<<<<<< HEAD
   err = VP8LEncodeStream(config, picture, &bw, 1 /*use_cache*/);
   if (err != VP8_ENC_OK) goto Error;
+=======
+  if (!VP8LEncodeStream(config, picture, &bw)) goto Error;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
   if (!WebPReportProgress(picture, 90, &percent)) goto UserAbort;
 

@@ -329,6 +329,116 @@ struct DivFunctor {
     CUDA4DNN_DEVICE T operator()(T x, T y) { return x / y; }
 };
 
+<<<<<<< HEAD
+=======
+template <class T>
+struct SubFunctor {
+    struct Params {
+        CUDA4DNN_HOST_DEVICE Params() { }
+    };
+
+    CUDA4DNN_DEVICE SubFunctor() { }
+    CUDA4DNN_DEVICE SubFunctor(const Params& params) { }
+
+    CUDA4DNN_DEVICE T operator()(T x, T y) { return x - y; }
+};
+
+template <class T>
+struct SignFunctor {
+    struct Params {
+        CUDA4DNN_HOST_DEVICE Params() {}
+    };
+
+    CUDA4DNN_DEVICE SignFunctor() { }
+    CUDA4DNN_DEVICE SignFunctor(const Params& params) { }
+
+    CUDA4DNN_DEVICE T operator()(T value) {
+        return value > T(0) ? T(1) : (value < T(0) ? T(-1) : T(0));
+    }
+};
+
+template <class T>
+struct ShrinkFunctor {
+    struct Params {
+        CUDA4DNN_HOST_DEVICE Params() : bias(0), lambd(0.5) { }
+        CUDA4DNN_HOST_DEVICE Params(T bias_, T lambd_) : bias(bias_), lambd(lambd_) { }
+        T bias, lambd;
+    };
+
+    CUDA4DNN_DEVICE ShrinkFunctor() : ShrinkFunctor(Params{}) { }
+    CUDA4DNN_DEVICE ShrinkFunctor(const Params& params) : bias{params.bias}, lambd{params.lambd} { }
+
+    CUDA4DNN_DEVICE T operator()(T value) {
+        return value > lambd ? value - bias : (value < -lambd ? value + bias : T(0));
+    }
+
+    T bias, lambd;
+};
+
+template <class T>
+struct ReciprocalFunctor {
+    struct Params {
+        CUDA4DNN_HOST_DEVICE Params() {}
+    };
+
+    CUDA4DNN_DEVICE ReciprocalFunctor() { }
+    CUDA4DNN_DEVICE ReciprocalFunctor(const Params& params) { }
+
+    CUDA4DNN_DEVICE T operator()(T value) {
+        return T(1.f)/value;
+    }
+};
+
+template <class T>
+struct ModFunctor {
+    struct Params {
+        CUDA4DNN_HOST_DEVICE Params() {}
+    };
+
+    CUDA4DNN_DEVICE ModFunctor() { }
+    CUDA4DNN_DEVICE ModFunctor(const Params& params) { }
+
+    CUDA4DNN_DEVICE T operator()(T x, T y) {
+        int res = (int)x % (int)y;
+        T zero = T(0);
+        if ((res > (int)zero && y < zero) || (res < (int)zero && y > zero)) {
+            res += (int)y;
+        }
+        return res;
+    }
+};
+
+template <class T>
+struct FModFunctor {
+    struct Params {
+        CUDA4DNN_HOST_DEVICE Params() {}
+    };
+
+    CUDA4DNN_DEVICE FModFunctor() { }
+    CUDA4DNN_DEVICE FModFunctor(const Params& params) { }
+
+    CUDA4DNN_DEVICE T operator()(T x, T y) {
+        using csl::device::fmod;
+        return fmod(x, y);
+    }
+};
+
+template <class T>
+struct PowFunctor {
+    struct Params {
+        CUDA4DNN_HOST_DEVICE Params() {}
+    };
+
+    CUDA4DNN_DEVICE PowFunctor() { }
+    CUDA4DNN_DEVICE PowFunctor(const Params& params) { }
+
+    CUDA4DNN_DEVICE T operator()(T x, T y) {
+        using csl::device::pow;
+        return pow(x, y);
+    }
+};
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }}}} /* namespace cv::dnn::cuda4dnn::kernels */
 
 #endif /* OPENCV_DNN_SRC_CUDA_FUNCTORS_HPP */

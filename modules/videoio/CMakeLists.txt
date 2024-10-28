@@ -1,5 +1,5 @@
 set(VIDEOIO_ENABLE_PLUGINS_DEFAULT ON)
-if(EMSCRIPTEN OR IOS OR WINRT)
+if(EMSCRIPTEN OR IOS OR XROS OR WINRT)
   set(VIDEOIO_ENABLE_PLUGINS_DEFAULT OFF)
 endif()
 
@@ -47,6 +47,9 @@ endif()
 
 # Removing WinRT API headers by default
 list(REMOVE_ITEM videoio_ext_hdrs "${CMAKE_CURRENT_LIST_DIR}/include/opencv2/${name}/cap_winrt.hpp")
+
+# Remove iOS API header by default
+list(REMOVE_ITEM videoio_ext_hdrs "${CMAKE_CURRENT_LIST_DIR}/include/opencv2/${name}/cap_ios.h")
 
 if(DEFINED WINRT AND NOT DEFINED ENABLE_WINRT_MODE_NATIVE)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /ZW")
@@ -196,7 +199,7 @@ if(TARGET ocv.3rdparty.aravis)
 endif()
 
 if(TARGET ocv.3rdparty.avfoundation)
-  if(IOS)
+  if(IOS OR XROS)
     list(APPEND videoio_srcs ${CMAKE_CURRENT_LIST_DIR}/src/cap_avfoundation.mm)
   else()
     list(APPEND videoio_srcs ${CMAKE_CURRENT_LIST_DIR}/src/cap_avfoundation_mac.mm)
@@ -220,6 +223,7 @@ if(TARGET ocv.3rdparty.cap_ios)
     ${CMAKE_CURRENT_LIST_DIR}/src/cap_ios_photo_camera.mm
     ${CMAKE_CURRENT_LIST_DIR}/src/cap_ios_video_camera.mm)
   list(APPEND tgts ocv.3rdparty.cap_ios)
+  list(APPEND videoio_ext_hdrs "${CMAKE_CURRENT_LIST_DIR}/include/opencv2/${name}/cap_ios.h")
 endif()
 
 if(TARGET ocv.3rdparty.android_mediandk)
@@ -234,6 +238,39 @@ if(TARGET ocv.3rdparty.android_native_camera)
   list(APPEND tgts ocv.3rdparty.android_native_camera)
 endif()
 
+<<<<<<< HEAD
+=======
+if(TARGET ocv.3rdparty.obsensor)
+if(OBSENSOR_USE_ORBBEC_SDK)
+    list(APPEND videoio_srcs
+      ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor_liborbbec.hpp
+      ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor_liborbbec.cpp)
+  else()
+    list(APPEND videoio_srcs
+      ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor_capture.cpp)
+    list(APPEND videoio_hdrs
+      ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor_capture.hpp
+      ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_stream_channel_interface.hpp)
+    if(HAVE_OBSENSOR_MSMF)
+      list(APPEND videoio_srcs
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_uvc_stream_channel.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_stream_channel_msmf.cpp)
+      list(APPEND videoio_hdrs
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_uvc_stream_channel.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_stream_channel_msmf.hpp)
+    elseif(HAVE_OBSENSOR_V4L2)
+      list(APPEND videoio_srcs
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_uvc_stream_channel.cpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_stream_channel_v4l2.cpp)
+      list(APPEND videoio_hdrs
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_uvc_stream_channel.hpp
+        ${CMAKE_CURRENT_LIST_DIR}/src/cap_obsensor/obsensor_stream_channel_v4l2.hpp)
+    endif()
+  endif()
+  list(APPEND tgts ocv.3rdparty.obsensor)
+endif()
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 if(tgts STREQUAL "PRIVATE")
   set(tgts "")
 endif()

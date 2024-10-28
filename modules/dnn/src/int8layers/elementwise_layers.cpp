@@ -106,6 +106,153 @@ public:
         }
     };
 
+<<<<<<< HEAD
+=======
+    virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
+                                       const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
+                                       const std::vector<Ptr<BackendWrapper> > &outputsWrapper,
+                                       bool isLast) CV_OVERRIDE
+    {
+#ifdef HAVE_TIMVX
+        // tvGraph Initialization.
+        auto timVxInfo = reinterpret_cast<TimVXInfo *>(timVXInfo_);
+        CV_Assert(timVxInfo);
+        Ptr<TimVXGraph> tvGraph = timVxInfo->getGraph();
+        CV_Assert(tvGraph);
+        Ptr<tim::vx::Graph> graph = tvGraph->graph;
+
+        std::vector<int> inputsIndex, outputsIndex;
+        int input_index, output_index;
+        CV_Assert(inputsWrapper.size() == 1);
+
+        // input Tensor
+        Ptr<TimVXBackendWrapper> inputWrapper = inputsWrapper[0].dynamicCast<TimVXBackendWrapper>();
+
+        if (inputWrapper->isTensor())
+        {
+            input_index = tvGraph->getTensorIndex(inputWrapper->getTensor());
+            if(input_index == -1)
+            {
+                // Copy To New inputWrapper
+                Mat tmp = inputWrapper->getMat();
+                inputWrapper = Ptr<TimVXBackendWrapper>(new TimVXBackendWrapper(tmp));
+            }
+        }
+
+        if (!inputWrapper->isTensor())
+        {
+            Ptr<tim::vx::Quantization> tvInputQuant = Ptr<tim::vx::Quantization>(
+                    new tim::vx::Quantization(tim::vx::QuantType::ASYMMETRIC, input_sc, input_zp));
+            inputWrapper->createTensor(graph, tim::vx::TensorAttribute::INPUT, tvInputQuant);
+            input_index = tvGraph->addWrapper(inputWrapper);
+        }
+
+        inputsIndex.push_back(input_index);
+
+        // output tensor
+        CV_Assert(outputsWrapper.size() == 1);
+        Ptr<TimVXBackendWrapper> outputWrapper = outputsWrapper[0].dynamicCast<TimVXBackendWrapper>();
+        Ptr<tim::vx::Quantization> outputQuant = Ptr<tim::vx::Quantization>(
+                new tim::vx::Quantization(tim::vx::QuantType::ASYMMETRIC, output_sc, output_zp));
+
+        Ptr<tim::vx::Tensor> outputTensor;
+
+        if (isLast)
+        {
+            auto shapeType = getShapeTypeFromMat(outputWrapper->getMat());
+
+            // For Graph Output tensor, we need to set tensor shape before createTensor().
+            outputWrapper->setTensorShape(shapeType);
+            outputWrapper->createTensor(graph, tim::vx::TensorAttribute::OUTPUT, outputQuant);
+        }
+        else
+        {
+            outputWrapper->createTensor(graph, tim::vx::TensorAttribute::TRANSIENT, outputQuant);
+        }
+        output_index = tvGraph->addWrapper(outputWrapper);
+        outputsIndex.push_back(output_index);
+
+        std::shared_ptr<tim::vx::Operation> tvAct;
+
+        switch(tvActType) {
+            case tvActReLU:
+            {
+                if (slope != 0.f)
+                    tvAct = graph->CreateOperation<tim::vx::ops::LeakyRelu>(slope);
+                else
+                    tvAct = graph->CreateOperation<tim::vx::ops::Relu>();
+                break;
+            }
+            case tvActReLU6:
+                tvAct = graph->CreateOperation<tim::vx::ops::Relu6>();
+                break;
+            case tvActTanH:
+                tvAct = graph->CreateOperation<tim::vx::ops::Tanh>();
+                break;
+            case tvActSwish:
+                tvAct = graph->CreateOperation<tim::vx::ops::Swish>();
+                break;
+            case tvActMish:
+                tvAct = graph->CreateOperation<tim::vx::ops::Mish>();
+                break;
+            case tvActSigmoid:
+                tvAct = graph->CreateOperation<tim::vx::ops::Sigmoid>();
+                break;
+            case tvActELU:
+                tvAct = graph->CreateOperation<tim::vx::ops::Elu>();
+                break;
+            default:
+                // TODO! check the default function.
+                tvAct = graph->CreateOperation<tim::vx::ops::Relu>();
+                break;
+        }
+
+        Ptr<TimVXBackendNode> tvBackendNode = new TimVXBackendNode(tvGraph, tvAct, inputsIndex, outputsIndex);
+
+        return tvBackendNode;
+#endif  // HAVE_TIMVX
+        return Ptr<BackendNode>();
+    }
+
+#ifdef HAVE_DNN_NGRAPH
+    virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> > &inputs,
+                                        const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
+    {
+        auto input = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
+
+        input = ngraphDequantize(input, input_sc, input_zp);
+
+        ov::Output<ov::Node> res;
+        if (type == "ReLU6Int8") {
+            res = std::make_shared<ov::op::v0::Clamp>(input, 0.0f, 6.0f);
+        } else if (type == "ReLUInt8") {
+            if (slope) {
+                auto param = std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &slope);
+                res = std::make_shared<ov::op::v0::PRelu>(input, param);
+            } else {
+                res = std::make_shared<ov::op::v0::Relu>(input);
+            }
+        } else if (type == "ELUInt8") {
+            res = std::make_shared<ov::op::v0::Elu>(input, 1.0f);
+        } else if (type == "MishInt8") {
+            res = std::make_shared<ov::op::v4::Mish>(input);
+        } else if (type == "HardSwishInt8") {
+            res = std::make_shared<ov::op::v4::HSwish>(input);
+        } else if (type == "AbsValInt8") {
+            res = std::make_shared<ov::op::v0::Abs>(input);
+        } else if (type == "SigmoidInt8") {
+            res = std::make_shared<ov::op::v0::Sigmoid>(input);
+        } else {
+            CV_Error(Error::StsNotImplemented, type + " activation with OpenVINO");
+        }
+
+        res = ngraphQuantize(res, output_sc, output_zp);
+
+        return new InfEngineNgraphNode(res);
+    }
+#endif  // HAVE_DNN_NGRAPH
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     void forward(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr, OutputArrayOfArrays internals_arr) CV_OVERRIDE
     {
         CV_TRACE_FUNCTION();

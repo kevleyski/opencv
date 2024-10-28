@@ -4375,7 +4375,7 @@ namespace cv{
             }
         }
 
-        CV_Error(CV_StsUnsupportedFormat, "unsupported label/image type");
+        CV_Error(cv::Error::StsUnsupportedFormat, "unsupported label/image type");
     }
 
 }
@@ -4397,7 +4397,7 @@ int cv::connectedComponents(InputArray img_, OutputArray _labels, int connectivi
         return connectedComponents_sub1(img, labels, connectivity, ccltype, sop);
     }
     else{
-        CV_Error(CV_StsUnsupportedFormat, "the type of labels must be 16u or 32s");
+        CV_Error(cv::Error::StsUnsupportedFormat, "the type of labels must be 16u or 32s");
     }
 }
 
@@ -4422,7 +4422,7 @@ int cv::connectedComponentsWithStats(InputArray img_, OutputArray _labels, Outpu
         return connectedComponents_sub1(img, labels, connectivity, ccltype, sop);
     }
     else{
-        CV_Error(CV_StsUnsupportedFormat, "the type of labels must be 16u or 32s");
+        CV_Error(cv::Error::StsUnsupportedFormat, "the type of labels must be 16u or 32s");
         return 0;
     }
 }

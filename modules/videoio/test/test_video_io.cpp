@@ -106,6 +106,11 @@ public:
             std::cout << "CAP_PROP_FRAME_COUNT is not supported by backend. Assume 50 frames." << std::endl;
             n_frames = 50;
         }
+        // GStreamer can't read frame count of big_buck_bunny.wmv
+        if (apiPref == CAP_GSTREAMER && ext == "wmv")
+        {
+            n_frames = 125;
+        }
 
         {
             SCOPED_TRACE("consecutive read");
@@ -205,7 +210,7 @@ public:
         EXPECT_NO_THROW(count_prop = (int)cap.get(CAP_PROP_FRAME_COUNT));
         // mpg file reports 5.08 sec * 24 fps => property returns 122 frames
         // but actual number of frames returned is 125
-        if (ext != "mpg")
+        if (ext != "mpg" && !(apiPref == CAP_GSTREAMER && ext == "wmv"))
         {
             if (count_prop > 0)
             {
@@ -239,12 +244,11 @@ public:
         if (!isBackendAvailable(apiPref, cv::videoio_registry::getStreamBackends()))
             throw SkipTestException(cv::String("Backend is not available/disabled: ") + cv::videoio_registry::getBackendName(apiPref));
 
-        // GStreamer: https://github.com/opencv/opencv/issues/19025
-        if (apiPref == CAP_GSTREAMER)
+        if (((apiPref == CAP_GSTREAMER) && (ext == "avi")))
             throw SkipTestException(cv::String("Backend ") +  cv::videoio_registry::getBackendName(apiPref) +
-                    cv::String(" does not return reliable values for CAP_PROP_POS_MSEC property"));
+                    cv::String(" does not support CAP_PROP_POS_MSEC option"));
 
-        if (((apiPref == CAP_FFMPEG) && ((ext == "h264") || (ext == "h265"))))
+        if (((apiPref == CAP_FFMPEG || apiPref == CAP_GSTREAMER) && ((ext == "h264") || (ext == "h265"))))
             throw SkipTestException(cv::String("Backend ") +  cv::videoio_registry::getBackendName(apiPref) +
                     cv::String(" does not support CAP_PROP_POS_MSEC option"));
 
@@ -254,6 +258,20 @@ public:
             throw SkipTestException(cv::String("Backend ") +  cv::videoio_registry::getBackendName(apiPref) +
                     cv::String(" can't open the video: ")  + video_file);
 
+<<<<<<< HEAD
+=======
+        int frame_count = (int)cap.get(CAP_PROP_FRAME_COUNT);
+
+        // HACK: Video consists of 125 frames, but cv::VideoCapture with FFmpeg reports only 122 frames for mpg video.
+        // mpg file reports 5.08 sec * 24 fps => property returns 122 frames,but actual number of frames returned is 125
+        // HACK: CAP_PROP_FRAME_COUNT is not supported for vmw + MSMF. Just force check for all 125 frames
+        if (ext == "mpg")
+            EXPECT_GE(frame_count, 114);
+        else if ((ext == "wmv") && (apiPref == CAP_MSMF || apiPref == CAP_GSTREAMER))
+            frame_count = 125;
+        else
+            EXPECT_EQ(frame_count, 125);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         Mat img;
         for(int i = 0; i < 10; i++)
         {
@@ -263,7 +281,14 @@ public:
             if (cvtest::debugLevel > 0)
                 std::cout << "i = " << i << ": timestamp = " << timestamp << std::endl;
             const double frame_period = 1000.f/bunny_param.getFps();
+<<<<<<< HEAD
             // NOTE: eps == frame_period, because videoCapture returns frame begining timestamp or frame end
+=======
+            // big_buck_bunny.mpg starts at 0.500 msec
+            if ((ext == "mpg") && (apiPref == CAP_GSTREAMER))
+                timestamp -= 500.0;
+            // NOTE: eps == frame_period, because videoCapture returns frame beginning timestamp or frame end
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             // timestamp depending on codec and back-end. So the first frame has timestamp 0 or frame_period.
             EXPECT_NEAR(timestamp, i*frame_period, frame_period) << "i=" << i;
         }

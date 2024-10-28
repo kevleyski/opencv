@@ -289,6 +289,11 @@ TEST_P(Test_Caffe_layers, Dropout)
 
 TEST_P(Test_Caffe_layers, Concat)
 {
+    if (cvtest::skipUnstableTests && (backend == DNN_BACKEND_VKCOM))
+    {
+        throw SkipTestException("Test_Caffe_layers.Concat test produces unstable result with Vulkan");
+    }
+
 #if defined(INF_ENGINE_RELEASE)
 #if INF_ENGINE_VER_MAJOR_GE(2019010000) && INF_ENGINE_VER_MAJOR_LT(2019020000)
     if (backend == DNN_BACKEND_INFERENCE_ENGINE_NN_BUILDER_2019 && target == DNN_TARGET_MYRIAD)
@@ -1635,7 +1640,7 @@ public:
         CV_TRACE_FUNCTION();
         CV_TRACE_ARG_VALUE(name, "name", name.c_str());
 
-        if (inputs_arr.depth() == CV_16S)
+        if (inputs_arr.depth() == CV_16F)
         {
             forward_fallback(inputs_arr, outputs_arr, internals_arr);
             return;
@@ -1817,6 +1822,50 @@ INSTANTIATE_TEST_CASE_P(/**/, Layer_Test_ShuffleChannel, Combine(
 /*group*/        Values(1, 2, 3, 6), dnnBackendsAndTargets(/*with IE*/ false)
 ));
 
+TEST(Layer_Test_ReduceMean, accuracy_input_0)
+{
+    vector<int> szData = { 2, 1, 2, 1 ,2 };
+    std::vector<float> initData = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    Mat inpInitA(szData, CV_32FC1, Mat(initData).data);
+    std::vector<float> resAxes0 = { 2, 3, 4, 5 };
+    std::vector<float> resAxes1 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    std::vector<float> resAxes2 = { 1, 2, 5, 6 };
+    std::vector<float> resAxes3 = { 0, 1, 2, 3, 4, 5, 6, 7 };
+    std::vector<float> resAxes4 = { 0.5, 2.5, 4.5, 6.5 };
+    std::vector < vector<float>> resReduceMean = { resAxes0, resAxes1, resAxes2, resAxes3, resAxes4 };
+
+
+    for (int i = 0; i < resReduceMean.size(); i++)
+    {
+        Net net;
+        LayerParams lp;
+        lp.set("keepdims", 0);
+        lp.type = "Reduce";
+        lp.set("reduce", "MEAN");
+        lp.name = "testReduceMean";
+        lp.set("axes", i);
+        lp.blobs.push_back(inpInitA);
+
+        net.addLayerToPrev(lp.name, lp.type, lp);
+        net.setInput(inpInitA);
+        net.setPreferableBackend(DNN_BACKEND_OPENCV);
+
+        Mat output = net.forward();
+        MatShape gt_shape;
+        for (int j = 0; j < szData.size(); j++)
+        {
+            if (i == j) continue;
+            gt_shape.push_back(szData[j]);
+        }
+
+        EXPECT_EQ(gt_shape, shape(output));
+
+        Mat a = output.reshape(1, output.total());
+        normAssert(a, Mat(resReduceMean[i]));
+    }
+}
+
+
 // Check if relu is not fused to convolution if we requested it's output
 TEST(Layer_Test_Convolution, relu_fusion)
 {
@@ -1987,6 +2036,123 @@ INSTANTIATE_TEST_CASE_P(/**/, Layer_Test_Eltwise_unequal, Combine(
     dnnBackendsAndTargets()
 ));
 
+<<<<<<< HEAD
+=======
+
+struct Layer_Test_Eltwise_bcast : testing::TestWithParam<tuple<string, int, tuple<Backend, Target>>>
+{
+public:
+    void test_bcast()
+    {
+        string op = get<0>(GetParam());
+        int dim = get<1>(GetParam());
+        tuple<Backend, Target> backend_target= get<2>(GetParam());
+        int backend = get<0>(backend_target);
+        int target = get<1>(backend_target);
+
+        if (backend == DNN_BACKEND_CUDA && dim > 4)
+            applyTestTag(CV_TEST_TAG_LONG);
+
+        vector<vector<int>> dim_shape_list;
+        get_all_arr(dim_shape_list, dim);
+        replace(dim_shape_list, 1, 3);
+        // same shape
+        for (int i = 0; i < dim_shape_list.size(); i++)
+            for (int j = 0; j < dim_shape_list.size(); j++)
+                run(dim_shape_list[i], dim_shape_list[j], op, backend, target);
+
+        vector<vector<int>> sub_shape_list;
+        vector<vector<int>> tmp;
+        for(int i = 1; i < dim; i++){
+            get_all_arr(tmp, i);
+            replace(tmp, 1, 3);
+            sub_shape_list.insert(sub_shape_list.end(), tmp.begin(), tmp.end());
+        }
+
+        // diff shape
+        for (const auto &shp1: dim_shape_list)
+            for (const auto &shp2: sub_shape_list)
+                run(shp1, shp2, op, backend, target);
+
+        // diff shape
+        for (const auto &shp1: sub_shape_list)
+            for (const auto &shp2: dim_shape_list)
+                run(shp1, shp2, op, backend, target);
+    }
+
+private:
+    // give n to generate all n-D arrays with 0 or 1
+    static void get_all_arr(vector<vector<int>> &arr, int n)
+    {
+        int total = 1 << n;
+        arr.assign(total, vector<int>(n, -1));
+        for (int i = 0; i < total; i++)
+            for (int j = 0; j < n; j++)
+                arr[i][j] = (i >> (n - j - 1)) & 1;
+    }
+
+    // zero will replace all 0, one will replace all 1
+    static void replace(vector<vector<int>> &arr, int zero, int one)
+    {
+        for (int i = 0; i < arr.size(); i++)
+            for (int j = 0; j < arr[0].size(); j++)
+                arr[i][j] = arr[i][j] ? one : zero;
+    }
+
+    static void run(const vector<int> &a_shape, const vector<int> &b_shape, const String &op, const int backend, const int target)
+    {
+        Mat a = Mat::zeros((int) a_shape.size(), a_shape.data(), CV_32FC1);
+        Mat b = Mat::ones((int) b_shape.size(), b_shape.data(), CV_32FC1);
+
+        Net net;
+        LayerParams lp;
+        lp.type = "NaryEltwise";
+        lp.name = "testLayer";
+        lp.set("operation", op);
+        int id = net.addLayerToPrev(lp.name, lp.type, lp);
+        net.connect(0, 1, id, 1);
+
+        vector<String> inpNames(2);
+        inpNames[0] = "a";
+        inpNames[1] = "b";
+        net.setInputsNames(inpNames);
+        net.setInput(a, inpNames[0]);
+        net.setInput(b, inpNames[1]);
+
+        net.setPreferableBackend(backend);
+        net.setPreferableTarget(target);
+
+        Mat re;
+        re = net.forward();
+        auto ptr_re = (float *) re.data;
+        for (int i = 0; i < re.total(); i++)
+            if (op == "sum"){
+                ASSERT_EQ(1, ptr_re[i]); // sum result should be 1
+            }
+    }
+};
+
+TEST_P(Layer_Test_Eltwise_bcast, brute_force)
+{
+    test_bcast();
+}
+
+// This test is to verify whether the broadcast operations of unidirectional and bidirectional,
+// as well as tensors with same and different shapes, can be forwarded correctly.
+// This can ensure that the elementwise layer does not have any errors when forwarding.
+//
+// To test which cases the backend will fallback to the cpu, replace the fallback command like
+// `return Ptr<BackendNode>();` in `initCUDA()` with `throw std::runtime_error("fallback");`
+//
+// To test more operators, add more ops after "sum".
+// Default only "sum" is tested, because for the most cases they have the same implementation.
+INSTANTIATE_TEST_CASE_P(/**/, Layer_Test_Eltwise_bcast, Combine(
+        Values("sum"),
+        Values(1, 2, 3, 4, 5),
+        dnnBackendsAndTargets()
+));
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 typedef testing::TestWithParam<tuple<Backend, Target> > Layer_Test_Resize;
 TEST_P(Layer_Test_Resize, change_input)
 {

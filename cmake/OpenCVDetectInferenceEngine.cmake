@@ -38,6 +38,7 @@ function(add_custom_ie_build _inc _lib _lib_rel _lib_dbg _msg)
   if(NOT _inc OR NOT (_lib OR _lib_rel OR _lib_dbg))
     return()
   endif()
+<<<<<<< HEAD
   if(NOT _lib)
     if(_lib_rel)
       set(_lib "${_lib_rel}")
@@ -163,4 +164,6 @@ if(WITH_NGRAPH)
     message(STATUS "Detected ngraph: cmake package (${ngraph_VERSION})")
     set(HAVE_NGRAPH ON)
   endif()
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 endif()

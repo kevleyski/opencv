@@ -24,7 +24,11 @@
 #include "src/webp/format_constants.h"
 
 #define DMUX_MAJ_VERSION 1
+<<<<<<< HEAD
 #define DMUX_MIN_VERSION 2
+=======
+#define DMUX_MIN_VERSION 4
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #define DMUX_REV_VERSION 0
 
 typedef struct {

@@ -50,4 +50,11 @@
 #include "opencv2/core/ocl.hpp"
 #include "opencv2/core/private.hpp"
 
+<<<<<<< HEAD
+=======
+#include <numeric>
+#include <array>
+#include <vector>
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif

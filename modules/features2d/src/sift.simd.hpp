@@ -150,7 +150,7 @@ void findScaleSpaceExtrema(
 
 void calcSIFTDescriptor(
         const Mat& img, Point2f ptf, float ori, float scl,
-        int d, int n, Mat& dst, int row
+        const int d, const int n, Mat& dst, int row
 );
 
 
@@ -708,7 +708,7 @@ void findScaleSpaceExtrema(
 
 void calcSIFTDescriptor(
         const Mat& img, Point2f ptf, float ori, float scl,
-        int d, int n, Mat& dstMat, int row
+        const int d, const int n, Mat& dstMat, int row
 )
 {
     CV_TRACE_FUNCTION();
@@ -725,7 +725,10 @@ void calcSIFTDescriptor(
     cos_t /= hist_width;
     sin_t /= hist_width;
 
-    int i, j, k, len = (radius*2+1)*(radius*2+1), histlen = (d+2)*(d+2)*(n+2);
+    int i, j, k;
+    const int len = (radius*2+1)*(radius*2+1);
+    const int len_hist = (d+2)*(d+2)*(n+2);
+    const int len_ddn = d * d * n;
     int rows = img.rows, cols = img.cols;
 
     cv::utils::BufferArea area;
@@ -736,8 +739,8 @@ void calcSIFTDescriptor(
     area.allocate(W, len, CV_SIMD_WIDTH);
     area.allocate(RBin, len, CV_SIMD_WIDTH);
     area.allocate(CBin, len, CV_SIMD_WIDTH);
-    area.allocate(hist, histlen, CV_SIMD_WIDTH);
-    area.allocate(rawDst, len, CV_SIMD_WIDTH);
+    area.allocate(hist, len_hist, CV_SIMD_WIDTH);
+    area.allocate(rawDst, len_ddn, CV_SIMD_WIDTH);
     area.commit();
     Mag = Y;
 
@@ -771,10 +774,10 @@ void calcSIFTDescriptor(
             }
         }
 
-    len = k;
-    cv::hal::fastAtan2(Y, X, Ori, len, true);
-    cv::hal::magnitude32f(X, Y, Mag, len);
-    cv::hal::exp32f(W, W, len);
+    const int len_left = k;
+    cv::hal::fastAtan2(Y, X, Ori, len_left, true);
+    cv::hal::magnitude32f(X, Y, Mag, len_left);
+    cv::hal::exp32f(W, W, len_left);
 
     k = 0;
 #if CV_SIMD
@@ -788,7 +791,7 @@ void calcSIFTDescriptor(
         const v_int32 __1 = vx_setall_s32(1);
         const v_int32 __d_plus_2 = vx_setall_s32(d+2);
         const v_int32 __n_plus_2 = vx_setall_s32(n+2);
-        for( ; k <= len - vecsize; k += vecsize )
+        for( ; k <= len_left - vecsize; k += vecsize )
         {
             v_float32 rbin = vx_load_aligned(RBin + k);
             v_float32 cbin = vx_load_aligned(CBin + k);
@@ -839,7 +842,7 @@ void calcSIFTDescriptor(
         }
     }
 #endif
-    for( ; k < len; k++ )
+    for( ; k < len_left; k++ )
     {
         float rbin = RBin[k], cbin = CBin[k];
         float obin = (Ori[k] - ori)*bins_per_rad;
@@ -892,13 +895,16 @@ void calcSIFTDescriptor(
     // and scale the result, so that it can be easily converted
     // to byte array
     float nrm2 = 0;
-    len = d*d*n;
     k = 0;
 #if CV_SIMD
     {
         v_float32 __nrm2 = vx_setzero_f32();
         v_float32 __rawDst;
+<<<<<<< HEAD
         for( ; k <= len - v_float32::nlanes; k += v_float32::nlanes )
+=======
+        for( ; k <= len_ddn - VTraits<v_float32>::vlanes(); k += VTraits<v_float32>::vlanes() )
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         {
             __rawDst = vx_load_aligned(rawDst + k);
             __nrm2 = v_fma(__rawDst, __rawDst, __nrm2);
@@ -906,10 +912,10 @@ void calcSIFTDescriptor(
         nrm2 = (float)v_reduce_sum(__nrm2);
     }
 #endif
-    for( ; k < len; k++ )
+    for( ; k < len_ddn; k++ )
         nrm2 += rawDst[k]*rawDst[k];
 
-    float thr = std::sqrt(nrm2)*SIFT_DESCR_MAG_THR;
+    const float thr = std::sqrt(nrm2)*SIFT_DESCR_MAG_THR;
 
     i = 0, nrm2 = 0;
 #if 0 //CV_AVX2
@@ -920,7 +926,7 @@ void calcSIFTDescriptor(
         __m256 __dst;
         __m256 __nrm2 = _mm256_setzero_ps();
         __m256 __thr = _mm256_set1_ps(thr);
-        for( ; i <= len - 8; i += 8 )
+        for( ; i <= len_ddn - 8; i += 8 )
         {
             __dst = _mm256_loadu_ps(&rawDst[i]);
             __dst = _mm256_min_ps(__dst, __thr);
@@ -936,7 +942,7 @@ void calcSIFTDescriptor(
                nrm2_buf[4] + nrm2_buf[5] + nrm2_buf[6] + nrm2_buf[7];
     }
 #endif
-    for( ; i < len; i++ )
+    for( ; i < len_ddn; i++ )
     {
         float val = std::min(rawDst[i], thr);
         rawDst[i] = val;
@@ -954,14 +960,26 @@ if( dstMat.type() == CV_32F )
     v_float32 __min = vx_setzero_f32();
     v_float32 __max = vx_setall_f32(255.0f); // max of uchar
     v_float32 __nrm2 = vx_setall_f32(nrm2);
+<<<<<<< HEAD
     for( k = 0; k <= len - v_float32::nlanes; k += v_float32::nlanes )
+=======
+    for( k = 0; k <= len_ddn - VTraits<v_float32>::vlanes(); k += VTraits<v_float32>::vlanes() )
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     {
         __dst = vx_load_aligned(rawDst + k);
         __dst = v_min(v_max(v_cvt_f32(v_round(__dst * __nrm2)), __min), __max);
         v_store(dst + k, __dst);
     }
 #endif
+<<<<<<< HEAD
     for( ; k < len; k++ )
+=======
+#if defined(__GNUC__) && __GNUC__ >= 9
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"  // iteration XX invokes undefined behavior
+#endif
+    for( ; k < len_ddn; k++ )
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     {
         dst[k] = saturate_cast<uchar>(rawDst[k]*nrm2);
     }
@@ -973,7 +991,11 @@ else // CV_8U
     v_float32 __dst0, __dst1;
     v_uint16 __pack01;
     v_float32 __nrm2 = vx_setall_f32(nrm2);
+<<<<<<< HEAD
     for( k = 0; k <= len - v_float32::nlanes * 2; k += v_float32::nlanes * 2 )
+=======
+    for( k = 0; k <= len_ddn - VTraits<v_float32>::vlanes() * 2; k += VTraits<v_float32>::vlanes() * 2 )
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     {
         __dst0 = vx_load_aligned(rawDst + k);
         __dst1 = vx_load_aligned(rawDst + k + v_float32::nlanes);
@@ -982,7 +1004,16 @@ else // CV_8U
         v_pack_store(dst + k, __pack01);
     }
 #endif
+<<<<<<< HEAD
     for( ; k < len; k++ )
+=======
+
+#if defined(__GNUC__) && __GNUC__ >= 9
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Waggressive-loop-optimizations"  // iteration XX invokes undefined behavior
+#endif
+    for( ; k < len_ddn; k++ )
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     {
         dst[k] = saturate_cast<uchar>(rawDst[k]*nrm2);
     }
@@ -990,7 +1021,7 @@ else // CV_8U
 #else
     float* dst = dstMat.ptr<float>(row);
     float nrm1 = 0;
-    for( k = 0; k < len; k++ )
+    for( k = 0; k < len_ddn; k++ )
     {
         rawDst[k] *= nrm2;
         nrm1 += rawDst[k];
@@ -1000,14 +1031,30 @@ if( dstMat.type() == CV_32F )
 {
     for( k = 0; k < len; k++ )
     {
+<<<<<<< HEAD
         dst[k] = std::sqrt(rawDst[k] * nrm1);
+=======
+        float *dst = dstMat.ptr<float>(row);
+        for( k = 0; k < len_ddn; k++ )
+        {
+            dst[k] = std::sqrt(rawDst[k] * nrm1);
+        }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 }
 else // CV_8U
 {
     for( k = 0; k < len; k++ )
     {
+<<<<<<< HEAD
         dst[k] = saturate_cast<uchar>(std::sqrt(rawDst[k] * nrm1)*SIFT_INT_DESCR_FCTR);
+=======
+        uint8_t *dst = dstMat.ptr<uint8_t>(row);
+        for( k = 0; k < len_ddn; k++ )
+        {
+            dst[k] = saturate_cast<uchar>(std::sqrt(rawDst[k] * nrm1)*SIFT_INT_DESCR_FCTR);
+        }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 }
 #endif

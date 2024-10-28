@@ -93,8 +93,17 @@ using namespace cv::segmentation;  // FIXIT
 using namespace cv::dnn;
 #endif
 
+<<<<<<< HEAD
 #ifdef HAVE_OPENCV_ARUCO
 using namespace aruco;
+=======
+#ifdef HAVE_OPENCV_FEATURES2D
+typedef SimpleBlobDetector::Params SimpleBlobDetector_Params;
+#endif
+
+#ifdef HAVE_OPENCV_VIDEO
+typedef TrackerMIL::Params TrackerMIL_Params;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif
 
 namespace binding_utils
@@ -434,6 +443,7 @@ EMSCRIPTEN_BINDINGS(binding_utils)
     register_vector<int>("IntVector");
     register_vector<float>("FloatVector");
     register_vector<double>("DoubleVector");
+    register_vector<std::string>("StringVector");
     register_vector<cv::Point>("PointVector");
     register_vector<cv::Mat>("MatVector");
     register_vector<cv::Rect>("RectVector");

@@ -76,7 +76,6 @@ protected:
     bool inplace;
     bool custom_inv_transform;
     int fwd_code, inv_code;
-    bool test_cpp;
     int hue_range;
     bool srgb;
 };
@@ -97,7 +96,6 @@ CV_ColorCvtBaseTest::CV_ColorCvtBaseTest( bool _custom_inv_transform, bool _allo
 
     fwd_code_str = inv_code_str = 0;
 
-    test_cpp = false;
     hue_range = 0;
     blue_idx = 0;
     srgb = false;
@@ -147,7 +145,6 @@ void CV_ColorCvtBaseTest::get_test_array_types_and_sizes( int test_case_idx,
         types[OUTPUT][1] = types[REF_OUTPUT][1] = CV_MAKETYPE(depth, cn);
 
     inplace = cn == 3 && cvtest::randInt(rng) % 2 != 0;
-    test_cpp = (cvtest::randInt(rng) & 256) == 0;
 }
 
 
@@ -161,23 +158,17 @@ int CV_ColorCvtBaseTest::prepare_test_case( int test_case_idx )
 
 void CV_ColorCvtBaseTest::run_func()
 {
-    CvArr* out0 = test_array[OUTPUT][0];
-    cv::Mat _out0 = cv::cvarrToMat(out0), _out1 = cv::cvarrToMat(test_array[OUTPUT][1]);
+    cv::Mat out0 = test_mat[OUTPUT][0];
+    cv::Mat _out0 = out0, _out1 = test_mat[OUTPUT][1];
 
-    if(!test_cpp)
-        cvCvtColor( inplace ? out0 : test_array[INPUT][0], out0, fwd_code );
-    else
-        cv::cvtColor( cv::cvarrToMat(inplace ? out0 : test_array[INPUT][0]), _out0, fwd_code, _out0.channels());
+    cv::cvtColor( inplace ? out0 : test_mat[INPUT][0], _out0, fwd_code, _out0.channels());
 
     if( inplace )
     {
-        cvCopy( out0, test_array[OUTPUT][1] );
-        out0 = test_array[OUTPUT][1];
+        out0.copyTo(test_mat[OUTPUT][1]);
+        out0 = test_mat[OUTPUT][1];
     }
-    if(!test_cpp)
-        cvCvtColor( out0, test_array[OUTPUT][1], inv_code );
-    else
-        cv::cvtColor(cv::cvarrToMat(out0), _out1, inv_code, _out1.channels());
+    cv::cvtColor(out0, _out1, inv_code, _out1.channels());
 }
 
 
@@ -464,7 +455,7 @@ void CV_ColorGrayTest::get_test_array_types_and_sizes( int test_case_idx, vector
 double CV_ColorGrayTest::get_success_error_level( int /*test_case_idx*/, int i, int j )
 {
     int depth = test_mat[i][j].depth();
-    return depth == CV_8U ? 2 : depth == CV_16U ? 16 : 1e-5;
+    return depth == CV_8U ? 1 : depth == CV_16U ? 2 : 1e-5;
 }
 
 
@@ -1730,13 +1721,8 @@ double CV_ColorBayerTest::get_success_error_level( int /*test_case_idx*/, int /*
 
 void CV_ColorBayerTest::run_func()
 {
-    if(!test_cpp)
-        cvCvtColor( test_array[INPUT][0], test_array[OUTPUT][0], fwd_code );
-    else
-    {
-        cv::Mat _out = cv::cvarrToMat(test_array[OUTPUT][0]);
-        cv::cvtColor(cv::cvarrToMat(test_array[INPUT][0]), _out, fwd_code, _out.channels());
-    }
+    cv::Mat _out = test_mat[OUTPUT][0];
+    cv::cvtColor(test_mat[INPUT][0], _out, fwd_code, _out.channels());
 }
 
 
@@ -1824,7 +1810,7 @@ void CV_ColorBayerTest::prepare_to_validation( int /*test_case_idx*/ )
     else if( depth == CV_16U )
         bayer2BGR_<ushort>(src, dst, fwd_code);
     else
-        CV_Error(CV_StsUnsupportedFormat, "");
+        CV_Error(cv::Error::StsUnsupportedFormat, "");
 }
 
 
@@ -1860,6 +1846,26 @@ TEST(Imgproc_ColorBayer, regression)
     absdiff(gold, result, diff);
 
     EXPECT_EQ(0, countNonZero(diff.reshape(1) > 1));
+}
+
+TEST(Imgproc_ColorBayer2Gray, regression_25823)
+{
+    const int n = 100;
+    Mat src(n, n, CV_8UC1);
+    Mat dst;
+
+    for (int i = 0; i < src.rows; ++i)
+    {
+        for (int j = 0; j < src.cols; ++j)
+        {
+            src.at<uchar>(i, j) = (i + j) % 2;
+        }
+    }
+
+    cvtColor(src, dst, COLOR_BayerBG2GRAY);
+
+    Mat gold(n, n, CV_8UC1, Scalar(1));
+    EXPECT_EQ(0, cv::norm(dst, gold, NORM_INF));
 }
 
 TEST(Imgproc_ColorBayerVNG, regression)
@@ -2656,7 +2662,7 @@ TEST(Imgproc_ColorLab_Full, bitExactness)
             Mat probe(256, 256, CV_8UC3), result;
             rng.fill(probe, RNG::UNIFORM, 0, 255, true);
 
-            cvtColor(probe, result, codes[c]);
+            cvtColor(probe, result, codes[c], 0, ALGO_HINT_ACCURATE);
 
             uint32_t h = adler32(result);
             uint32_t goodHash = hashes[c*nIterations + iter];
@@ -2748,7 +2754,7 @@ TEST(Imgproc_ColorLuv_Full, bitExactness)
             Mat probe(256, 256, CV_8UC3), result;
             rng.fill(probe, RNG::UNIFORM, 0, 255, true);
 
-            cvtColor(probe, result, codes[c]);
+            cvtColor(probe, result, codes[c], 0, ALGO_HINT_ACCURATE);
 
             uint32_t h = adler32(result);
             uint32_t goodHash = hashes[c*nIterations + iter];
@@ -2797,6 +2803,91 @@ TEST(Imgproc_ColorLuv_Full, bitExactness)
     }
 }
 
+<<<<<<< HEAD
+=======
+
+static
+void runCvtColorBitExactCheck(ColorConversionCodes code, int inputType, uint32_t hash, Size sz = Size(263, 255), int rngSeed = 0)
+{
+    RNG rng(rngSeed);
+
+    Mat src(sz, inputType, Scalar::all(0));
+    Mat dst;
+    rng.fill(src, RNG::UNIFORM, 0, 255, true);
+
+    cv::cvtColor(src, dst, code, 0, ALGO_HINT_ACCURATE);
+
+    uint32_t dst_hash = adler32(dst);
+
+    EXPECT_EQ(hash, dst_hash) << cv::format("0x%08llx", (long long int)dst_hash);
+
+    if (cvtest::debugLevel > 0)
+    {
+        const ::testing::TestInfo* const test_info = ::testing::UnitTest::GetInstance()->current_test_info();
+        CV_Assert(test_info);
+        std::string name = (std::string(test_info->test_case_name()) + "--" + test_info->name() + ".xml");
+        cv::FileStorage fs(name, cv::FileStorage::WRITE);
+        fs << "dst" << dst;
+    }
+}
+
+TEST(Imgproc_cvtColor_BE, COLOR_RGB2GRAY)  { runCvtColorBitExactCheck(COLOR_RGB2GRAY,  CV_8UC3, 0x416bd44a); }
+TEST(Imgproc_cvtColor_BE, COLOR_RGBA2GRAY) { runCvtColorBitExactCheck(COLOR_RGBA2GRAY, CV_8UC3, 0x416bd44a); }
+TEST(Imgproc_cvtColor_BE, COLOR_BGR2GRAY)  { runCvtColorBitExactCheck(COLOR_BGR2GRAY,  CV_8UC3, 0x3008c6b8); }
+TEST(Imgproc_cvtColor_BE, COLOR_BGRA2GRAY) { runCvtColorBitExactCheck(COLOR_BGRA2GRAY, CV_8UC3, 0x3008c6b8); }
+
+TEST(Imgproc_cvtColor_BE, COLOR_BGR2YUV) { runCvtColorBitExactCheck(COLOR_BGR2YUV, CV_8UC3, 0xc2cbcfda); }
+TEST(Imgproc_cvtColor_BE, COLOR_RGB2YUV) { runCvtColorBitExactCheck(COLOR_RGB2YUV, CV_8UC3, 0x4e98e757); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR) { runCvtColorBitExactCheck(COLOR_YUV2BGR, CV_8UC3, 0xb2c62a3f); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB) { runCvtColorBitExactCheck(COLOR_YUV2RGB, CV_8UC3, 0x6d242a3f); }
+
+// packed input
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB_NV12) { runCvtColorBitExactCheck(COLOR_YUV2RGB_NV12, CV_8UC1, 0x46a1bb76, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR_NV12) { runCvtColorBitExactCheck(COLOR_YUV2BGR_NV12, CV_8UC1, 0x3843bb76, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB_NV21) { runCvtColorBitExactCheck(COLOR_YUV2RGB_NV21, CV_8UC1, 0xf3fdf2ea, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR_NV21) { runCvtColorBitExactCheck(COLOR_YUV2BGR_NV21, CV_8UC1, 0x6e84f2ea, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGBA_NV12) { runCvtColorBitExactCheck(COLOR_YUV2RGBA_NV12, CV_8UC1, 0xb6a16bd3, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGRA_NV12) { runCvtColorBitExactCheck(COLOR_YUV2BGRA_NV12, CV_8UC1, 0xa8436bd3, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGBA_NV21) { runCvtColorBitExactCheck(COLOR_YUV2RGBA_NV21, CV_8UC1, 0x1c7fa347, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGRA_NV21) { runCvtColorBitExactCheck(COLOR_YUV2BGRA_NV21, CV_8UC1, 0x96f7a347, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB_YV12) { runCvtColorBitExactCheck(COLOR_YUV2RGB_YV12, CV_8UC1, 0xc5da1651, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR_YV12) { runCvtColorBitExactCheck(COLOR_YUV2BGR_YV12, CV_8UC1, 0x12161651, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB_IYUV) { runCvtColorBitExactCheck(COLOR_YUV2RGB_IYUV, CV_8UC1, 0xb4e62ea5, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR_IYUV) { runCvtColorBitExactCheck(COLOR_YUV2BGR_IYUV, CV_8UC1, 0xfa632ea5, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGBA_YV12) { runCvtColorBitExactCheck(COLOR_YUV2RGBA_YV12, CV_8UC1, 0x0db4c69f, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGRA_YV12) { runCvtColorBitExactCheck(COLOR_YUV2BGRA_YV12, CV_8UC1, 0x59e1c69f, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGBA_IYUV) { runCvtColorBitExactCheck(COLOR_YUV2RGBA_IYUV, CV_8UC1, 0xfe09def3, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGRA_IYUV) { runCvtColorBitExactCheck(COLOR_YUV2BGRA_IYUV, CV_8UC1, 0x4395def3, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2GRAY_420) { runCvtColorBitExactCheck(COLOR_YUV2GRAY_420, CV_8UC1, 0xf672b440, Size(262, 510)); }
+
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB_UYVY) { runCvtColorBitExactCheck(COLOR_YUV2RGB_UYVY, CV_8UC2, 0x69bea2c1, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR_UYVY) { runCvtColorBitExactCheck(COLOR_YUV2BGR_UYVY, CV_8UC2, 0xdc51a2c1, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGBA_UYVY) { runCvtColorBitExactCheck(COLOR_YUV2RGBA_UYVY, CV_8UC2, 0x851eab45, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGRA_UYVY) { runCvtColorBitExactCheck(COLOR_YUV2BGRA_UYVY, CV_8UC2, 0xf7b1ab45, Size(262, 510)); }
+
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB_YUY2) { runCvtColorBitExactCheck(COLOR_YUV2RGB_YUY2, CV_8UC2, 0x607e8889, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR_YUY2) { runCvtColorBitExactCheck(COLOR_YUV2BGR_YUY2, CV_8UC2, 0xfb148889, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGB_YVYU) { runCvtColorBitExactCheck(COLOR_YUV2RGB_YVYU, CV_8UC2, 0x239b13d4, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGR_YVYU) { runCvtColorBitExactCheck(COLOR_YUV2BGR_YVYU, CV_8UC2, 0x402b13d4, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGBA_YUY2) { runCvtColorBitExactCheck(COLOR_YUV2RGBA_YUY2, CV_8UC2, 0xf6af910d, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGRA_YUY2) { runCvtColorBitExactCheck(COLOR_YUV2BGRA_YUY2, CV_8UC2, 0x9154910d, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2RGBA_YVYU) { runCvtColorBitExactCheck(COLOR_YUV2RGBA_YVYU, CV_8UC2, 0x14481c58, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2BGRA_YVYU) { runCvtColorBitExactCheck(COLOR_YUV2BGRA_YVYU, CV_8UC2, 0x30d81c58, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2GRAY_UYVY) { runCvtColorBitExactCheck(COLOR_YUV2GRAY_UYVY, CV_8UC2, 0x228e669c, Size(262, 510)); }
+TEST(Imgproc_cvtColor_BE, COLOR_YUV2GRAY_YUY2) { runCvtColorBitExactCheck(COLOR_YUV2GRAY_YUY2, CV_8UC2, 0x125c62fd, Size(262, 510)); }
+
+TEST(Imgproc_cvtColor_BE, COLOR_RGB2YUV_I420) { runCvtColorBitExactCheck(COLOR_RGB2YUV_I420, CV_8UC3, 0x44bb076a, Size(262, 254)); }
+TEST(Imgproc_cvtColor_BE, COLOR_BGR2YUV_I420) { runCvtColorBitExactCheck(COLOR_BGR2YUV_I420, CV_8UC3, 0xf908ff52, Size(262, 254)); }
+TEST(Imgproc_cvtColor_BE, COLOR_RGBA2YUV_I420) { runCvtColorBitExactCheck(COLOR_RGBA2YUV_I420, CV_8UC3, 0x44bb076a, Size(262, 254)); }
+TEST(Imgproc_cvtColor_BE, COLOR_BGRA2YUV_I420) { runCvtColorBitExactCheck(COLOR_BGRA2YUV_I420, CV_8UC3, 0xf908ff52, Size(262, 254)); }
+
+TEST(Imgproc_cvtColor_BE, COLOR_RGB2YUV_YV12) { runCvtColorBitExactCheck(COLOR_RGB2YUV_YV12, CV_8UC3, 0x1b0d076a, Size(262, 254)); }
+TEST(Imgproc_cvtColor_BE, COLOR_BGR2YUV_YV12) { runCvtColorBitExactCheck(COLOR_BGR2YUV_YV12, CV_8UC3, 0xda8aff52, Size(262, 254)); }
+TEST(Imgproc_cvtColor_BE, COLOR_RGBA2YUV_YV12) { runCvtColorBitExactCheck(COLOR_RGBA2YUV_YV12, CV_8UC3, 0x1b0d076a, Size(262, 254)); }
+TEST(Imgproc_cvtColor_BE, COLOR_BGRA2YUV_YV12) { runCvtColorBitExactCheck(COLOR_BGRA2YUV_YV12, CV_8UC3, 0xda8aff52, Size(262, 254)); }
+
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 static void test_Bayer2RGB_EdgeAware_8u(const Mat& src, Mat& dst, int code)
 {
     if (dst.empty())
@@ -3102,5 +3193,21 @@ TEST(ImgProc_cvtColorTwoPlane, y_plane_padding_differs_from_uv_plane_padding_170
     EXPECT_DOUBLE_EQ(cvtest::norm(rgb_reference_mat, rgb_uv_padded_mat, NORM_INF), .0);
 }
 
+
+// See https://github.com/opencv/opencv/issues/25971
+// If num of channels is not suitable for selected cv::ColorConversionCodes,
+// e.code must be cv::Error::BadNumChannels.
+TEST(ImgProc_cvtColor_InvalidNumOfChannels, regression_25971)
+{
+    try {
+        cv::Mat src = cv::Mat::zeros(100, 100, CV_8UC1);
+        cv::Mat dst;
+        EXPECT_THROW(cv::cvtColor(src, dst, COLOR_RGB2GRAY), cv::Exception);
+    }catch(const cv::Exception& e) {
+        EXPECT_EQ(e.code, cv::Error::BadNumChannels);
+    }catch(...) {
+        FAIL() << "Unexpected exception is happened.";
+    }
+}
 
 }} // namespace

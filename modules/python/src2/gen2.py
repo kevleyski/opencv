@@ -410,12 +410,127 @@ class ArgInfo(object):
                 self.isrvalueref = True
         self.py_inputarg = False
         self.py_outputarg = False
+<<<<<<< HEAD
+=======
+        self.enclosing_arg = enclosing_arg
+
+    def __str__(self):
+        return 'ArgInfo("{}", tp="{}", default="{}", in={}, out={})'.format(
+            self.name, self.tp, self.defval, self.inputarg,
+            self.outputarg
+        )
+
+    def __repr__(self):
+        return str(self)
+
+    @property
+    def export_name(self):
+        if self.name in python_reserved_keywords:
+            return self.name + '_'
+        return self.name
+
+    @property
+    def nd_mat(self):
+        return '/ND' in self._modifiers
+
+    @property
+    def inputarg(self):
+        return '/O' not in self._modifiers
+
+    @property
+    def arithm_op_src_arg(self):
+        return '/AOS' in self._modifiers
+
+    @property
+    def outputarg(self):
+        return '/O' in self._modifiers or '/IO' in self._modifiers
+
+    @property
+    def pathlike(self):
+        return '/PATH' in self._modifiers
+
+    @property
+    def returnarg(self):
+        return self.outputarg
+
+    @property
+    def isrvalueref(self):
+        return '/RRef' in self._modifiers
+
+    @property
+    def full_name(self):
+        if self.enclosing_arg is None:
+            return self.name
+        return self.enclosing_arg.name + '.' + self.name
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     def isbig(self):
         return self.tp in ["Mat", "vector_Mat", "cuda::GpuMat", "GpuMat", "vector_GpuMat", "UMat", "vector_UMat"] # or self.tp.startswith("vector")
 
     def crepr(self):
+<<<<<<< HEAD
         return "ArgInfo(\"%s\", %d)" % (self.name, self.outputarg)
+=======
+        arg  = 0x01 if self.outputarg else 0x0
+        arg += 0x02 if self.arithm_op_src_arg else 0x0
+        arg += 0x04 if self.pathlike else 0x0
+        arg += 0x08 if self.nd_mat else 0x0
+        return "ArgInfo(\"%s\", %d)" % (self.name, arg)
+
+
+def find_argument_class_info(argument_type, function_namespace,
+                             function_class_name, known_classes):
+    # type: (str, str, str, dict[str, ClassInfo]) -> ClassInfo | None
+    """Tries to find corresponding class info for the provided argument type
+
+    Args:
+        argument_type (str): Function argument type
+        function_namespace (str): Namespace of the function declaration
+        function_class_name (str): Name of the class if function is a method of class
+        known_classes (dict[str, ClassInfo]): Mapping between string class
+            identifier and ClassInfo struct.
+
+    Returns:
+        Optional[ClassInfo]: class info struct if the provided argument type
+            refers to a known C++ class, None otherwise.
+    """
+
+    possible_classes = tuple(filter(lambda cls: cls.endswith(argument_type), known_classes))
+    # If argument type is not a known class - just skip it
+    if not possible_classes:
+        return None
+    if len(possible_classes) == 1:
+        return known_classes[possible_classes[0]]
+
+    # If there is more than 1 matched class, try to select the most probable one
+    # Look for a matched class name in different scope, starting from the
+    # narrowest one
+
+    # First try to find argument inside class scope of the function (if any)
+    if function_class_name:
+        type_to_match = function_class_name + '_' + argument_type
+        if type_to_match in possible_classes:
+            return known_classes[type_to_match]
+    else:
+        type_to_match = argument_type
+
+    # Trying to find argument type in the namespace of the function
+    type_to_match = '{}_{}'.format(
+        function_namespace.lstrip('cv.').replace('.', '_'), type_to_match
+    )
+    if type_to_match in possible_classes:
+        return known_classes[type_to_match]
+
+    # Try to find argument name as is
+    if argument_type in possible_classes:
+        return known_classes[argument_type]
+
+    # NOTE: parser is broken - some classes might not be visible, depending on
+    # the order of parsed headers.
+    # print("[WARNING] Can't select an appropriate class for argument: '",
+    #       argument_type, "'. Possible matches: '", possible_classes, "'")
+    return None
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 
 class FuncVariant(object):
@@ -639,7 +754,22 @@ class FuncInfo(object):
 
         all_code_variants = []
 
+        # See https://github.com/opencv/opencv/issues/25928
+        # Conversion to UMat is expensive more than conversion to Mat.
+        # To reduce this cost, conversion to Mat is prefer than to UMat.
+        variants = []
+        variants_umat = []
         for v in self.variants:
+            hasUMat = False
+            for a in v.args:
+                hasUMat = hasUMat or "UMat" in a.tp
+            if hasUMat :
+                variants_umat.append(v)
+            else:
+                variants.append(v)
+        variants.extend(variants_umat)
+
+        for v in variants:
             code_decl = ""
             code_ret = ""
             code_cvt_list = []
@@ -827,6 +957,12 @@ class FuncInfo(object):
             elif self.is_static:
                 py_name = '.'.join([self.namespace, classinfo.sname + '_' + self.variants[0].wname])
             else:
+<<<<<<< HEAD
+=======
+                py_name = classinfo.full_export_name + "." + self.variants[0].wname
+
+            if not self.is_static and not self.isconstructor:
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                 cname = classinfo.cname + '::' + cname
                 py_name = 'cv.' + classinfo.wname + '.' + self.variants[0].wname
         else:

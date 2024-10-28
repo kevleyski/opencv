@@ -100,8 +100,12 @@ public class SIFTDescriptorExtractorTest extends OpenCVTestCase {
 
         extractor.write(filename);
 
+<<<<<<< HEAD
 //        String truth = "%YAML:1.0\n---\nname: \"Feature2D.SIFT\"\ncontrastThreshold: 4.0000000000000001e-02\nedgeThreshold: 10.\nnFeatures: 0\nnOctaveLayers: 3\nsigma: 1.6000000000000001e+00\n";
         String truth = "%YAML:1.0\n---\n";
+=======
+        String truth = "%YAML:1.0\n---\nname: \"Feature2D.SIFT\"\nnfeatures: 0\nnOctaveLayers: 3\ncontrastThreshold: 0.040000000000000001\nedgeThreshold: 10.\nsigma: 1.6000000000000001\ndescriptorType: 5\n";
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         String actual = readFile(filename);
         actual = actual.replaceAll("e([+-])0(\\d\\d)", "e$1$2"); // NOTE: workaround for different platforms double representation
         assertEquals(truth, actual);

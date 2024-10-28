@@ -932,4 +932,57 @@ template<typename T> int putData(NSArray<NSNumber*>* indices, cv::Mat* mat, int 
     return [self cols];
 }
 
+<<<<<<< HEAD
+=======
+#ifdef AVAILABLE_IMGCODECS
+
+-(CGImageRef)toCGImage {
+    return [MatConverters convertMatToCGImageRef:self];
+}
+
+-(instancetype)initWithCGImage:(CGImageRef)image {
+    return [MatConverters convertCGImageRefToMat:image];
+}
+
+-(instancetype)initWithCGImage:(CGImageRef)image alphaExist:(BOOL)alphaExist {
+    return [MatConverters convertCGImageRefToMat:image alphaExist:alphaExist];
+}
+
+#if TARGET_OS_IPHONE || TARGET_OS_VISION
+
+-(UIImage*)toUIImage {
+    return [MatConverters converMatToUIImage:self];
+}
+
+-(instancetype)initWithUIImage:(UIImage*)image {
+    return [MatConverters convertUIImageToMat:image];
+}
+
+-(instancetype)initWithUIImage:(UIImage*)image alphaExist:(BOOL)alphaExist {
+    return [MatConverters convertUIImageToMat:image alphaExist:alphaExist];
+}
+
+#elif TARGET_OS_MAC
+
+-(NSImage*)toNSImage {
+    return [MatConverters converMatToNSImage:self];
+}
+
+-(instancetype)initWithNSImage:(NSImage*)image {
+    return [MatConverters convertNSImageToMat:image];
+}
+
+-(instancetype)initWithNSImage:(NSImage*)image alphaExist:(BOOL)alphaExist {
+    return [MatConverters convertNSImageToMat:image alphaExist:alphaExist];
+}
+
+#endif
+
+- (id)debugQuickLookObject {
+    return [MatQuickLook matDebugQuickLookObject:self];
+}
+
+#endif
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 @end

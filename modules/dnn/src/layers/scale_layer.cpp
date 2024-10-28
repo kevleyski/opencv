@@ -71,7 +71,7 @@ public:
         CV_TRACE_FUNCTION();
         CV_TRACE_ARG_VALUE(name, "name", name.c_str());
 
-        if (inputs_arr.depth() == CV_16S)
+        if (inputs_arr.depth() == CV_16F)
         {
             forward_fallback(inputs_arr, outputs_arr, internals_arr);
             return;
@@ -295,7 +295,13 @@ public:
     virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> >& inputs, const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
     {
         auto ieInpNode0 = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
+<<<<<<< HEAD
         auto ieInpNode1 = nodes.size() > 1 ? nodes[1].dynamicCast<InfEngineNgraphNode>()->node : nullptr;
+=======
+        ov::Output<ov::Node> ieInpNode1;
+        if (nodes.size() > 1)
+            ieInpNode1 = nodes[1].dynamicCast<InfEngineNgraphNode>()->node;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
         size_t numChannels = 1;
         if (blobs.empty())
@@ -308,6 +314,7 @@ public:
         int cAxis = normalize_axis(axis, shape.size());
         shape[cAxis] = numChannels;
 
+<<<<<<< HEAD
         auto node = ieInpNode0;
         if (hasWeights)
         {
@@ -323,16 +330,28 @@ public:
         if (hasBias || !hasWeights)
         {
             std::shared_ptr<ngraph::Node> bias;
+=======
+        std::shared_ptr<ov::Node> node;
+        if (hasWeights)
+        {
+            ov::Output<ov::Node> weight = blobs.empty() ? ieInpNode1 :
+                          std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape(shape), blobs[0].data);
+            node = std::make_shared<ov::op::v1::Multiply>(ieInpNode0, weight, ov::op::AutoBroadcastType::NUMPY);
+        }
+        if (hasBias || !hasWeights)
+        {
+            ov::Output<ov::Node> bias;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             if (hasBias)
             {
                 bias = blobs.empty() ? ieInpNode1 :
-                       std::make_shared<ngraph::op::Constant>(ngraph::element::f32,
-                                                              ngraph::Shape(shape), blobs.back().data);
+                       std::make_shared<ov::op::v0::Constant>(ov::element::f32,
+                                                              ov::Shape(shape), blobs.back().data);
             }
             else
-                bias = std::make_shared<ngraph::op::Constant>(ngraph::element::f32,
-                                                              ngraph::Shape(shape), std::vector<float>(numChannels, 0).data());
-            node = std::make_shared<ngraph::op::v1::Add>(node, bias, ngraph::op::AutoBroadcastType::NUMPY);
+                bias = std::make_shared<ov::op::v0::Constant>(ov::element::f32,
+                                                              ov::Shape(shape), std::vector<float>(numChannels, 0).data());
+            node = std::make_shared<ov::op::v1::Add>(node, bias, ov::op::AutoBroadcastType::NUMPY);
         }
         return Ptr<BackendNode>(new InfEngineNgraphNode(node));
     }

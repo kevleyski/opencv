@@ -46,14 +46,22 @@ Open your Doxyfile using your favorite text editor and search for the key
 `TAGFILES`. Change it as follows:
 
 @code
+<<<<<<< HEAD
 TAGFILES = ./docs/doxygen-tags/opencv.tag=http://docs.opencv.org/4.5.4
+=======
+TAGFILES = ./docs/doxygen-tags/opencv.tag=http://docs.opencv.org/4.10.0
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 @endcode
 
 If you had other definitions already, you can append the line using a `\`:
 
 @code
 TAGFILES = ./docs/doxygen-tags/libstdc++.tag=https://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen \
+<<<<<<< HEAD
            ./docs/doxygen-tags/opencv.tag=http://docs.opencv.org/4.5.4
+=======
+           ./docs/doxygen-tags/opencv.tag=http://docs.opencv.org/4.10.0
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 @endcode
 
 Doxygen can now use the information from the tag file to link to the OpenCV

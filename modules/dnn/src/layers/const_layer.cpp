@@ -54,8 +54,18 @@ public:
     {
         std::vector<UMat> outputs;
         outs.getUMatVector(outputs);
+<<<<<<< HEAD
         if (outs.depth() == CV_16S)
             convertFp16(blobs[0], outputs[0]);
+=======
+        if (outs.depth() == CV_16F) {
+            auto blob = blobs[0];
+            if (blob.type() != CV_32F) {
+                blob.convertTo(blob, CV_32F);
+            }
+            blob.convertTo(outputs[0], CV_16F);
+        }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         else
             blobs[0].copyTo(outputs[0]);
         return true;
@@ -90,9 +100,29 @@ public:
     virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> >& inputs,
                                         const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
     {
+<<<<<<< HEAD
         auto node = std::make_shared<ngraph::op::Constant>(ngraph::element::f32,
                                                            getShape<size_t>(blobs[0]),
                                                            blobs[0].data);
+=======
+        ov::element::Type dType;
+        if (blobs[0].depth() == CV_32F) {
+            dType = ov::element::f32;
+        } else if (blobs[0].depth() == CV_32S) {
+            dType = ov::element::i32;
+        } else if (blobs[0].depth() == CV_8S) {
+            dType = ov::element::i8;
+        } else {
+            CV_Error(Error::StsNotImplemented, format("Unexpected Const data depth: %d", blobs[0].depth()));
+        }
+        std::shared_ptr<ov::Node> node =
+                    std::make_shared<ov::op::v0::Constant>(dType,
+                                                           getShape<size_t>(blobs[0]),
+                                                           blobs[0].data);
+        if (node->get_element_type() != ov::element::f32) {
+            node = std::make_shared<ov::op::v0::Convert>(node, ov::element::f32);
+        }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         return Ptr<BackendNode>(new InfEngineNgraphNode(node));
     }
 #endif  // HAVE_DNN_NGRAPH

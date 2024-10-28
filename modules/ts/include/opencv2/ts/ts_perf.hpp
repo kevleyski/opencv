@@ -588,7 +588,7 @@ void PrintTo(const Size& sz, ::std::ostream* os);
       public:\
        fixture() {}\
       protected:\
-       virtual void PerfTestBody();\
+       virtual void PerfTestBody() CV_OVERRIDE;\
      };\
      TEST_F(fixture, testname){ CV__PERF_TEST_BODY_IMPL(#fixture "_" #testname); }\
     }\
@@ -629,7 +629,7 @@ void PrintTo(const Size& sz, ::std::ostream* os);
      public:\
       fixture##_##name() {}\
      protected:\
-      virtual void PerfTestBody();\
+      virtual void PerfTestBody() CV_OVERRIDE;\
     };\
     CV__TEST_P(fixture##_##name, name, PerfTestBodyDummy, CV__PERF_TEST_BODY_IMPL){} \
     INSTANTIATE_TEST_CASE_P(/*none*/, fixture##_##name, params);\

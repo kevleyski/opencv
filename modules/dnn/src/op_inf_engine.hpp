@@ -19,6 +19,7 @@
 
 #ifdef HAVE_INF_ENGINE
 
+<<<<<<< HEAD
 #define INF_ENGINE_RELEASE_2018R5 2018050000
 #define INF_ENGINE_RELEASE_2019R1 2019010000
 #define INF_ENGINE_RELEASE_2019R2 2019020000
@@ -31,10 +32,15 @@
 #define INF_ENGINE_RELEASE_2021_2 2021020000
 #define INF_ENGINE_RELEASE_2021_3 2021030000
 #define INF_ENGINE_RELEASE_2021_4 2021040000
+=======
+#define INF_ENGINE_RELEASE_2022_1 2022010000
+#define INF_ENGINE_RELEASE_2023_0 2023000000
+#define INF_ENGINE_RELEASE_2024_0 2024000000
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #ifndef INF_ENGINE_RELEASE
-#warning("IE version have not been provided via command-line. Using 2021.4 by default")
-#define INF_ENGINE_RELEASE INF_ENGINE_RELEASE_2021_4
+#warning("IE version have not been provided via command-line. Using 2022.1 by default")
+#define INF_ENGINE_RELEASE INF_ENGINE_RELEASE_2022_1
 #endif
 
 #define INF_ENGINE_VER_MAJOR_GT(ver) (((INF_ENGINE_RELEASE) / 10000) > ((ver) / 10000))
@@ -48,6 +54,7 @@
 #pragma GCC diagnostic ignored "-Wsuggest-override"
 #endif
 
+<<<<<<< HEAD
 #if defined(HAVE_DNN_IE_NN_BUILDER_2019) || INF_ENGINE_VER_MAJOR_EQ(INF_ENGINE_RELEASE_2020_4)
 //#define INFERENCE_ENGINE_DEPRECATED  // turn off deprecation warnings from IE
 //there is no way to suppress warnings from IE only at this moment, so we are forced to suppress warnings globally
@@ -72,6 +79,11 @@
 #if defined(__GNUC__) && INF_ENGINE_VER_MAJOR_LT(INF_ENGINE_RELEASE_2020_1)
 #pragma GCC visibility pop
 #endif
+=======
+#include <openvino/openvino.hpp>
+#include <openvino/pass/serialize.hpp>
+#include <openvino/pass/convert_fp32_to_fp16.hpp>
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #if defined(__GNUC__) && __GNUC__ >= 5
 //#pragma GCC diagnostic pop
@@ -85,6 +97,7 @@ namespace cv { namespace dnn {
 
 Backend& getInferenceEngineBackendTypeParam();
 
+<<<<<<< HEAD
 Mat infEngineBlobToMat(const InferenceEngine::Blob::Ptr& blob);
 
 void infEngineBlobsToMats(const std::vector<InferenceEngine::Blob::Ptr>& blobs,
@@ -252,6 +265,12 @@ public:
 
 #endif  // HAVE_DNN_IE_NN_BUILDER_2019
 
+=======
+Mat infEngineBlobToMat(const ov::Tensor& blob);
+
+void infEngineBlobsToMats(const ov::TensorVector& blobs,
+                          std::vector<Mat>& mats);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 CV__DNN_INLINE_NS_BEGIN
 
@@ -261,8 +280,12 @@ bool isArmComputePlugin();
 
 CV__DNN_INLINE_NS_END
 
+<<<<<<< HEAD
 
 InferenceEngine::Core& getCore(const std::string& id);
+=======
+ov::Core& getCore(const std::string& id);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 template<typename T = size_t>
 static inline std::vector<T> getShape(const Mat& mat)

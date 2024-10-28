@@ -66,13 +66,23 @@ void WebPMuxDelete(WebPMux* mux) {
 
 // Handy MACRO, makes MuxSet() very symmetric to MuxGet().
 #define SWITCH_ID_LIST(INDEX, LIST)                                            \
+<<<<<<< HEAD
   if (idx == (INDEX)) {                                                        \
     err = ChunkAssignData(&chunk, data, copy_data, tag);                       \
     if (err == WEBP_MUX_OK) {                                                  \
       err = ChunkSetHead(&chunk, (LIST));                                      \
+=======
+  do {                                                                         \
+    if (idx == (INDEX)) {                                                      \
+      err = ChunkAssignData(&chunk, data, copy_data, tag);                     \
+      if (err == WEBP_MUX_OK) {                                                \
+        err = ChunkSetHead(&chunk, (LIST));                                    \
+        if (err != WEBP_MUX_OK) ChunkRelease(&chunk);                          \
+      }                                                                        \
+      return err;                                                              \
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }                                                                          \
-    return err;                                                                \
-  }
+  } while (0)
 
 static WebPMuxError MuxSet(WebPMux* const mux, uint32_t tag,
                            const WebPData* const data, int copy_data) {

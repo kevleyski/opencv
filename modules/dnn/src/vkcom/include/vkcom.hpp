@@ -50,11 +50,16 @@ bool isAvailable();
 #include "op_base.hpp"
 #include "op_concat.hpp"
 #include "op_conv.hpp"
+<<<<<<< HEAD
 #include "op_lrn.hpp"
 #include "op_softmax.hpp"
 #include "op_relu.hpp"
 #include "op_pool.hpp"
 #include "op_prior_box.hpp"
 #include "op_permute.hpp"
+=======
+#include "op_matmul.hpp"
+#include "op_naryeltwise.hpp"
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #endif // OPENCV_DNN_VKCOM_HPP

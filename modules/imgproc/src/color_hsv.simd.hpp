@@ -101,12 +101,21 @@ struct RGB2HSV_b
             vg = v_select(v == g, v255, vz);
 
             // sdiv = sdiv_table[v]
+<<<<<<< HEAD
             v_int32 sdiv[4];
             v_uint16 vd[2];
             v_expand(v, vd[0], vd[1]);
             v_int32 vq[4];
             v_expand(v_reinterpret_as_s16(vd[0]), vq[0], vq[1]);
             v_expand(v_reinterpret_as_s16(vd[1]), vq[2], vq[3]);
+=======
+            v_int32 sdiv0, sdiv1, sdiv2, sdiv3;;
+            v_uint16 vd0, vd1;
+            v_expand(v, vd0, vd1);
+            v_int32 vq0, vq1, vq2, vq3;
+            v_expand(v_reinterpret_as_s16(vd0), vq0, vq1);
+            v_expand(v_reinterpret_as_s16(vd1), vq2, vq3);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             {
                 int32_t CV_DECL_ALIGNED(CV_SIMD_WIDTH) storevq[vsize];
                 for (int k = 0; k < 4; k++)
@@ -121,12 +130,21 @@ struct RGB2HSV_b
             }
 
             // hdiv = hdiv_table[diff]
+<<<<<<< HEAD
             v_int32 hdiv[4];
             v_uint16 diffd[2];
             v_expand(diff, diffd[0], diffd[1]);
             v_int32 diffq[4];
             v_expand(v_reinterpret_as_s16(diffd[0]), diffq[0], diffq[1]);
             v_expand(v_reinterpret_as_s16(diffd[1]), diffq[2], diffq[3]);
+=======
+            v_int32 hdiv0, hdiv1, hdiv2, hdiv3;
+            v_uint16 diffd0, diffd1;
+            v_expand(diff, diffd0, diffd1);
+            v_int32 diffq0, diffq1, diffq2, diffq3;
+            v_expand(v_reinterpret_as_s16(diffd0), diffq0, diffq1);
+            v_expand(v_reinterpret_as_s16(diffd1), diffq2, diffq3);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             {
                 int32_t CV_DECL_ALIGNED(CV_SIMD_WIDTH) storediffq[vsize];
                 for (int k = 0; k < 4; k++)

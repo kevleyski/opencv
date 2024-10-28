@@ -86,10 +86,16 @@ int VP8LEncodeImage(const WebPConfig* const config,
                     const WebPPicture* const picture);
 
 // Encodes the main image stream using the supplied bit writer.
+<<<<<<< HEAD
 // If 'use_cache' is false, disables the use of color cache.
 WebPEncodingError VP8LEncodeStream(const WebPConfig* const config,
                                    const WebPPicture* const picture,
                                    VP8LBitWriter* const bw, int use_cache);
+=======
+// Returns false in case of error (stored in picture->error_code).
+int VP8LEncodeStream(const WebPConfig* const config,
+                     const WebPPicture* const picture, VP8LBitWriter* const bw);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #if (WEBP_NEAR_LOSSLESS == 1)
 // in near_lossless.c

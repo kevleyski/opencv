@@ -9,6 +9,12 @@
 
 #ifdef HAVE_ONNX
 
+<<<<<<< HEAD
+=======
+#include "backends/onnx/dml_ep.hpp"
+#include "backends/onnx/coreml_ep.hpp"
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #include <ade/util/algorithm.hpp> // any_of
 #include <ade/util/zip_range.hpp>
 #include <opencv2/gapi/infer.hpp>
@@ -119,7 +125,7 @@ class ONNXCompiled {
     std::vector<cv::Mat> out_data;
 
     void Run(const std::vector<cv::Mat>& ins,
-             const std::vector<cv::Mat>& outs);
+             std::vector<cv::Mat>& outs);
 
     std::vector<std::string> in_names_without_const;
 public:
@@ -142,6 +148,109 @@ public:
     void run();
 };
 
+<<<<<<< HEAD
+=======
+static void addCUDAExecutionProvider(Ort::SessionOptions *session_options,
+                                     const cv::gapi::onnx::ep::CUDA &cuda_ep) {
+     OrtCUDAProviderOptions options{};
+     options.device_id = cuda_ep.device_id;
+
+     try {
+        session_options->AppendExecutionProvider_CUDA(options);
+     } catch (const std::exception &e) {
+         std::stringstream ss;
+         ss << "ONNX Backend: Failed to enable CUDA"
+            << " Execution Provider: " << e.what();
+         cv::util::throw_error(std::runtime_error(ss.str()));
+     }
+}
+
+static void addTensorRTExecutionProvider(Ort::SessionOptions *session_options,
+                                         const cv::gapi::onnx::ep::TensorRT &trt_ep) {
+     OrtTensorRTProviderOptions options{};
+     options.device_id = trt_ep.device_id;
+
+     try {
+        session_options->AppendExecutionProvider_TensorRT(options);
+     } catch (const std::exception &e) {
+         std::stringstream ss;
+         ss << "ONNX Backend: Failed to enable TensorRT"
+            << " Execution Provider: " << e.what();
+         cv::util::throw_error(std::runtime_error(ss.str()));
+     }
+}
+
+static void addOpenVINOExecutionProvider(Ort::SessionOptions *session_options,
+                                         const cv::gapi::onnx::ep::OpenVINO &ov_ep) {
+     std::unordered_map<std::string, std::string> options;
+
+     try {
+        // If the OpenVINO Execution Provider object was initialized with a parameters map,
+        // those parameters are used directly.
+        // Otherwise, the function constructs the options map from the individual member
+        // variables of the OpenVINO object.
+        if (ov_ep.params_map.empty()) {
+            options = {
+                {"device_type", ov_ep.device_type},
+                {"cache_dir", ov_ep.cache_dir},
+                {"num_of_threads", ov_ep.num_of_threads > 0 ? std::to_string(ov_ep.num_of_threads) : ""},
+                {"enable_opencl_throttling", ov_ep.enable_opencl_throttling ? "True" : "False"},
+                {"enable_dynamic_shapes", ov_ep.enable_dynamic_shapes ? "True" : "False"},
+            };
+        } else {
+            options.insert(ov_ep.params_map.begin(), ov_ep.params_map.end());
+        }
+        //  AppendExecutionProvider function expects a const std::unordered_map as its second argument
+        session_options->AppendExecutionProvider("OpenVINO", options);
+     } catch (const std::exception &e) {
+         std::stringstream ss;
+         ss << "ONNX Backend: Failed to enable OpenVINO"
+            << " Execution Provider: " << e.what();
+         cv::util::throw_error(std::runtime_error(ss.str()));
+     }
+}
+
+static void addExecutionProvider(Ort::SessionOptions          *session_options,
+                                 const cv::gapi::onnx::ep::EP &execution_provider) {
+    namespace ep = cv::gapi::onnx::ep;
+    switch (execution_provider.index()) {
+        case ep::EP::index_of<ep::OpenVINO>(): {
+             GAPI_LOG_INFO(NULL, "OpenVINO Execution Provider is added.");
+             const auto &ov_ep = cv::util::get<ep::OpenVINO>(execution_provider);
+             addOpenVINOExecutionProvider(session_options, ov_ep);
+             break;
+        }
+        case ep::EP::index_of<ep::DirectML>(): {
+            GAPI_LOG_INFO(NULL, "DirectML Execution Provider is added.");
+            const auto &dml_ep = cv::util::get<ep::DirectML>(execution_provider);
+            addDMLExecutionProvider(session_options, dml_ep);
+            break;
+        }
+        case ep::EP::index_of<ep::CoreML>(): {
+            GAPI_LOG_INFO(NULL, "CoreML Execution Provider is added.");
+            const auto &coreml_ep = cv::util::get<ep::CoreML>(execution_provider);
+            addCoreMLExecutionProvider(session_options, coreml_ep);
+            break;
+        }
+        case ep::EP::index_of<ep::CUDA>(): {
+            GAPI_LOG_INFO(NULL, "CUDA Execution Provider is added.");
+            const auto &cuda_ep = cv::util::get<ep::CUDA>(execution_provider);
+            addCUDAExecutionProvider(session_options, cuda_ep);
+            break;
+        }
+        case ep::EP::index_of<ep::TensorRT>(): {
+            GAPI_LOG_INFO(NULL, "TensorRT Execution Provider is added.");
+            const auto &trt_ep = cv::util::get<ep::TensorRT>(execution_provider);
+            addTensorRTExecutionProvider(session_options, trt_ep);
+            break;
+        }
+        default:
+            GAPI_LOG_INFO(NULL, "CPU Execution Provider is added.");
+            break;
+    }
+}
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 } // namespace onnx
 } // namespace gimpl
 } // namespace cv
@@ -218,22 +327,24 @@ inline std::vector<int64_t> toORT(const cv::MatSize &sz) {
 inline void preprocess(const cv::Mat& src,
                        const cv::gimpl::onnx::TensorInfo& ti,
                              cv::Mat& dst) {
-    GAPI_Assert(src.depth() == CV_32F || src.depth() == CV_8U);
     // CNN input type
     const auto type = toCV(ti.type);
-    if (src.depth() == CV_32F) {
+    if (src.depth() != CV_8U) {
         // Just pass the tensor as-is.
         // No layout or dimension transformations done here!
         // TODO: This needs to be aligned across all NN backends.
-        GAPI_Assert(type == CV_32F && "Only 32F model input is supported for 32F input data");
         const auto tensor_dims = toORT(src.size);
         if (tensor_dims.size() == ti.dims.size()) {
             for (size_t i = 0; i < ti.dims.size(); ++i) {
                 GAPI_Assert((ti.dims[i] == -1 || ti.dims[i] == tensor_dims[i]) &&
-                            "32F tensor dimensions should match with all non-dynamic NN input dimensions");
+                            "Non-U8 tensor dimensions should match with all non-dynamic NN input dimensions");
             }
         } else {
+<<<<<<< HEAD
             GAPI_Assert(false && "32F tensor size should match with NN input");
+=======
+            GAPI_Error("Non-U8 tensor size should match with NN input");
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
 
         dst = src;
@@ -366,6 +477,25 @@ inline Ort::Value createTensor(const Ort::MemoryInfo& memory_info,
         return createTensor<float>(memory_info, tensor_params, data);
     case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32:
         return createTensor<int32_t>(memory_info, tensor_params, data);
+    case ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64:{
+        // cv::Mat does not support int64 data directly.
+        // Following steps are applied to create an ONNX tensor from cv::Mat data:
+        // - First create a new ONNX tensor 'i64_tensor' with data type int64_t using the default allocator
+        // - Next retrieve a pointer to the mutable data buffer of 'i64_tensor'
+        // - Convert the data from int32 (see toCV function) to int64 and deep copy it into 'i64_tensor'
+        auto ort_dims = toORT(data.size);
+
+        Ort::AllocatorWithDefaultOptions allocator;
+        Ort::Value i64_tensor = Ort::Value::CreateTensor<int64_t>(allocator,
+                                                                  ort_dims.data(),
+                                                                  ort_dims.size());
+        int64_t* tensor_data = i64_tensor.GetTensorMutableData<int64_t>();
+
+        cv::gimpl::convertInt32ToInt64(data.ptr<int>(),
+                                       tensor_data,
+                                       data.total());
+        return i64_tensor;
+    }
     default:
         GAPI_Assert(false && "ONNX. Unsupported data type");
     }
@@ -579,6 +709,26 @@ namespace cv {
 namespace gimpl {
 namespace onnx {
 
+static GraphOptimizationLevel convertToGraphOptimizationLevel(const int opt_level) {
+    switch (opt_level) {
+    case ORT_DISABLE_ALL:
+        return ORT_DISABLE_ALL;
+    case ORT_ENABLE_BASIC:
+        return ORT_ENABLE_BASIC;
+    case ORT_ENABLE_EXTENDED:
+        return ORT_ENABLE_EXTENDED;
+    case ORT_ENABLE_ALL:
+        return ORT_ENABLE_ALL;
+    default:
+        if (opt_level > ORT_ENABLE_ALL) {  // relax constraint
+            return ORT_ENABLE_ALL;
+        }
+        else {
+            cv::util::throw_error(std::invalid_argument("Invalid argument opt_level = " + std::to_string(opt_level)));
+        }
+    }
+}
+
 ONNXCompiled::ONNXCompiled(const gapi::onnx::detail::ParamDesc &pp)
     : params(pp) {
     // Validate input parameters before allocating any resources
@@ -593,6 +743,25 @@ ONNXCompiled::ONNXCompiled(const gapi::onnx::detail::ParamDesc &pp)
 
     // Create and initialize the ONNX session
     Ort::SessionOptions session_options;
+<<<<<<< HEAD
+=======
+    GAPI_LOG_INFO(NULL, "Adding Execution Providers for \"" << pp.model_path << "\"");
+    for (const auto &ep : pp.execution_providers) {
+        cv::gimpl::onnx::addExecutionProvider(&session_options, ep);
+    }
+
+    for (const auto &option : pp.session_options) {
+        session_options.AddConfigEntry(option.first.c_str(), option.second.c_str());
+    }
+
+    if (pp.disable_mem_pattern) {
+        session_options.DisableMemPattern();
+    }
+
+    if (pp.opt_level.has_value()) {
+        session_options.SetGraphOptimizationLevel(convertToGraphOptimizationLevel(pp.opt_level.value()));
+    }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     this_env = Ort::Env(ORT_LOGGING_LEVEL_WARNING, "");
 #ifndef _WIN32
     this_session = Ort::Session(this_env, params.model_path.data(), session_options);
@@ -631,9 +800,11 @@ ONNXCompiled::ONNXCompiled(const gapi::onnx::detail::ParamDesc &pp)
                             in_tensor_info.end(),
                             [](const cv::gimpl::onnx::TensorInfo &p) {
                                 return p.type == ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT
-                                    || p.type == ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8;
+                                    || p.type == ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT8
+                                    || p.type == ONNX_TENSOR_ELEMENT_DATA_TYPE_INT32
+                                    || p.type == ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64;
                             })
-                && "Only FP32 and U8 inputs for NN are supported");
+                && "Only FP32, INT32, INT64 and U8 inputs for NN are supported");
 
     // Put mean and std in appropriate tensor params
     if (!params.mean.empty() || !params.stdev.empty()) {
@@ -748,7 +919,7 @@ cv::Mat ONNXCompiled::allocOutput(int i) const {
 }
 
 void ONNXCompiled::Run(const std::vector<cv::Mat>& ins,
-                       const std::vector<cv::Mat>& outs) {
+                       std::vector<cv::Mat>& outs) {
     std::vector<Ort::Value> in_tensors, out_tensors;
 
     // Layer names order for run
@@ -793,6 +964,17 @@ void ONNXCompiled::Run(const std::vector<cv::Mat>& ins,
                          out_run_names.data(),
                          &out_tensors.front(),
                          params.output_names.size());
+        if (out_tensor_info[0].type == ONNX_TENSOR_ELEMENT_DATA_TYPE_INT64) {
+            // cv::Mat does not support int64 output data.
+            // Conversion from int 64 to int 32 is carried in the copyFromONNX function
+            // The output is written to out_mat
+            for (auto &&iter : ade::util::zip(ade::util::toRange(out_tensors),
+                                              ade::util::toRange(outs))) {
+                auto &out_tensor = std::get<0>(iter);
+                auto &out_mat = std::get<1>(iter);
+                copyFromONNX(out_tensor, out_mat);
+            }
+        }
     } else {
         // Hard path - run session & user-defined post-processing
         // NOTE: use another list of output names here

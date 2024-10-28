@@ -13,6 +13,8 @@
 
 #include <opencv2/gapi/core.hpp>
 
+#include "executor/thread_pool.hpp"
+
 namespace opencv_test
 {
 
@@ -49,7 +51,61 @@ namespace
          static GMatDesc outMeta(GMatDesc in) { return in; }
     };
 
+<<<<<<< HEAD
     // These definitons test the correct macro work if the kernel has multiple output values
+=======
+    G_TYPED_KERNEL(GZeros, <GMat(GMat, GMatDesc)>, "org.opencv.test.zeros")
+    {
+        static GMatDesc outMeta(GMatDesc /*in*/, GMatDesc user_desc)
+        {
+            return user_desc;
+        }
+    };
+
+    GAPI_OCV_KERNEL(GOCVZeros, GZeros)
+    {
+        static void run(const cv::Mat&      /*in*/,
+                        const cv::GMatDesc& /*desc*/,
+                        cv::Mat&            out)
+        {
+            out.setTo(0);
+        }
+    };
+
+    G_TYPED_KERNEL(GBusyWait, <GMat(GMat, uint32_t)>, "org.busy_wait") {
+        static GMatDesc outMeta(GMatDesc in, uint32_t)
+        {
+            return in;
+        }
+    };
+
+    GAPI_OCV_KERNEL(GOCVBusyWait, GBusyWait)
+    {
+        static void run(const cv::Mat& in,
+                        const uint32_t time_in_ms,
+                        cv::Mat&       out)
+        {
+            using namespace std::chrono;
+            auto s = high_resolution_clock::now();
+            in.copyTo(out);
+            auto e = high_resolution_clock::now();
+
+            const auto elapsed_in_ms =
+                static_cast<int32_t>(duration_cast<milliseconds>(e-s).count());
+
+            int32_t diff = time_in_ms - elapsed_in_ms;
+            const auto need_to_wait_in_ms = static_cast<uint32_t>(std::max(0, diff));
+
+            s = high_resolution_clock::now();
+            e = s;
+            while (duration_cast<milliseconds>(e-s).count() < need_to_wait_in_ms) {
+                e = high_resolution_clock::now();
+            }
+        }
+    };
+
+    // These definitions test the correct macro work if the kernel has multiple output values
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     G_TYPED_KERNEL(GRetGArrayTupleOfGMat2Kernel,  <GArray<std::tuple<GMat, GMat>>(GMat, Scalar)>,                                         "org.opencv.test.retarrayoftupleofgmat2kernel")  {};
     G_TYPED_KERNEL(GRetGArraTupleyOfGMat3Kernel,  <GArray<std::tuple<GMat, GMat, GMat>>(GMat)>,                                           "org.opencv.test.retarrayoftupleofgmat3kernel")  {};
     G_TYPED_KERNEL(GRetGArraTupleyOfGMat4Kernel,  <GArray<std::tuple<GMat, GMat, GMat, GMat>>(GMat)>,                                     "org.opencv.test.retarrayoftupleofgmat4kernel")  {};
@@ -430,4 +486,97 @@ TEST(GAPI_Pipeline, ReplaceDefaultByFunctor)
     EXPECT_TRUE(f.is_called);
 }
 
+<<<<<<< HEAD
+=======
+TEST(GAPI_Pipeline, GraphOutputIs1DMat)
+{
+    int dim = 100;
+    cv::Mat in_mat(1, 1, CV_8UC3);
+    cv::Mat out_mat;
+
+    cv::GMat in;
+    auto cc = cv::GComputation(in, GZeros::on(in, cv::GMatDesc(CV_8U, {dim})))
+        .compile(cv::descr_of(in_mat), cv::compile_args(cv::gapi::kernels<GOCVZeros>()));
+
+    // NB: Computation is able to write 1D output cv::Mat to empty out_mat.
+    ASSERT_NO_THROW(cc(cv::gin(in_mat), cv::gout(out_mat)));
+    ASSERT_EQ(1, out_mat.size.dims());
+    ASSERT_EQ(dim, out_mat.size[0]);
+
+    // NB: Computation is able to write 1D output cv::Mat
+    // to pre-allocated with the same meta out_mat.
+    ASSERT_NO_THROW(cc(cv::gin(in_mat), cv::gout(out_mat)));
+    ASSERT_EQ(1, out_mat.size.dims());
+    ASSERT_EQ(dim, out_mat.size[0]);
+}
+
+TEST(GAPI_Pipeline, 1DMatBetweenIslands)
+{
+    int dim = 100;
+    cv::Mat in_mat(1, 1, CV_8UC3);
+    cv::Mat out_mat;
+
+    cv::Mat ref_mat({dim}, CV_8U);
+    ref_mat.dims = 1;
+    ref_mat.setTo(0);
+
+    cv::GMat in;
+    auto out = cv::gapi::copy(GZeros::on(cv::gapi::copy(in), cv::GMatDesc(CV_8U, {dim})));
+    auto cc = cv::GComputation(in, out)
+        .compile(cv::descr_of(in_mat), cv::compile_args(cv::gapi::kernels<GOCVZeros>()));
+
+    cc(cv::gin(in_mat), cv::gout(out_mat));
+
+    EXPECT_EQ(0, cv::norm(out_mat, ref_mat));
+}
+
+TEST(GAPI_Pipeline, 1DMatWithinSingleIsland)
+{
+    int dim = 100;
+    cv::Size blur_sz(3, 3);
+    cv::Mat in_mat(10, 10, CV_8UC3);
+    cv::randu(in_mat, 0, 255);
+    cv::Mat out_mat;
+
+    cv::Mat ref_mat({dim}, CV_8U);
+    ref_mat.dims = 1;
+    ref_mat.setTo(0);
+
+    cv::GMat in;
+    auto out = cv::gapi::blur(
+            GZeros::on(cv::gapi::blur(in, blur_sz), cv::GMatDesc(CV_8U, {dim})), blur_sz);
+    auto cc = cv::GComputation(in, out)
+        .compile(cv::descr_of(in_mat), cv::compile_args(cv::gapi::kernels<GOCVZeros>()));
+
+    cc(cv::gin(in_mat), cv::gout(out_mat));
+
+    EXPECT_EQ(0, cv::norm(out_mat, ref_mat));
+}
+
+TEST(GAPI_Pipeline, BranchesExecutedInParallel)
+{
+    cv::GMat in;
+    // NB: cv::gapi::copy used to prevent fusing OCV backend operations
+    // into the single island where they will be executed in turn
+    auto out0 = GBusyWait::on(cv::gapi::copy(in), 1000u /*1sec*/);
+    auto out1 = GBusyWait::on(cv::gapi::copy(in), 1000u /*1sec*/);
+    auto out2 = GBusyWait::on(cv::gapi::copy(in), 1000u /*1sec*/);
+    auto out3 = GBusyWait::on(cv::gapi::copy(in), 1000u /*1sec*/);
+
+    cv::GComputation comp(cv::GIn(in), cv::GOut(out0,out1,out2,out3));
+    cv::Mat in_mat = cv::Mat::eye(32, 32, CV_8UC1);
+    cv::Mat out_mat0, out_mat1, out_mat2, out_mat3;
+
+    using namespace std::chrono;
+    auto s = high_resolution_clock::now();
+    comp.apply(cv::gin(in_mat), cv::gout(out_mat0, out_mat1, out_mat2, out_mat3),
+               cv::compile_args(cv::use_threaded_executor(4u),
+                                cv::gapi::kernels<GOCVBusyWait>()));
+    auto e = high_resolution_clock::now();
+    const auto elapsed_in_ms = duration_cast<milliseconds>(e-s).count();;
+
+    EXPECT_GE(1200u, elapsed_in_ms);
+}
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 } // namespace opencv_test

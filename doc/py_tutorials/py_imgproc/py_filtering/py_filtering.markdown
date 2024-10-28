@@ -148,6 +148,3 @@ Additional Resources
 --------------------
 
 -#  Details about the [bilateral filtering](http://people.csail.mit.edu/sparis/bf_course/)
-
-Exercises
----------

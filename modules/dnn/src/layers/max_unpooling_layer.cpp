@@ -72,7 +72,7 @@ public:
         CV_TRACE_FUNCTION();
         CV_TRACE_ARG_VALUE(name, "name", name.c_str());
 
-        if (inputs_arr.depth() == CV_16S)
+        if (inputs_arr.depth() == CV_16F)
         {
             forward_fallback(inputs_arr, outputs_arr, internals_arr);
             return;
@@ -185,6 +185,53 @@ public:
 #endif  // HAVE_HALIDE
         return Ptr<BackendNode>();
     }
+<<<<<<< HEAD
+=======
+
+#ifdef HAVE_DNN_NGRAPH
+    virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> >& inputs,
+                                        const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
+    {
+        auto features = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
+        auto indices = nodes[1].dynamicCast<InfEngineNgraphNode>()->node;
+
+        std::vector<MatShape> inpShapes(nodes.size());
+        std::vector<MatShape> outShapes, internals;
+        for (int i = 0; i < nodes.size(); ++i) {
+            std::vector<size_t> shape = nodes[i].dynamicCast<InfEngineNgraphNode>()->node.get_shape();
+            inpShapes[i] = std::vector<int>(shape.begin(), shape.end());
+        }
+        getMemoryShapes(inpShapes, 1, outShapes, internals);
+
+        Mat zeros = Mat::zeros(1, total(outShapes[0]), CV_32F);
+        auto zeroInp = std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{zeros.total()}, zeros.data);
+
+        int newShape = -1;
+        features = std::make_shared<ov::op::v1::Reshape>(
+            features,
+            std::make_shared<ov::op::v0::Constant>(ov::element::i32, ov::Shape{1}, &newShape),
+            true
+        );
+        indices = std::make_shared<ov::op::v1::Reshape>(
+            indices,
+            std::make_shared<ov::op::v0::Constant>(ov::element::i32, ov::Shape{1}, &newShape),
+            true
+        );
+        if (indices.get_element_type() != ov::element::i32 && indices.get_element_type() != ov::element::i64) {
+            indices = std::make_shared<ov::op::v0::Convert>(indices, ov::element::i64);
+        }
+
+        int axis = 0;
+        std::shared_ptr<ov::Node> unpool = std::make_shared<ov::op::v3::ScatterElementsUpdate>(zeroInp, indices, features,
+            std::make_shared<ov::op::v0::Constant>(ov::element::i32, ov::Shape{1}, &axis));
+
+        auto shape = std::make_shared<ov::op::v0::Constant>(ov::element::i32, ov::Shape{outShapes[0].size()}, outShapes[0].data());
+        unpool = std::make_shared<ov::op::v1::Reshape>(unpool, shape, true);
+
+        return Ptr<BackendNode>(new InfEngineNgraphNode(unpool));
+    }
+#endif  // HAVE_DNN_NGRAPH
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 };
 
 Ptr<MaxUnpoolLayer> MaxUnpoolLayer::create(const LayerParams& params)

@@ -12,7 +12,12 @@
 #  elif defined WINRT || defined _WIN32_WCE
      /* not supported */
 #  elif defined __ANDROID__ || defined __linux__ || defined _WIN32 || \
+<<<<<<< HEAD
         defined __FreeBSD__ || defined __bsdi__ || defined __HAIKU__
+=======
+        defined __FreeBSD__ || defined __bsdi__ || defined __HAIKU__ || \
+        defined __GNU__ || defined __QNX__
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #      define OPENCV_HAVE_FILESYSTEM_SUPPORT 1
 #  elif defined(__APPLE__)
 #    include <TargetConditionals.h>

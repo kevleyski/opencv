@@ -52,54 +52,93 @@
 Haar Feature-based Cascade Classifier for Object Detection
 ----------------------------------------------------------
 
-The object detector described below has been initially proposed by Paul Viola @cite Viola01 and
-improved by Rainer Lienhart @cite Lienhart02 .
+    The object detector described below has been initially proposed by Paul Viola @cite Viola01 and
+    improved by Rainer Lienhart @cite Lienhart02 .
 
-First, a classifier (namely a *cascade of boosted classifiers working with haar-like features*) is
-trained with a few hundred sample views of a particular object (i.e., a face or a car), called
-positive examples, that are scaled to the same size (say, 20x20), and negative examples - arbitrary
-images of the same size.
+    First, a classifier (namely a *cascade of boosted classifiers working with haar-like features*) is
+    trained with a few hundred sample views of a particular object (i.e., a face or a car), called
+    positive examples, that are scaled to the same size (say, 20x20), and negative examples - arbitrary
+    images of the same size.
 
-After a classifier is trained, it can be applied to a region of interest (of the same size as used
-during the training) in an input image. The classifier outputs a "1" if the region is likely to show
-the object (i.e., face/car), and "0" otherwise. To search for the object in the whole image one can
-move the search window across the image and check every location using the classifier. The
-classifier is designed so that it can be easily "resized" in order to be able to find the objects of
-interest at different sizes, which is more efficient than resizing the image itself. So, to find an
-object of an unknown size in the image the scan procedure should be done several times at different
-scales.
+    After a classifier is trained, it can be applied to a region of interest (of the same size as used
+    during the training) in an input image. The classifier outputs a "1" if the region is likely to show
+    the object (i.e., face/car), and "0" otherwise. To search for the object in the whole image one can
+    move the search window across the image and check every location using the classifier. The
+    classifier is designed so that it can be easily "resized" in order to be able to find the objects of
+    interest at different sizes, which is more efficient than resizing the image itself. So, to find an
+    object of an unknown size in the image the scan procedure should be done several times at different
+    scales.
 
-The word "cascade" in the classifier name means that the resultant classifier consists of several
-simpler classifiers (*stages*) that are applied subsequently to a region of interest until at some
-stage the candidate is rejected or all the stages are passed. The word "boosted" means that the
-classifiers at every stage of the cascade are complex themselves and they are built out of basic
-classifiers using one of four different boosting techniques (weighted voting). Currently Discrete
-Adaboost, Real Adaboost, Gentle Adaboost and Logitboost are supported. The basic classifiers are
-decision-tree classifiers with at least 2 leaves. Haar-like features are the input to the basic
-classifiers, and are calculated as described below. The current algorithm uses the following
-Haar-like features:
+    The word "cascade" in the classifier name means that the resultant classifier consists of several
+    simpler classifiers (*stages*) that are applied subsequently to a region of interest until at some
+    stage the candidate is rejected or all the stages are passed. The word "boosted" means that the
+    classifiers at every stage of the cascade are complex themselves and they are built out of basic
+    classifiers using one of four different boosting techniques (weighted voting). Currently Discrete
+    Adaboost, Real Adaboost, Gentle Adaboost and Logitboost are supported. The basic classifiers are
+    decision-tree classifiers with at least 2 leaves. Haar-like features are the input to the basic
+    classifiers, and are calculated as described below. The current algorithm uses the following
+    Haar-like features:
 
-![image](pics/haarfeatures.png)
+    ![image](pics/haarfeatures.png)
 
-The feature used in a particular classifier is specified by its shape (1a, 2b etc.), position within
-the region of interest and the scale (this scale is not the same as the scale used at the detection
-stage, though these two scales are multiplied). For example, in the case of the third line feature
-(2c) the response is calculated as the difference between the sum of image pixels under the
-rectangle covering the whole feature (including the two white stripes and the black stripe in the
-middle) and the sum of the image pixels under the black stripe multiplied by 3 in order to
-compensate for the differences in the size of areas. The sums of pixel values over a rectangular
-regions are calculated rapidly using integral images (see below and the integral description).
+    The feature used in a particular classifier is specified by its shape (1a, 2b etc.), position within
+    the region of interest and the scale (this scale is not the same as the scale used at the detection
+    stage, though these two scales are multiplied). For example, in the case of the third line feature
+    (2c) the response is calculated as the difference between the sum of image pixels under the
+    rectangle covering the whole feature (including the two white stripes and the black stripe in the
+    middle) and the sum of the image pixels under the black stripe multiplied by 3 in order to
+    compensate for the differences in the size of areas. The sums of pixel values over a rectangular
+    regions are calculated rapidly using integral images (see below and the integral description).
 
+<<<<<<< HEAD
 To see the object detector at work, have a look at the facedetect demo:
 <https://github.com/opencv/opencv/tree/master/samples/cpp/dbt_face_detection.cpp>
+=======
+    Check @ref tutorial_cascade_classifier "the corresponding tutorial" for more details.
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
-The following reference is for the detection part only. There is a separate application called
-opencv_traincascade that can train a cascade of boosted classifiers from a set of samples.
+    The following reference is for the detection part only. There is a separate application called
+    opencv_traincascade that can train a cascade of boosted classifiers from a set of samples.
 
+<<<<<<< HEAD
 @note In the new C++ interface it is also possible to use LBP (local binary pattern) features in
 addition to Haar-like features. .. [Viola01] Paul Viola and Michael J. Jones. Rapid Object Detection
 using a Boosted Cascade of Simple Features. IEEE CVPR, 2001. The paper is available online at
 <http://research.microsoft.com/en-us/um/people/viola/Pubs/Detect/violaJones_CVPR2001.pdf>
+=======
+    @note In the new C++ interface it is also possible to use LBP (local binary pattern) features in
+    addition to Haar-like features. .. [Viola01] Paul Viola and Michael J. Jones. Rapid Object Detection
+    using a Boosted Cascade of Simple Features. IEEE CVPR, 2001. The paper is available online at
+    <https://github.com/SvHey/thesis/blob/master/Literature/ObjectDetection/violaJones_CVPR2001.pdf>
+
+    @defgroup objdetect_hog HOG (Histogram of Oriented Gradients) descriptor and object detector
+    @defgroup objdetect_barcode Barcode detection and decoding
+    @defgroup objdetect_qrcode QRCode detection and encoding
+    @defgroup objdetect_dnn_face DNN-based face detection and recognition
+
+    Check @ref tutorial_dnn_face "the corresponding tutorial" for more details.
+
+    @defgroup objdetect_common Common functions and classes
+    @defgroup objdetect_aruco ArUco markers and boards detection for robust camera pose estimation
+    @{
+        ArUco Marker Detection
+        Square fiducial markers (also known as Augmented Reality Markers) are useful for easy,
+        fast and robust camera pose estimation.
+
+        The main functionality of ArucoDetector class is detection of markers in an image. If the markers are grouped
+        as a board, then you can try to recover the missing markers with ArucoDetector::refineDetectedMarkers().
+        ArUco markers can also be used for advanced chessboard corner finding. To do this, group the markers in the
+        CharucoBoard and find the corners of the chessboard with the CharucoDetector::detectBoard().
+
+        The implementation is based on the ArUco Library by R. Muñoz-Salinas and S. Garrido-Jurado @cite Aruco2014.
+
+        Markers can also be detected based on the AprilTag 2 @cite wang2016iros fiducial detection method.
+
+        @sa @cite Aruco2014
+        This code has been originally developed by Sergio Garrido-Jurado as a project
+        for Google Summer of Code 2015 (GSoC 15).
+    @}
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 @{
     @defgroup objdetect_c C API
@@ -764,7 +803,63 @@ protected:
     Ptr<Impl> p;
 };
 
+<<<<<<< HEAD
 //! @} objdetect
+=======
+class CV_EXPORTS_W_SIMPLE QRCodeDetectorAruco : public GraphicalCodeDetector {
+public:
+    CV_WRAP QRCodeDetectorAruco();
+
+    struct CV_EXPORTS_W_SIMPLE Params {
+        CV_WRAP Params();
+
+        /** @brief The minimum allowed pixel size of a QR module in the smallest image in the image pyramid, default 4.f */
+        CV_PROP_RW float minModuleSizeInPyramid;
+
+        /** @brief The maximum allowed relative rotation for finder patterns in the same QR code, default pi/12 */
+        CV_PROP_RW float maxRotation;
+
+        /** @brief The maximum allowed relative mismatch in module sizes for finder patterns in the same QR code, default 1.75f */
+        CV_PROP_RW float maxModuleSizeMismatch;
+
+        /** @brief The maximum allowed module relative mismatch for timing pattern module, default 2.f
+         *
+         * If relative mismatch of timing pattern module more this value, penalty points will be added.
+         * If a lot of penalty points are added, QR code will be rejected. */
+        CV_PROP_RW float maxTimingPatternMismatch;
+
+        /** @brief The maximum allowed percentage of penalty points out of total pins in timing pattern, default 0.4f */
+        CV_PROP_RW float maxPenalties;
+
+        /** @brief The maximum allowed relative color mismatch in the timing pattern, default 0.2f*/
+        CV_PROP_RW float maxColorsMismatch;
+
+        /** @brief The algorithm find QR codes with almost minimum timing pattern score and minimum size, default 0.9f
+         *
+         * The QR code with the minimum "timing pattern score" and minimum "size" is selected as the best QR code.
+         * If for the current QR code "timing pattern score" * scaleTimingPatternScore < "previous timing pattern score" and "size" < "previous size", then
+         * current QR code set as the best QR code. */
+        CV_PROP_RW float scaleTimingPatternScore;
+    };
+
+    /** @brief QR code detector constructor for Aruco-based algorithm. See cv::QRCodeDetectorAruco::Params */
+    CV_WRAP explicit QRCodeDetectorAruco(const QRCodeDetectorAruco::Params& params);
+
+    /** @brief Detector parameters getter. See cv::QRCodeDetectorAruco::Params */
+    CV_WRAP const QRCodeDetectorAruco::Params& getDetectorParameters() const;
+
+    /** @brief Detector parameters setter. See cv::QRCodeDetectorAruco::Params */
+    CV_WRAP QRCodeDetectorAruco& setDetectorParameters(const QRCodeDetectorAruco::Params& params);
+
+    /** @brief Aruco detector parameters are used to search for the finder patterns. */
+    CV_WRAP const aruco::DetectorParameters& getArucoParameters() const;
+
+    /** @brief Aruco detector parameters are used to search for the finder patterns. */
+    CV_WRAP void setArucoParameters(const aruco::DetectorParameters& params);
+};
+
+//! @}
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }
 
 #include "opencv2/objdetect/detection_based_tracker.hpp"

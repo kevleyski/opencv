@@ -27,11 +27,26 @@ libpng                Portable Network Graphics library.
                       for details and links to the source code
 
                       WITH_PNG CMake option must be ON to add libpng support to imgcodecs.
+<<<<<<< HEAD
+=======
+                      
+libspng               Portable Network Graphics library.
+                      The license and copyright notes can be found in libspng/LICENSE.
+                      See libspng home page https://libspng.org
+                      for details and links to the source code
+                      
+                      WITH_SPNG CMake option must be ON to add libspng support to imgcodecs
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 ------------------------------------------------------------------------------------
 libtiff               Tag Image File Format (TIFF) Software
                       Copyright (c) 1988-1997 Sam Leffler
                       Copyright (c) 1991-1997 Silicon Graphics, Inc.
+<<<<<<< HEAD
                       See libtiff home page http://www.libtiff.org/
+=======
+                      See libtiff home page #1 http://www.simplesystems.org/libtiff/
+                                            #2 https://libtiff.gitlab.io/libtiff/
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                       for details and links to the source code
 
                       WITH_TIFF CMake option must be ON to add libtiff & zlib support to imgcodecs.
@@ -40,6 +55,14 @@ zlib                  General purpose LZ77 compression library
                       Copyright (C) 1995-2012 Jean-loup Gailly and Mark Adler.
                       See zlib home page http://www.zlib.net
                       for details and links to the source code
+
+zlib-ng               zlib data compression library for the next generation systems
+                      (C) 1995-2013 Jean-loup Gailly and Mark Adler
+                      See zlib-ng official GitHub repository
+                      https://github.com/zlib-ng/zlib-ng.git
+                      for details and links to source code
+
+                      WITH_ZLIB_NG CMake option must be ON to use zlib-ng as the zlib implementation.
 ------------------------------------------------------------------------------------
 jasper                JasPer is a collection of software
                       (i.e., a library and application programs) for the coding

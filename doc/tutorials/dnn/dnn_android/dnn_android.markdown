@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # How to run deep networks on Android device {#tutorial_dnn_android}
 
 @tableofcontents
@@ -105,3 +106,6 @@ a correct screen orientation and allow to use a camera.
 
 - Launch an application and make a fun!
 ![](11_demo.jpg)
+=======
+The page was moved to @ref tutorial_android_dnn_intro
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
