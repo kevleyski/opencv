@@ -5,7 +5,15 @@
 #include <opencv2/imgproc.hpp>
 #include <opencv2/highgui.hpp>
 
+<<<<<<< HEAD
 #ifdef CV_CXX11
+=======
+#if defined(HAVE_THREADS)
+#define USE_THREADS 1
+#endif
+
+#ifdef USE_THREADS
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #include <mutex>
 #include <thread>
 #include <queue>

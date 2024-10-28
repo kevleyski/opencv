@@ -5,6 +5,11 @@
 #define __OPENCV_TEST_PRECOMP_HPP__
 
 #include <sstream>
+<<<<<<< HEAD
+=======
+#include <algorithm>
+#include <numeric>
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #include "opencv2/ts.hpp"
 #include "opencv2/videoio.hpp"

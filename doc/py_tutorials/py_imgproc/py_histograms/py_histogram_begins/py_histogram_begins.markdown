@@ -193,6 +193,3 @@ Additional Resources
 --------------------
 
 -#  [Cambridge in Color website](http://www.cambridgeincolour.com/tutorials/histograms1.htm)
-
-Exercises
----------

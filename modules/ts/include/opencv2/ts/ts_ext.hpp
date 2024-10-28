@@ -60,6 +60,19 @@ bool checkBigDataTests();
       GTEST_DISALLOW_COPY_AND_ASSIGN_(\
           GTEST_TEST_CLASS_NAME_(test_case_name, test_name));\
     };\
+<<<<<<< HEAD
+=======
+    class test_case_name##test_name##_factory : public ::testing::internal::TestFactoryBase { \
+     public:\
+      virtual ::testing::Test* CreateTest() CV_OVERRIDE { \
+        try { \
+          return new GTEST_TEST_CLASS_NAME_(test_case_name, test_name); \
+        } catch (const cvtest::details::SkipTestExceptionBase& e) { \
+          return new SkipThisTest(e.what()); \
+        } \
+      } \
+    };\
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     \
     ::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_case_name, test_name)\
       ::test_info_ =\
@@ -113,6 +126,19 @@ bool checkBigDataTests();
       GTEST_DISALLOW_COPY_AND_ASSIGN_(\
           GTEST_TEST_CLASS_NAME_(test_fixture, test_name));\
     };\
+<<<<<<< HEAD
+=======
+    class test_fixture##test_name##_factory : public ::testing::internal::TestFactoryBase { \
+     public:\
+      virtual ::testing::Test* CreateTest() CV_OVERRIDE { \
+        try { \
+          return new GTEST_TEST_CLASS_NAME_(test_fixture, test_name); \
+        } catch (const cvtest::details::SkipTestExceptionBase& e) { \
+          return new SkipThisTest(e.what()); \
+        } \
+      } \
+    };\
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     \
     ::testing::TestInfo* const GTEST_TEST_CLASS_NAME_(test_fixture, test_name)\
       ::test_info_ =\

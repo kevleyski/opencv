@@ -84,7 +84,6 @@ Ptr<BaseFilter> getLinearFilter(
 
 #ifndef CV_CPU_OPTIMIZATION_DECLARATIONS_ONLY
 
-typedef int CV_DECL_ALIGNED(1) unaligned_int;
 #define VEC_ALIGN CV_MALLOC_ALIGN
 
 int FilterEngine__start(FilterEngine& this_, const Size &_wholeSize, const Size &sz, const Point &ofs)
@@ -1081,6 +1080,7 @@ struct SymmColumnVec_32s8u
                 v_pack_u_store(dst + i, v_pack(v_round(s0), v_round(s1)));
                 i += v_uint16::nlanes;
             }
+<<<<<<< HEAD
 #if CV_SIMD_WIDTH > 16
             while( i <= width - v_int32x4::nlanes )
 #else
@@ -1096,6 +1096,8 @@ struct SymmColumnVec_32s8u
                 *(unaligned_int*)(dst + i) = v_reinterpret_as_s32(v_pack_u(s16, s16)).get0();
                 i += v_int32x4::nlanes;
             }
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
         else
         {
@@ -1137,6 +1139,7 @@ struct SymmColumnVec_32s8u
                 v_pack_u_store(dst + i, v_pack(v_round(s0), v_round(s1)));
                 i += v_uint16::nlanes;
             }
+<<<<<<< HEAD
 #if CV_SIMD_WIDTH > 16
             while( i <= width - v_int32x4::nlanes )
 #else
@@ -1151,6 +1154,8 @@ struct SymmColumnVec_32s8u
                 *(unaligned_int*)(dst + i) = v_reinterpret_as_s32(v_pack_u(s16, s16)).get0();
                 i += v_int32x4::nlanes;
             }
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
         return i;
     }
@@ -2162,6 +2167,7 @@ struct FilterVec_8u
             v_pack_u_store(dst + i, v_pack(v_round(s0), v_round(s1)));
             i += v_uint16::nlanes;
         }
+<<<<<<< HEAD
 #if CV_SIMD_WIDTH > 16
         while( i <= width - v_int32x4::nlanes )
 #else
@@ -2176,6 +2182,8 @@ struct FilterVec_8u
             *(unaligned_int*)(dst + i) = v_reinterpret_as_s32(v_pack_u(s16, s16)).get0();
             i += v_int32x4::nlanes;
         }
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         return i;
     }
 
@@ -2964,7 +2972,7 @@ Ptr<BaseRowFilter> getLinearRowFilter(
     if( sdepth == CV_64F && ddepth == CV_64F )
         return makePtr<RowFilter<double, double, RowNoVec> >(kernel, anchor);
 
-    CV_Error_( CV_StsNotImplemented,
+    CV_Error_( cv::Error::StsNotImplemented,
         ("Unsupported combination of source format (=%d), and buffer format (=%d)",
         srcType, bufType));
 }
@@ -3061,7 +3069,7 @@ Ptr<BaseColumnFilter> getLinearColumnFilter(
                 (kernel, anchor, delta, symmetryType);
     }
 
-    CV_Error_( CV_StsNotImplemented,
+    CV_Error_( cv::Error::StsNotImplemented,
         ("Unsupported combination of buffer format (=%d), and destination format (=%d)",
         bufType, dstType));
 }
@@ -3215,7 +3223,7 @@ Ptr<BaseFilter> getLinearFilter(
         return makePtr<Filter2D<double,
             Cast<double, double>, FilterNoVec> >(kernel, anchor, delta);
 
-    CV_Error_( CV_StsNotImplemented,
+    CV_Error_( cv::Error::StsNotImplemented,
         ("Unsupported combination of source format (=%d), and destination format (=%d)",
         srcType, dstType));
 }

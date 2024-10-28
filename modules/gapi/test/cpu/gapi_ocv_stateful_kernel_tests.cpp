@@ -329,7 +329,16 @@ namespace
 
 TEST(StatefulKernel, StateIsInitViaCompArgsInStreaming)
 {
+<<<<<<< HEAD
     initTestDataPath();
+=======
+    // This test is long as it runs BG subtractor (a) twice
+    // (in G-API + for reference) over (b) two files. In fact
+    // it is one more BG Subtractor accuracy test, but not
+    // a stateful initialization test -- the latter must be
+    // done through a light-weight mock object. So for now:
+    applyTestTag(CV_TEST_TAG_VERYLONG);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     // G-API graph declaration
     cv::GMat in;

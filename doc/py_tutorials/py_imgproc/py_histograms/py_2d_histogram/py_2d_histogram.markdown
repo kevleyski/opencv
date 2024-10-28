@@ -122,9 +122,3 @@ output of that code for the same image as above:
 
 You can clearly see in the histogram what colors are present, blue is there, yellow is there, and
 some white due to chessboard is there. Nice !!!
-
-Additional Resources
---------------------
-
-Exercises
----------

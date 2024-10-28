@@ -208,6 +208,7 @@ public:
             const bool is_prosac = params->getSampler() == SamplingMethod::SAMPLING_PROSAC;
 
             std::atomic_bool success(false);
+<<<<<<< HEAD
             std::atomic_int num_hypothesis_tested(0);
             std::atomic_int thread_cnt(0);
             std::vector<Score> best_scores(MAX_THREADS);
@@ -215,6 +216,30 @@ public:
 
             Mutex mutex; // only for prosac
 
+=======
+            std::atomic_int num_hypothesis_tested(0), thread_cnt(0), max_number_inliers(0), subset_size, termination_length;
+            std::atomic<float> best_score_all(std::numeric_limits<float>::max());
+            std::vector<Score> best_scores(MAX_THREADS), best_scores_not_LO;
+            std::vector<Mat> best_models(MAX_THREADS), best_models_not_LO, K1_apx, K2_apx;
+            std::vector<int> num_tested_models_threads(MAX_THREADS), growth_function, non_random_inliers;
+            std::vector<std::vector<Mat>> tested_models_threads(MAX_THREADS);
+            std::vector<std::vector<std::vector<int>>> tested_samples_threads(MAX_THREADS);
+            std::vector<std::vector<int>> best_samples_threads(MAX_THREADS);
+            std::vector<bool> last_model_from_LO_vec;
+            std::vector<double> lambda_non_random_all_inliers_vec(MAX_THREADS);
+            if (IS_FUNDAMENTAL) {
+                last_model_from_LO_vec = std::vector<bool>(MAX_THREADS);
+                best_models_not_LO = std::vector<Mat>(MAX_THREADS);
+                best_scores_not_LO = std::vector<Score>(MAX_THREADS);
+                K1_apx = std::vector<Mat>(MAX_THREADS);
+                K2_apx = std::vector<Mat>(MAX_THREADS);
+            }
+            if (is_prosac) {
+                growth_function = _sampler.dynamicCast<ProsacSampler>()->getGrowthFunction();
+                subset_size = 2*sample_size; // n,  size of the current sampling pool
+                termination_length = points_size;
+            }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             ///////////////////////////////////////////////////////////////////////////////////////////////////////
             parallel_for_(Range(0, MAX_THREADS), [&](const Range & /*range*/) {
             if (!success) { // cover all if not success to avoid thread creating new variables
@@ -226,6 +251,7 @@ public:
                 Ptr<Quality> quality = _quality->clone();
                 Ptr<ModelVerifier> model_verifier = _model_verifier->clone(thread_state++); // update verifier
                 Ptr<LocalOptimization> local_optimization;
+<<<<<<< HEAD
                 if (LO)
                     local_optimization = _local_optimization->clone(thread_state++);
                 Ptr<TerminationCriteria> termination_criteria = _termination_criteria->clone();
@@ -240,6 +266,37 @@ public:
                 std::vector<Mat> models(estimator->getMaxNumSolutions());
                 int iters, max_iters = params->getMaxIters();
                 auto update_best = [&] (const Score &new_score, const Mat &new_model) {
+=======
+                Ptr<MinimalSolver> min_solver;
+                Ptr<NonMinimalSolver> non_min_solver;
+                Ptr<WeightFunction> weight_fnc;
+                initialize (thread_state, min_solver, non_min_solver, error, estimator, degeneracy, quality,
+                        model_verifier, local_optimization, termination, sampler, lo_sampler, weight_fnc, true);
+                bool is_last_from_LO_thread = false;
+                Mat best_model_thread, non_degenerate_model, lo_model, best_not_LO_thread;
+                Score best_score_thread, current_score, non_denegenerate_model_score, lo_score, best_score_all_threads, best_not_LO_score_thread;
+                std::vector<int> sample(estimator->getMinimalSampleSize()), best_sample_thread, supports;
+                supports.reserve(3*MAX_MODELS_ADAPT); // store model supports
+                std::vector<bool> best_inliers_mask_local(points_size, false), model_inliers_mask(points_size, false);
+                std::vector<Mat> models(estimator->getMaxNumSolutions());
+                auto update_best = [&] (const Score &new_score, const Mat &new_model, bool from_LO=false) {
+                    // update best score of all threads
+                    if (max_number_inliers < new_score.inlier_number) max_number_inliers = new_score.inlier_number;
+                    if (best_score_all > new_score.score)
+                        best_score_all = new_score.score;
+                    best_score_all_threads = Score(max_number_inliers, best_score_all);
+                    //
+                    quality->getInliers(new_model, model_inliers_mask);
+                    IoU = Utils::intersectionOverUnion(best_inliers_mask_local, model_inliers_mask);
+                    if (!best_model_thread.empty() && (int)tested_models_thread.size() < MAX_TEST_MODELS_NONRAND && IoU < IOU_SIMILARITY_THR) {
+                        tested_models_thread.emplace_back(best_model_thread.clone());
+                        tested_samples_thread.emplace_back(best_sample_thread);
+                    }
+                    if (!adapt) { // update quality and verifier
+                        quality->setBestScore(best_score_all);
+                        model_verifier->update(best_score_all_threads, iters);
+                    }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                     // copy new score to best score
                     best_score_thread = new_score;
                     best_scores[thread_rng_id] = best_score_thread;
@@ -258,6 +315,7 @@ public:
 
                     if (iters % 10) {
                         // Synchronize threads. just to speed verification of model.
+<<<<<<< HEAD
                         int best_thread_idx = thread_rng_id;
                         bool updated = false;
                         for (int t = 0; t < MAX_THREADS; t++) {
@@ -271,6 +329,10 @@ public:
                             quality->setBestScore(best_score_all_threads.score);
                             model_verifier->update(best_score_all_threads.inlier_number);
                         }
+=======
+                        quality->setBestScore(std::min(best_score_thread.score, (float)best_score_all));
+                        model_verifier->update(best_score_thread.inlier_number > max_number_inliers ? best_score_thread : best_score_all_threads, iters);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                     }
 
                     if (is_prosac) {

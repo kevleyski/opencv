@@ -68,20 +68,6 @@ String dumpString(const String& argument)
 }
 
 CV_WRAP static inline
-String testOverloadResolution(int value, const Point& point = Point(42, 24))
-{
-    return format("overload (int=%d, point=(x=%d, y=%d))", value, point.x,
-                  point.y);
-}
-
-CV_WRAP static inline
-String testOverloadResolution(const Rect& rect)
-{
-    return format("overload (rect=(x=%d, y=%d, w=%d, h=%d))", rect.x, rect.y,
-                  rect.width, rect.height);
-}
-
-CV_WRAP static inline
 String dumpRect(const Rect& argument)
 {
     return format("rect: (x=%d, y=%d, w=%d, h=%d)", argument.x, argument.y,
@@ -116,6 +102,47 @@ String dumpRange(const Range& argument)
     }
 }
 
+<<<<<<< HEAD
+=======
+CV_EXPORTS_W String dumpVectorOfInt(const std::vector<int>& vec);
+
+CV_EXPORTS_W String dumpVectorOfDouble(const std::vector<double>& vec);
+
+CV_EXPORTS_W String dumpVectorOfRect(const std::vector<Rect>& vec);
+
+
+//! @cond IGNORED
+
+CV_WRAP static inline
+String testOverloadResolution(int value, const Point& point = Point(42, 24))
+{
+    return format("overload (int=%d, point=(x=%d, y=%d))", value, point.x,
+                  point.y);
+}
+
+CV_WRAP static inline
+String testOverloadResolution(const Rect& rect)
+{
+    return format("overload (rect=(x=%d, y=%d, w=%d, h=%d))", rect.x, rect.y,
+                  rect.width, rect.height);
+}
+
+CV_WRAP static inline
+RotatedRect testRotatedRect(float x, float y, float w, float h, float angle)
+{
+    return RotatedRect(Point2f(x, y), Size2f(w, h), angle);
+}
+
+CV_WRAP static inline
+std::vector<RotatedRect> testRotatedRectVector(float x, float y, float w, float h, float angle)
+{
+    std::vector<RotatedRect> result;
+    for (int i = 0; i < 10; i++)
+        result.push_back(RotatedRect(Point2f(x + i, y + 2 * i), Size2f(w, h), angle + 10 * i));
+    return result;
+}
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 CV_WRAP static inline
 int testOverwriteNativeMethod(int argument)
 {
@@ -127,12 +154,6 @@ String testReservedKeywordConversion(int positional_argument, int lambda = 2, in
 {
     return format("arg=%d, lambda=%d, from=%d", positional_argument, lambda, from);
 }
-
-CV_EXPORTS_W String dumpVectorOfInt(const std::vector<int>& vec);
-
-CV_EXPORTS_W String dumpVectorOfDouble(const std::vector<double>& vec);
-
-CV_EXPORTS_W String dumpVectorOfRect(const std::vector<Rect>& vec);
 
 CV_WRAP static inline
 void generateVectorOfRect(size_t len, CV_OUT std::vector<Rect>& vec)
@@ -204,6 +225,107 @@ AsyncArray testAsyncException()
     return p.getArrayResult();
 }
 
+<<<<<<< HEAD
+=======
+CV_WRAP static inline
+String dumpVec2i(const cv::Vec2i value = cv::Vec2i(42, 24)) {
+    return format("Vec2i(%d, %d)", value[0], value[1]);
+}
+
+struct CV_EXPORTS_W_SIMPLE ClassWithKeywordProperties {
+    CV_PROP_RW int lambda;
+    CV_PROP int except;
+
+    CV_WRAP explicit ClassWithKeywordProperties(int lambda_arg = 24, int except_arg = 42)
+    {
+        lambda = lambda_arg;
+        except = except_arg;
+    }
+};
+
+struct CV_EXPORTS_W_PARAMS FunctionParams
+{
+    CV_PROP_RW int lambda = -1;
+    CV_PROP_RW float sigma = 0.0f;
+
+    FunctionParams& setLambda(int value) CV_NOEXCEPT
+    {
+        lambda = value;
+        return *this;
+    }
+
+    FunctionParams& setSigma(float value) CV_NOEXCEPT
+    {
+        sigma = value;
+        return *this;
+    }
+};
+
+CV_WRAP static inline String
+copyMatAndDumpNamedArguments(InputArray src, OutputArray dst,
+                             const FunctionParams& params = FunctionParams())
+{
+    src.copyTo(dst);
+    return format("lambda=%d, sigma=%.1f", params.lambda,
+                  params.sigma);
+}
+
+namespace nested {
+CV_WRAP static inline bool testEchoBooleanFunction(bool flag) {
+    return flag;
+}
+
+class CV_EXPORTS_W CV_WRAP_AS(ExportClassName) OriginalClassName
+{
+public:
+    struct CV_EXPORTS_W_SIMPLE Params
+    {
+        CV_PROP_RW int int_value;
+        CV_PROP_RW float float_value;
+
+        CV_WRAP explicit Params(int int_param = 123, float float_param = 3.5f)
+        {
+            int_value = int_param;
+            float_value = float_param;
+        }
+    };
+
+    explicit OriginalClassName(const OriginalClassName::Params& params = OriginalClassName::Params())
+    {
+        params_ = params;
+    }
+
+    CV_WRAP int getIntParam() const
+    {
+        return params_.int_value;
+    }
+
+    CV_WRAP float getFloatParam() const
+    {
+        return params_.float_value;
+    }
+
+    CV_WRAP static std::string originalName()
+    {
+        return "OriginalClassName";
+    }
+
+    CV_WRAP static Ptr<OriginalClassName>
+    create(const OriginalClassName::Params& params = OriginalClassName::Params())
+    {
+        return makePtr<OriginalClassName>(params);
+    }
+
+private:
+    OriginalClassName::Params params_;
+};
+
+typedef OriginalClassName::Params OriginalClassName_Params;
+} // namespace nested
+
+//! @endcond IGNORED
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 namespace fs {
     CV_EXPORTS_W cv::String getCacheDirectoryForDownloads();
 } // namespace fs

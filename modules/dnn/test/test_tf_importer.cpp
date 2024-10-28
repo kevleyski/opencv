@@ -735,6 +735,9 @@ TEST_P(Test_TensorFlow_nets, Inception_v2_SSD)
     net.setPreferableBackend(backend);
     net.setPreferableTarget(target);
 
+    if (target == DNN_TARGET_CPU_FP16)
+        net.enableWinograd(false);
+
     net.setInput(blob);
     // Output has shape 1x1xNx7 where N - number of detections.
     // An every detection is a vector of values [id, classId, confidence, left, top, right, bottom]
@@ -951,7 +954,7 @@ TEST_P(Test_TensorFlow_nets, EAST_text_detection)
 {
     applyTestTag(
         (target == DNN_TARGET_CPU ? CV_TEST_TAG_MEMORY_512MB : CV_TEST_TAG_MEMORY_1GB),
-        CV_TEST_TAG_DEBUG_LONG
+        CV_TEST_TAG_DEBUG_VERYLONG
     );
 
 #if defined(INF_ENGINE_RELEASE)
@@ -979,6 +982,8 @@ TEST_P(Test_TensorFlow_nets, EAST_text_detection)
 
     net.setPreferableBackend(backend);
     net.setPreferableTarget(target);
+    if (target == DNN_TARGET_CPU_FP16)
+        net.enableWinograd(false);
 
     Mat img = imread(imgPath);
     Mat inp = blobFromImage(img, 1.0, Size(), Scalar(123.68, 116.78, 103.94), true, false);
@@ -1011,6 +1016,15 @@ TEST_P(Test_TensorFlow_nets, EAST_text_detection)
         lInf_scores = 0.1;
         l1_geometry = 0.3; lInf_geometry = 7;
     }
+<<<<<<< HEAD
+=======
+    else if (target == DNN_TARGET_CPU_FP16)
+    {
+        lInf_scores = 0.17;
+        l1_geometry = 0.28;
+        lInf_geometry = 5.94;
+    }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     else
     {
         l1_geometry = 1e-4, lInf_geometry = 3e-3;
@@ -1367,7 +1381,10 @@ TEST_P(Test_TensorFlow_nets, Mask_RCNN)
     if (target == DNN_TARGET_CUDA_FP16)
         applyTestTag(CV_TEST_TAG_DNN_SKIP_CUDA_FP16);
 
-    applyTestTag(CV_TEST_TAG_MEMORY_1GB, CV_TEST_TAG_DEBUG_VERYLONG);
+    applyTestTag(
+        CV_TEST_TAG_MEMORY_2GB,
+        CV_TEST_TAG_DEBUG_VERYLONG
+    );
     Mat img = imread(findDataFile("dnn/street.png"));
     std::string proto = findDataFile("dnn/mask_rcnn_inception_v2_coco_2018_01_28.pbtxt");
     std::string model = findDataFile("dnn/mask_rcnn_inception_v2_coco_2018_01_28.pb", false);
@@ -1379,6 +1396,8 @@ TEST_P(Test_TensorFlow_nets, Mask_RCNN)
 
     net.setPreferableBackend(backend);
     net.setPreferableTarget(target);
+    if (target == DNN_TARGET_CPU_FP16)
+        net.enableWinograd(false);
 
     net.setInput(blob);
 

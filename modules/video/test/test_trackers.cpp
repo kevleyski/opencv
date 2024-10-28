@@ -111,6 +111,7 @@ TEST(DaSiamRPN, memory_usage)
     cv::VideoCapture video(inputVideo);
     ASSERT_TRUE(video.isOpened()) << inputVideo;
 
+<<<<<<< HEAD
     cv::Mat frame;
     video >> frame;
     ASSERT_FALSE(frame.empty()) << inputVideo;
@@ -124,6 +125,34 @@ TEST(DaSiamRPN, memory_usage)
         ASSERT_TRUE(res);
         std::cout << "Predicted ROI: " << roi << std::endl;
     }
+=======
+    cv::TrackerNano::Params params;
+    params.backbone = backbonePath;
+    params.neckhead = neckheadPath;
+    cv::Ptr<Tracker> tracker = TrackerNano::create(params);
+    checkTrackingAccuracy(tracker);
+}
+
+TEST(NanoTrack, accuracy_NanoTrack_V2)
+{
+    std::string backbonePath = cvtest::findDataFile("dnn/onnx/models/nanotrack_backbone_sim_v2.onnx", false);
+    std::string neckheadPath = cvtest::findDataFile("dnn/onnx/models/nanotrack_head_sim_v2.onnx", false);
+
+    cv::TrackerNano::Params params;
+    params.backbone = backbonePath;
+    params.neckhead = neckheadPath;
+    cv::Ptr<Tracker> tracker = TrackerNano::create(params);
+    checkTrackingAccuracy(tracker, 0.69);
+}
+
+TEST(vittrack, accuracy_vittrack)
+{
+    std::string model = cvtest::findDataFile("dnn/onnx/models/vitTracker.onnx");
+    cv::TrackerVit::Params params;
+    params.net = model;
+    cv::Ptr<Tracker> tracker = TrackerVit::create(params);
+    checkTrackingAccuracy(tracker, 0.64);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }
 
 }}  // namespace opencv_test::

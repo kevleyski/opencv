@@ -39,6 +39,7 @@
 //
 //M*/
 #include "precomp.hpp"
+using namespace cv;
 
 namespace cv
 {
@@ -1282,7 +1283,28 @@ CollectPolyEdges( Mat& img, const Point2l* v, int count, std::vector<PolyEdge>& 
             t0.y = pt0.y; t1.y = pt1.y;
             t0.x = (pt0.x + (XY_ONE >> 1)) >> XY_SHIFT;
             t1.x = (pt1.x + (XY_ONE >> 1)) >> XY_SHIFT;
+<<<<<<< HEAD
             Line( img, t0, t1, color, line_type );
+=======
+            Line(img, t0, t1, color, line_type);
+
+            // use clipped endpoints to create a more accurate PolyEdge
+            if ((unsigned)t0.x >= (unsigned)(img.cols) ||
+                (unsigned)t1.x >= (unsigned)(img.cols) ||
+                (unsigned)t0.y >= (unsigned)(img.rows) ||
+                (unsigned)t1.y >= (unsigned)(img.rows))
+            {
+                clipLine(img.size(), t0, t1);
+
+                if (t0.y != t1.y)
+                {
+                    pt0c.y = t0.y; pt1c.y = t1.y;
+                }
+            }
+
+            pt0c.x = (int64)(t0.x) << XY_SHIFT;
+            pt1c.x = (int64)(t1.x) << XY_SHIFT;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
         else
         {
@@ -1333,6 +1355,10 @@ FillEdgeCollection( Mat& img, std::vector<PolyEdge>& edges, const void* color )
     int y_max = INT_MIN, y_min = INT_MAX;
     int64 x_max = 0xFFFFFFFFFFFFFFFF, x_min = 0x7FFFFFFFFFFFFFFF;
     int pix_size = (int)img.elemSize();
+<<<<<<< HEAD
+=======
+    int delta = XY_ONE - 1;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     if( total < 2 )
         return;
@@ -2006,8 +2032,11 @@ void fillPoly( InputOutputArray _img, const Point** pts, const int* npts, int nc
     edges.reserve( total + 1 );
     for (i = 0; i < ncontours; i++)
     {
-        std::vector<Point2l> _pts(pts[i], pts[i] + npts[i]);
-        CollectPolyEdges(img, _pts.data(), npts[i], edges, buf, line_type, shift, offset);
+        if (npts[i] > 0 && pts[i])
+        {
+            std::vector<Point2l> _pts(pts[i], pts[i] + npts[i]);
+            CollectPolyEdges(img, _pts.data(), npts[i], edges, buf, line_type, shift, offset);
+        }
     }
 
     FillEdgeCollection(img, edges, buf);
@@ -2202,7 +2231,7 @@ static const int* getFontData(int fontFace)
         ascii = HersheyScriptComplex;
         break;
     default:
-        CV_Error( CV_StsOutOfRange, "Unknown font type" );
+        CV_Error( cv::Error::StsOutOfRange, "Unknown font type" );
     }
     return ascii;
 }
@@ -2273,7 +2302,7 @@ void putText( InputOutputArray _img, const String& text, Point org,
     int base_line = -(ascii[0] & 15);
     int hscale = cvRound(fontScale*XY_ONE), vscale = hscale;
 
-    if( line_type == CV_AA && img.depth() != CV_8U )
+    if( line_type == cv::LINE_AA && img.depth() != CV_8U )
         line_type = 8;
 
     if( bottomLeftOrigin )
@@ -2392,7 +2421,7 @@ void cv::fillPoly(InputOutputArray img, InputArrayOfArrays pts,
     for( i = 0; i < ncontours; i++ )
     {
         Mat p = pts.getMat(manyContours ? i : -1);
-        CV_Assert(p.checkVector(2, CV_32S) >= 0);
+        CV_Assert(p.checkVector(2, CV_32S) > 0);
         ptsptr[i] = p.ptr<Point>();
         npts[i] = p.rows*p.cols*p.channels()/2;
     }
@@ -2431,35 +2460,6 @@ void cv::polylines(InputOutputArray img, InputArrayOfArrays pts,
     polylines(img, (const Point**)ptsptr, npts, (int)ncontours, isClosed, color, thickness, lineType, shift);
 }
 
-namespace
-{
-using namespace cv;
-
-static void addChildContour(InputArrayOfArrays contours,
-                            size_t ncontours,
-                            const Vec4i* hierarchy,
-                            int i, std::vector<CvSeq>& seq,
-                            std::vector<CvSeqBlock>& block)
-{
-    for( ; i >= 0; i = hierarchy[i][0] )
-    {
-        Mat ci = contours.getMat(i);
-        cvMakeSeqHeaderForArray(CV_SEQ_POLYGON, sizeof(CvSeq), sizeof(Point),
-                                !ci.empty() ? (void*)ci.ptr() : 0, (int)ci.total(),
-                                &seq[i], &block[i] );
-
-        int h_next = hierarchy[i][0], h_prev = hierarchy[i][1],
-            v_next = hierarchy[i][2], v_prev = hierarchy[i][3];
-        seq[i].h_next = (0 <= h_next && h_next < (int)ncontours) ? &seq[h_next] : 0;
-        seq[i].h_prev = (0 <= h_prev && h_prev < (int)ncontours) ? &seq[h_prev] : 0;
-        seq[i].v_next = (0 <= v_next && v_next < (int)ncontours) ? &seq[v_next] : 0;
-        seq[i].v_prev = (0 <= v_prev && v_prev < (int)ncontours) ? &seq[v_prev] : 0;
-
-        if( v_next >= 0 )
-            addChildContour(contours, ncontours, hierarchy, v_next, seq, block);
-    }
-}
-}
 
 void cv::drawContours( InputOutputArray _image, InputArrayOfArrays _contours,
                    int contourIdx, const Scalar& color, int thickness,
@@ -2467,81 +2467,97 @@ void cv::drawContours( InputOutputArray _image, InputArrayOfArrays _contours,
                    int maxLevel, Point offset )
 {
     CV_INSTRUMENT_REGION();
-
-    Mat image = _image.getMat(), hierarchy = _hierarchy.getMat();
-    CvMat _cimage = cvMat(image);
-
-    size_t ncontours = _contours.total();
-    size_t i = 0, first = 0, last = ncontours;
-    std::vector<CvSeq> seq;
-    std::vector<CvSeqBlock> block;
-
-    if( !last )
+    CV_Assert( thickness <= MAX_THICKNESS );
+    const size_t ncontours = _contours.total();
+    if (!ncontours)
         return;
+    CV_Assert(ncontours <= (size_t)std::numeric_limits<int>::max());
+    if (lineType == cv::LINE_AA && _image.depth() != CV_8U)
+        lineType = 8;
+    Mat image = _image.getMat(), hierarchy = _hierarchy.getMat();
 
-    seq.resize(last);
-    block.resize(last);
-
-    for( i = first; i < last; i++ )
-        seq[i].first = 0;
-
-    if( contourIdx >= 0 )
+    if (thickness >= 0) // contour lines
     {
-        CV_Assert( 0 <= contourIdx && contourIdx < (int)last );
-        first = contourIdx;
-        last = contourIdx + 1;
-    }
-
-    for( i = first; i < last; i++ )
-    {
-        Mat ci = _contours.getMat((int)i);
-        if( ci.empty() )
-            continue;
-        int npoints = ci.checkVector(2, CV_32S);
-        CV_Assert( npoints > 0 );
-        cvMakeSeqHeaderForArray( CV_SEQ_POLYGON, sizeof(CvSeq), sizeof(Point),
-                                 ci.ptr(), npoints, &seq[i], &block[i] );
-    }
-
-    if( hierarchy.empty() || maxLevel == 0 )
-        for( i = first; i < last; i++ )
+        double color_buf[4] {};
+        scalarToRawData(color, color_buf, _image.type(), 0 );
+        int i = 0, end = (int)ncontours;
+        if (contourIdx >= 0)
         {
-            seq[i].h_next = i < last-1 ? &seq[i+1] : 0;
-            seq[i].h_prev = i > first ? &seq[i-1] : 0;
+            i = contourIdx;
+            end = i + 1;
         }
-    else
-    {
-        size_t count = last - first;
-        CV_Assert(hierarchy.total() == ncontours && hierarchy.type() == CV_32SC4 );
-        const Vec4i* h = hierarchy.ptr<Vec4i>();
-
-        if( count == ncontours )
+        for (; i < end; ++i)
         {
-            for( i = first; i < last; i++ )
+            Mat cnt = _contours.getMat(i);
+            if (cnt.empty())
+                continue;
+            const int npoints = cnt.checkVector(2, CV_32S);
+            CV_Assert(npoints > 0);
+            for (int j = 0; j < npoints; ++j)
             {
-                int h_next = h[i][0], h_prev = h[i][1],
-                    v_next = h[i][2], v_prev = h[i][3];
-                seq[i].h_next = (size_t)h_next < count ? &seq[h_next] : 0;
-                seq[i].h_prev = (size_t)h_prev < count ? &seq[h_prev] : 0;
-                seq[i].v_next = (size_t)v_next < count ? &seq[v_next] : 0;
-                seq[i].v_prev = (size_t)v_prev < count ? &seq[v_prev] : 0;
+                const bool isLastIter = j == npoints - 1;
+                const Point pt1 = cnt.at<Point>(j);
+                const Point pt2 = cnt.at<Point>(isLastIter ? 0 : j + 1);
+                cv::ThickLine(image, pt1 + offset, pt2 + offset, color_buf, thickness, lineType, 2, 0);
             }
+        }
+    }
+    else // filled polygons
+    {
+        int i = 0, end = (int)ncontours;
+        if (contourIdx >= 0)
+        {
+            i = contourIdx;
+            end = i + 1;
+        }
+        std::vector<int> indexesToFill;
+        if (hierarchy.empty() || maxLevel == 0)
+        {
+            for (; i != end; ++i)
+                indexesToFill.push_back(i);
         }
         else
         {
-            int child = h[first][2];
-            if( child >= 0 )
+            std::stack<int> indexes;
+            for (; i != end; ++i)
             {
-                addChildContour(_contours, ncontours, h, child, seq, block);
-                seq[first].v_next = &seq[child];
+                // either all from the top level or a single contour
+                if (hierarchy.at<Vec4i>(i)[3] < 0 || contourIdx >= 0)
+                    indexes.push(i);
+            }
+            while (!indexes.empty())
+            {
+                // get current element
+                const int cur = indexes.top();
+                indexes.pop();
+
+                //  check current element depth
+                int curLevel = -1;
+                int par = cur;
+                while (par >= 0)
+                {
+                    par = hierarchy.at<Vec4i>(par)[3]; // parent
+                    ++curLevel;
+                }
+                if (curLevel <= maxLevel)
+                {
+                    indexesToFill.push_back(cur);
+                }
+
+                int next = hierarchy.at<Vec4i>(cur)[2]; // first child
+                while (next > 0)
+                {
+                    indexes.push(next);
+                    next = hierarchy.at<Vec4i>(next)[0]; // next sibling
+                }
             }
         }
+        std::vector<Mat> contoursToFill;
+        for (const int & idx : indexesToFill)
+            contoursToFill.push_back(_contours.getMat(idx));
+        fillPoly(image, contoursToFill, color, lineType, 0, offset);
     }
-
-    cvDrawContours( &_cimage, &seq[first], cvScalar(color), cvScalar(color), contourIdx >= 0 ?
-                   -maxLevel : maxLevel, thickness, lineType, cvPoint(offset) );
 }
-
 
 
 static const int CodeDeltas[8][2] =

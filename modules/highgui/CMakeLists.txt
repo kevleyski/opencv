@@ -49,7 +49,45 @@ list(REMOVE_ITEM highgui_ext_hdrs "${CMAKE_CURRENT_LIST_DIR}/include/opencv2/${n
 
 set(OPENCV_HIGHGUI_BUILTIN_BACKEND "")
 
+<<<<<<< HEAD
 if(HAVE_QT)
+=======
+if(WITH_FRAMEBUFFER AND HAVE_FRAMEBUFFER)
+  set(OPENCV_HIGHGUI_BUILTIN_BACKEND "FB")
+  add_definitions(-DHAVE_FRAMEBUFFER)
+  list(APPEND highgui_srcs ${CMAKE_CURRENT_LIST_DIR}/src/window_framebuffer.cpp)
+  list(APPEND highgui_hdrs ${CMAKE_CURRENT_LIST_DIR}/src/window_framebuffer.hpp)
+  if(HAVE_FRAMEBUFFER_XVFB)
+    add_definitions(-DHAVE_FRAMEBUFFER_XVFB)
+  endif()
+endif()
+
+if(WITH_WAYLAND AND HAVE_WAYLAND)
+  set(OPENCV_HIGHGUI_BUILTIN_BACKEND "Wayland")
+  add_definitions(-DHAVE_WAYLAND)
+
+  set(CMAKE_INCLUDE_CURRENT_DIR ON)
+
+  if (HAVE_WAYLAND_PROTOCOLS)
+      ocv_wayland_generate(
+            ${WAYLAND_PROTOCOLS_BASE}/stable/xdg-shell/xdg-shell.xml
+            xdg-shell-client-protocol)
+  endif()
+
+  list(APPEND highgui_srcs
+    ${CMAKE_CURRENT_LIST_DIR}/src/window_wayland.cpp
+    ${WAYLAND_PROTOCOL_SOURCES}
+  )
+  list(APPEND HIGHGUI_LIBRARIES "${WAYLAND_CLIENT_LINK_LIBRARIES};${WAYLAND_CURSOR_LINK_LIBRARIES};${XKBCOMMON_LINK_LIBRARIES}")
+
+  if(HAVE_WAYLAND_EGL)
+    if(WAYLAND_EGL_LIBRARIES)
+      list(APPEND HIGHGUI_LIBRARIES "${WAYLAND_EGL_LIBRARIES}")
+    endif()
+  endif()
+
+elseif(HAVE_QT)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   set(OPENCV_HIGHGUI_BUILTIN_BACKEND "QT${QT_VERSION_MAJOR}")
   add_definitions(-DHAVE_QT)
 
@@ -170,6 +208,9 @@ if(TARGET ocv.3rdparty.gtk3 OR TARGET ocv.3rdparty.gtk2)
   )
     if(__gtk_dependency STREQUAL "ocv.3rdparty.gtk3")
       set(OPENCV_HIGHGUI_BUILTIN_BACKEND "GTK3")
+      if(OPENGL_LIBRARIES)
+        list(APPEND HIGHGUI_LIBRARIES "${OPENGL_LIBRARIES}")
+      endif()
     elseif(__gtk_dependency STREQUAL "ocv.3rdparty.gtk2")
       set(OPENCV_HIGHGUI_BUILTIN_BACKEND "GTK2")
     else()
@@ -177,9 +218,6 @@ if(TARGET ocv.3rdparty.gtk3 OR TARGET ocv.3rdparty.gtk2)
     endif()
     list(APPEND highgui_srcs ${CMAKE_CURRENT_LIST_DIR}/src/window_gtk.cpp)
     list(APPEND tgts ${__gtk_dependency})
-    if(TARGET ocv.3rdparty.gthread)
-      list(APPEND tgts ocv.3rdparty.gthread)
-    endif()
     if(TARGET ocv.3rdparty.gtkglext
         AND __gtk_dependency STREQUAL "ocv.3rdparty.gtk2"
         AND NOT OPENCV_GTK_DISABLE_GTKGLEXT
@@ -194,27 +232,18 @@ if(TARGET ocv.3rdparty.gtk3 OR TARGET ocv.3rdparty.gtk2)
     endif()
   elseif("gtk" IN_LIST HIGHGUI_PLUGIN_LIST)
     ocv_create_builtin_highgui_plugin(opencv_highgui_gtk ${__gtk_dependency} "window_gtk.cpp")
-    if(TARGET ocv.3rdparty.gthread)
-      ocv_target_link_libraries(opencv_highgui_gtk ocv.3rdparty.gthread)
-    endif()
     if(TARGET ocv.3rdparty.gtkglext)
       ocv_target_link_libraries(opencv_highgui_gtk ocv.3rdparty.gtkglext)
     endif()
   else()
     if(TARGET ocv.3rdparty.gtk3 AND ("gtk3" IN_LIST HIGHGUI_PLUGIN_LIST OR HIGHGUI_PLUGIN_LIST STREQUAL "all"))
       ocv_create_builtin_highgui_plugin(opencv_highgui_gtk3 ocv.3rdparty.gtk3 "window_gtk.cpp")
-      if(TARGET ocv.3rdparty.gthread)
-        ocv_target_link_libraries(opencv_highgui_gtk3 ocv.3rdparty.gthread)
-      endif()
       if(TARGET ocv.3rdparty.gtkglext)
         ocv_target_link_libraries(opencv_highgui_gtk3 ocv.3rdparty.gtkglext)
       endif()
     endif()
     if(TARGET ocv.3rdparty.gtk2 AND ("gtk2" IN_LIST HIGHGUI_PLUGIN_LIST OR HIGHGUI_PLUGIN_LIST STREQUAL "all"))
       ocv_create_builtin_highgui_plugin(opencv_highgui_gtk2 ocv.3rdparty.gtk2 "window_gtk.cpp")
-      if(TARGET ocv.3rdparty.gthread)
-        ocv_target_link_libraries(opencv_highgui_gtk2 ocv.3rdparty.gthread)
-      endif()
       if(TARGET ocv.3rdparty.gtkglext)
         ocv_target_link_libraries(opencv_highgui_gtk2 ocv.3rdparty.gtkglext)
       endif()

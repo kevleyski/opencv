@@ -5,6 +5,7 @@
  * Copyright (C) 1991-1994, Thomas G. Lane.
  * It was modified by The libjpeg-turbo Project to include only code relevant
  * to libjpeg-turbo.
+ * Copyright (C) 2022, D. R. Commander.
  * For conditions of distribution and use, see the accompanying README.ijg
  * file.
  *
@@ -58,6 +59,18 @@
  * Change the casts in these macros if not!
  */
 
+#ifdef _MSC_VER
+
+#define SNPRINTF(str, n, format, ...) \
+  _snprintf_s(str, n, _TRUNCATE, format, ##__VA_ARGS__)
+
+#else
+
+#define SNPRINTF  snprintf
+
+#endif
+
+
 #ifdef NEED_BSD_STRINGS
 
 #include <strings.h>
@@ -77,6 +90,8 @@
 #endif
 
 /*
+#include <errno.h>
+
  * The modules that use fread() and fwrite() always invoke them through
  * these macros.  On some systems you may need to twiddle the argument casts.
  * CAUTION: argument order is different from underlying functions!

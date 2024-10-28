@@ -44,9 +44,3 @@ cv.destroyAllWindows()
 Result is shown below:
 
 ![image](images/houghcircles2.jpg)
-
-Additional Resources
---------------------
-
-Exercises
----------

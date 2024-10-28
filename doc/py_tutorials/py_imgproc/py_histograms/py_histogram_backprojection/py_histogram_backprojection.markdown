@@ -119,6 +119,3 @@ Additional Resources
 
 -#  "Indexing via color histograms", Swain, Michael J. , Third international conference on computer
     vision,1990.
-
-Exercises
----------

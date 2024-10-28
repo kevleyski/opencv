@@ -1,8 +1,18 @@
 set(CMAKE_SYSTEM_NAME Linux)
 set(CMAKE_SYSTEM_PROCESSOR riscv64)
+<<<<<<< HEAD
 
 set(RISCV_GCC_INSTALL_ROOT /opt/RISCV CACHE PATH "Path to GCC for RISC-V cross compiler installation directory")
 set(CMAKE_SYSROOT ${RISCV_GCC_INSTALL_ROOT}/sysroot CACHE PATH "RISC-V sysroot")
+=======
+set(GNU_MACHINE riscv64-unknown-linux-gnu CACHE STRING "GNU compiler triple")
+
+include("${CMAKE_CURRENT_LIST_DIR}/flags-riscv64.cmake")
+if(COMMAND ocv_set_platform_flags)
+  ocv_set_platform_flags(CMAKE_CXX_FLAGS_INIT)
+  ocv_set_platform_flags(CMAKE_C_FLAGS_INIT)
+endif()
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 set(CMAKE_C_COMPILER ${RISCV_GCC_INSTALL_ROOT}/bin/riscv64-unknown-linux-gnu-gcc)
 set(CMAKE_CXX_COMPILER ${RISCV_GCC_INSTALL_ROOT}/bin/riscv64-unknown-linux-gnu-g++)

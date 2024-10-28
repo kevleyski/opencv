@@ -680,4 +680,431 @@ TEST(Drawing, fillpoly_circle)
     EXPECT_LT(diff_fp3, 1.);
 }
 
+<<<<<<< HEAD
+=======
+TEST(Drawing, fillpoly_contours)
+{
+    const int imgSize = 50;
+    const int type = CV_8UC1;
+    const int shift = 0;
+    const Scalar cl = Scalar::all(255);
+    const cv::LineTypes lineType = LINE_8;
+
+    // check that contours of fillPoly and polylines match
+    {
+        cv::Mat img(imgSize, imgSize, type);
+        img = 0;
+        std::vector<std::vector<cv::Point>> polygonPoints{
+            { {44, 27}, {7, 37}, {7, 19}, {38, 19} }
+        };
+        cv::fillPoly(img, polygonPoints, cl, lineType, shift);
+        cv::polylines(img, polygonPoints, true, 0, 1, lineType, shift);
+
+        {
+            cv::Mat labelImage(img.size(), CV_32S);
+            int labels = cv::connectedComponents(img, labelImage, 4);
+            EXPECT_EQ(2, labels) << "filling went over the border";
+        }
+    }
+
+    // check that line generated with fillPoly and polylines match
+    {
+        cv::Mat img1(imgSize, imgSize, type), img2(imgSize, imgSize, type);
+        img1 = 0;
+        img2 = 0;
+        std::vector<std::vector<cv::Point>> polygonPoints{
+            { {44, 27}, {38, 19} }
+        };
+        cv::fillPoly(img1, polygonPoints, cl, lineType, shift);
+        cv::polylines(img2, polygonPoints, true, cl, 1, lineType, shift);
+        EXPECT_MAT_N_DIFF(img1, img2, 0);
+    }
+}
+
+TEST(Drawing, fillpoly_match_lines)
+{
+    const int imgSize = 49;
+    const int type = CV_8UC1;
+    const int shift = 0;
+    const Scalar cl = Scalar::all(255);
+    const cv::LineTypes lineType = LINE_8;
+    cv::Mat img1(imgSize, imgSize, type), img2(imgSize, imgSize, type);
+    for (int x1 = 0; x1 < imgSize; x1 += imgSize / 2)
+    {
+        for (int y1 = 0; y1 < imgSize; y1 += imgSize / 2)
+        {
+            for (int x2 = 0; x2 < imgSize; x2++)
+            {
+                for (int y2 = 0; y2 < imgSize; y2++)
+                {
+                    img1 = 0;
+                    img2 = 0;
+                    std::vector<std::vector<cv::Point>> polygonPoints{
+                        { {x1, y1}, {x2, y2} }
+                    };
+                    cv::fillPoly(img1, polygonPoints, cl, lineType, shift);
+                    cv::polylines(img2, polygonPoints, true, cl, 1, lineType, shift);
+                    EXPECT_MAT_N_DIFF(img1, img2, 0);
+                }
+            }
+        }
+    }
+}
+
+TEST(Drawing, fillpoly_fully)
+{
+    unsigned imageWidth = 256;
+    unsigned imageHeight = 256;
+    int type = CV_8UC1;
+    int shift = 0;
+    Point offset(0, 0);
+    cv::LineTypes lineType = LINE_4;
+
+    int imageSizeOffset = 15;
+
+    cv::Mat img(imageHeight, imageWidth, type);
+    img = 0;
+
+    std::vector<cv::Point> polygonPoints;
+    polygonPoints.push_back(cv::Point(100, -50));
+    polygonPoints.push_back(cv::Point(imageSizeOffset, imageHeight - imageSizeOffset));
+    polygonPoints.push_back(cv::Point(imageSizeOffset, imageSizeOffset));
+
+    // convert data
+    std::vector<const cv::Point*> polygonPointPointers(polygonPoints.size());
+    for (size_t i = 0; i < polygonPoints.size(); i++)
+    {
+        polygonPointPointers[i] = &polygonPoints[i];
+    }
+
+    const cv::Point** data = &polygonPointPointers.front();
+    int size = (int)polygonPoints.size();
+    const int* npts = &size;
+    int ncontours = 1;
+
+    // generate image
+    cv::fillPoly(img, data, npts, ncontours, 255, lineType, shift, offset);
+
+    // check for artifacts
+    {
+        cv::Mat binary = img < 128;
+        cv::Mat labelImage(binary.size(), CV_32S);
+        cv::Mat labelCentroids;
+        int labels = cv::connectedComponents(binary, labelImage, 4);
+        EXPECT_EQ(2, labels) << "artifacts occured";
+    }
+
+    // check if filling went over border
+    {
+        int xy_shift = 16, delta = offset.y + ((1 << shift) >> 1);
+        int xy_one = 1 << xy_shift;
+
+        Point pt0(polygonPoints[polygonPoints.size() - 1]), pt1;
+        for (size_t i = 0; i < polygonPoints.size(); i++, pt0 = pt1)
+        {
+            pt1 = polygonPoints[i];
+
+            // offset/shift treated like in fillPoly
+            Point t0(pt0), t1(pt1);
+
+            t0.x = (t0.x + offset.x) << (xy_shift - shift);
+            t0.y = (t0.y + delta) >> shift;
+
+            t1.x = (t1.x + offset.x) << (xy_shift - shift);
+            t1.y = (t1.y + delta) >> shift;
+
+            if (lineType < cv::LINE_AA)
+            {
+                t0.x = (t0.x + (xy_one >> 1)) >> xy_shift;
+                t1.x = (t1.x + (xy_one >> 1)) >> xy_shift;
+
+                // LINE_4 to use the same type of line which is used in fillPoly
+                line(img, t0, t1, 0, 1, LINE_4, 0);
+            }
+            else
+            {
+                t0.x >>= (xy_shift);
+                t1.x >>= (xy_shift);
+                line(img, t0, t1, 0, 1, lineType, 0);
+            }
+
+        }
+        cv::Mat binary = img < 254;
+        cv::Mat labelImage(binary.size(), CV_32S);
+        int labels = cv::connectedComponents(binary, labelImage, 4);
+        EXPECT_EQ(2, labels) << "filling went over the border";
+    }
+}
+
+PARAM_TEST_CASE(FillPolyFully, unsigned, unsigned, int, int, Point, cv::LineTypes)
+{
+    unsigned imageWidth;
+    unsigned imageHeight;
+    int type;
+    int shift;
+    Point offset;
+    cv::LineTypes lineType;
+
+    virtual void SetUp()
+    {
+        imageWidth = GET_PARAM(0);
+        imageHeight = GET_PARAM(1);
+        type = GET_PARAM(2);
+        shift = GET_PARAM(3);
+        offset = GET_PARAM(4);
+        lineType = GET_PARAM(5);
+    }
+
+    void draw_polygon(cv::Mat& img, const std::vector<cv::Point>& polygonPoints)
+    {
+        // convert data
+        std::vector<const cv::Point*> polygonPointPointers(polygonPoints.size());
+        for (size_t i = 0; i < polygonPoints.size(); i++)
+        {
+            polygonPointPointers[i] = &polygonPoints[i];
+        }
+
+        const cv::Point** data = &polygonPointPointers.front();
+        int size = (int)polygonPoints.size();
+        const int* npts = &size;
+        int ncontours = 1;
+
+        // generate image
+        cv::fillPoly(img, data, npts, ncontours, 255, lineType, shift, offset);
+    }
+
+    void check_artifacts(cv::Mat& img)
+    {
+        // check for artifacts
+        cv::Mat binary = img < 128;
+        cv::Mat labelImage(binary.size(), CV_32S);
+        cv::Mat labelCentroids;
+        int labels = cv::connectedComponents(binary, labelImage, 4);
+        EXPECT_EQ(2, labels) << "artifacts occured";
+    }
+
+    void check_filling_over_border(cv::Mat& img, const std::vector<cv::Point>& polygonPoints)
+    {
+        int xy_shift = 16, delta = offset.y + ((1 << shift) >> 1);
+        int xy_one = 1 << xy_shift;
+
+        Point pt0(polygonPoints[polygonPoints.size() - 1]), pt1;
+        for (size_t i = 0; i < polygonPoints.size(); i++, pt0 = pt1)
+        {
+            pt1 = polygonPoints[i];
+
+            // offset/shift treated like in fillPoly
+            Point t0(pt0), t1(pt1);
+
+            t0.x = (t0.x + offset.x) << (xy_shift - shift);
+            t0.y = (t0.y + delta) >> shift;
+
+            t1.x = (t1.x + offset.x) << (xy_shift - shift);
+            t1.y = (t1.y + delta) >> shift;
+
+            if (lineType < cv::LINE_AA)
+            {
+                t0.x = (t0.x + (xy_one >> 1)) >> xy_shift;
+                t1.x = (t1.x + (xy_one >> 1)) >> xy_shift;
+
+                // LINE_4 to use the same type of line which is used in fillPoly
+                line(img, t0, t1, 0, 1, LINE_4, 0);
+            }
+            else
+            {
+                t0.x >>= (xy_shift);
+                t1.x >>= (xy_shift);
+                line(img, t0, t1, 0, 1, lineType, 0);
+            }
+
+        }
+        cv::Mat binary = img < 254;
+        cv::Mat labelImage(binary.size(), CV_32S);
+        int labels = cv::connectedComponents(binary, labelImage, 4);
+        EXPECT_EQ(2, labels) << "filling went over the border";
+    }
+
+    void run_test(const std::vector<cv::Point>& polygonPoints)
+    {
+        cv::Mat img(imageHeight, imageWidth, type);
+        img = 0;
+
+        draw_polygon(img, polygonPoints);
+        check_artifacts(img);
+        check_filling_over_border(img, polygonPoints);
+    }
+};
+
+TEST_P(FillPolyFully, DISABLED_fillpoly_fully)
+{
+    int imageSizeOffset = 15;
+
+    // testing for polygon with straight edge at left/right side
+    int positions1[2] = { imageSizeOffset, (int)imageWidth - imageSizeOffset };
+    for (size_t i = 0; i < 2; i++)
+    {
+        for (int y = imageHeight + 50; y > -50; y -= 1)
+        {
+            // define polygon
+            std::vector<cv::Point> polygonPoints;
+            polygonPoints.push_back(cv::Point(100, imageHeight - y));
+            polygonPoints.push_back(cv::Point(positions1[i], positions1[1]));
+            polygonPoints.push_back(cv::Point(positions1[i], positions1[0]));
+
+            run_test(polygonPoints);
+        }
+    }
+
+    // testing for polygon with straight edge at top/bottom side
+    int positions2[2] = { imageSizeOffset, (int)imageHeight - imageSizeOffset };
+    for (size_t i = 0; i < 2; i++)
+    {
+        for (int x = imageWidth + 50; x > -50; x -= 1)
+        {
+            // define polygon
+            std::vector<cv::Point> polygonPoints;
+            polygonPoints.push_back(cv::Point(imageWidth - x, 100));
+            polygonPoints.push_back(cv::Point(positions2[1], positions2[i]));
+            polygonPoints.push_back(cv::Point(positions2[0], positions2[i]));
+
+            run_test(polygonPoints);
+        }
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(
+    FillPolyTest, FillPolyFully,
+    testing::Combine(
+        testing::Values(256),
+        testing::Values(256),
+        testing::Values(CV_8UC1),
+        testing::Values(0, 1, 2),
+        testing::Values(cv::Point(0, 0), cv::Point(10, 10)),
+        testing::Values(LINE_4, LINE_8, LINE_AA)
+    )
+);
+
+TEST(Drawing, circle_overflow)
+{
+    applyTestTag(CV_TEST_TAG_VERYLONG);
+    cv::Mat1b matrix = cv::Mat1b::zeros(600, 600);
+    cv::Scalar kBlue = cv::Scalar(0, 0, 255);
+    cv::circle(matrix, cv::Point(275, -2147483318), 2147483647, kBlue, 1, 8, 0);
+}
+
+TEST(Drawing, circle_memory_access)
+{
+    cv::Mat1b matrix = cv::Mat1b::zeros(10, 10);
+    cv::Scalar kBlue = cv::Scalar(0, 0, 255);
+    cv::circle(matrix, cv::Point(-1, -1), 0, kBlue, 2, 8, 16);
+}
+
+inline static Mat mosaic2x2(Mat &img)
+{
+    const Size sz = img.size();
+    Mat res(sz * 2, img.type(), Scalar::all(0));
+    img.copyTo(res(Rect(Point(0, 0), sz)));
+    img.copyTo(res(Rect(Point(0, sz.height), sz)));
+    img.copyTo(res(Rect(Point(sz.width, 0), sz)));
+    img.copyTo(res(Rect(Point(sz.width, sz.height), sz)));
+    return res;
+}
+
+TEST(Drawing, contours_filled)
+{
+    const Scalar white(255);
+    const Scalar black(0);
+    const Size sz(100, 100);
+
+    Mat img(sz, CV_8UC1, black);
+    rectangle(img, Point(20, 20), Point(80, 80), white, -1);
+    rectangle(img, Point(30, 30), Point(70, 70), black, -1);
+    rectangle(img, Point(40, 40), Point(60, 60), white, -1);
+    img = mosaic2x2(img);
+
+    Mat img1(sz, CV_8UC1, black);
+    rectangle(img1, Point(20, 20), Point(80, 80), white, -1);
+    img1 = mosaic2x2(img1);
+
+    Mat img2(sz, CV_8UC1, black);
+    rectangle(img2, Point(20, 20), Point(80, 80), white, -1);
+    rectangle(img2, Point(30, 30), Point(70, 70), black, -1);
+    img2 = mosaic2x2(img2);
+
+    Mat img3(sz, CV_8UC1, black);
+    rectangle(img3, Point(40, 40), Point(60, 60), white, -1);
+    img3 = mosaic2x2(img3);
+
+    // inverted contours - corners and left edge adjusted
+    Mat imgi(sz, CV_8UC1, black);
+    rectangle(imgi, Point(29, 29), Point(71, 71), white, -1);
+    rectangle(imgi, Point(41, 41), Point(59, 59), black, -1);
+    imgi.at<uchar>(Point(29, 29)) = 0;
+    imgi.at<uchar>(Point(29, 71)) = 0;
+    imgi = mosaic2x2(imgi);
+
+    vector<vector<Point>> contours;
+    vector<Vec4i> hierarchy;
+    findContours(img, contours, hierarchy, RETR_TREE, CHAIN_APPROX_NONE);
+    ASSERT_EQ(12u, contours.size());
+
+    // NOTE:
+    // assuming contour tree has following structure (idx = 0, 1, ...):
+    //   idx (top level)
+    //     - idx + 1
+    //         - idx + 2
+    //   idx + 3 (top level)
+    //     - idx + 4
+    //         - idx + 5
+    //   ...
+    const vector<int> top_contours {0, 3, 6, 9};
+    {
+        // all contours
+        Mat res(img.size(), CV_8UC1, Scalar::all(0));
+        drawContours(res, contours, -1, white, -1, cv::LINE_8, hierarchy);
+        EXPECT_LT(cvtest::norm(img, res, NORM_INF), 1);
+    }
+    {
+        // all contours
+        Mat res(img.size(), CV_8UC1, Scalar::all(0));
+        drawContours(res, contours, -1, white, -1, cv::LINE_8, hierarchy, 3);
+        EXPECT_LT(cvtest::norm(img, res, NORM_INF), 1);
+    }
+    {
+        // all contours
+        Mat res(img.size(), CV_8UC1, Scalar::all(0));
+        drawContours(res, contours, -1, white, -1, cv::LINE_8, hierarchy, 0);
+        EXPECT_LT(cvtest::norm(img, res, NORM_INF), 1);
+    }
+    {
+        // all external contours one by one
+        Mat res(img.size(), CV_8UC1, Scalar::all(0));
+        for (int idx : top_contours)
+            drawContours(res, contours, idx, white, -1, cv::LINE_8, hierarchy, 0);
+        EXPECT_LT(cvtest::norm(img1, res, NORM_INF), 1);
+    }
+    {
+        // all external contours + 1-level deep hole (one by one)
+        Mat res(img.size(), CV_8UC1, Scalar::all(0));
+        for (int idx : top_contours)
+            drawContours(res, contours, idx, white, -1, cv::LINE_8, hierarchy, 1);
+        EXPECT_LT(cvtest::norm(img2, res, NORM_INF), 1);
+    }
+    {
+        // 2-level deep contours
+        Mat res(img.size(), CV_8UC1, Scalar::all(0));
+        for (int idx : top_contours)
+            drawContours(res, contours, idx + 2, white, -1, cv::LINE_8, hierarchy);
+        EXPECT_LT(cvtest::norm(img3, res, NORM_INF), 1);
+    }
+    {
+        // holes become inverted here, LINE_8 -> LINE_4
+        Mat res(img.size(), CV_8UC1, Scalar::all(0));
+        for (int idx : top_contours)
+            drawContours(res, contours, idx + 1, white, -1, cv::LINE_4, hierarchy);
+        EXPECT_LT(cvtest::norm(imgi, res, NORM_INF), 1);
+    }
+}
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }} // namespace

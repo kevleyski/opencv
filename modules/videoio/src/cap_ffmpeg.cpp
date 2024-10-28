@@ -64,7 +64,7 @@
 namespace cv {
 namespace {
 
-class CvCapture_FFMPEG_proxy CV_FINAL : public cv::IVideoCapture
+class CvCapture_FFMPEG_proxy CV_FINAL : public cv::VideoCaptureBase
 {
 public:
     CvCapture_FFMPEG_proxy() { ffmpegCapture = 0; }
@@ -75,11 +75,11 @@ public:
     }
     virtual ~CvCapture_FFMPEG_proxy() { close(); }
 
-    virtual double getProperty(int propId) const CV_OVERRIDE
+    virtual double getProperty_(int propId) const CV_OVERRIDE
     {
         return ffmpegCapture ? icvGetCaptureProperty_FFMPEG_p(ffmpegCapture, propId) : 0;
     }
-    virtual bool setProperty(int propId, double value) CV_OVERRIDE
+    virtual bool setProperty_(int propId, double value) CV_OVERRIDE
     {
         return ffmpegCapture ? icvSetCaptureProperty_FFMPEG_p(ffmpegCapture, propId, value)!=0 : false;
     }
@@ -87,7 +87,11 @@ public:
     {
         return ffmpegCapture ? icvGrabFrame_FFMPEG_p(ffmpegCapture)!=0 : false;
     }
+<<<<<<< HEAD
     virtual bool retrieveFrame(int, cv::OutputArray frame) CV_OVERRIDE
+=======
+    virtual bool retrieveFrame_(int flag, cv::OutputArray frame) CV_OVERRIDE
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     {
         unsigned char* data = 0;
         int step=0, width=0, height=0, cn=0;
@@ -105,10 +109,14 @@ public:
         if (!icvRetrieveFrame_FFMPEG_p(ffmpegCapture, &data, &step, &width, &height, &cn))
             return false;
 
+<<<<<<< HEAD
         cv::Mat tmp(height, width, CV_MAKETYPE(CV_8U, cn), data, step);
         this->rotateFrame(tmp);
         tmp.copyTo(frame);
 
+=======
+        cv::Mat(height, width, CV_MAKETYPE(depth, cn), data, step).copyTo(frame);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         return true;
     }
     bool open(const cv::String& filename, const cv::VideoCaptureParameters& params)
@@ -127,7 +135,7 @@ public:
     }
 
     virtual bool isOpened() const CV_OVERRIDE { return ffmpegCapture != 0; }
-    virtual int getCaptureDomain() CV_OVERRIDE { return CV_CAP_FFMPEG; }
+    virtual int getCaptureDomain() CV_OVERRIDE { return cv::CAP_FFMPEG; }
 
 protected:
     CvCapture_FFMPEG* ffmpegCapture;

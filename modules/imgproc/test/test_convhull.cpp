@@ -39,10 +39,14 @@
 //
 //M*/
 
+#include "opencv2/core/hal/interface.h"
+#include "opencv2/ts.hpp"
+#include "opencv2/ts/cuda_test.hpp"
 #include "test_precomp.hpp"
 
 namespace opencv_test { namespace {
 
+<<<<<<< HEAD
 /*static int
 cvTsPointConvexPolygon( CvPoint2D32f pt, CvPoint2D32f* v, int n )
 {
@@ -1084,11 +1088,13 @@ int CV_MinCircleTest2::validate_test_results( int test_case_idx )
     return code;
 }
 
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 /****************************************************************************************\
 *                                 minEnclosingCircle Test 3                              *
 \****************************************************************************************/
 
-TEST(Imgproc_minEnclosingCircle, basic_test)
+TEST(minEnclosingCircle, basic_test)
 {
     vector<Point2f> pts;
     pts.push_back(Point2f(0, 0));
@@ -1165,6 +1171,7 @@ TEST(Imgproc_minEnclosingCircle, regression_16051) {
     EXPECT_NEAR(2.1024551f, radius, 1e-3);
 }
 
+<<<<<<< HEAD
 /****************************************************************************************\
 *                                   Perimeter Test                                     *
 \****************************************************************************************/
@@ -2066,6 +2073,8 @@ TEST(Imgproc_FitEllipse, small) { CV_FitEllipseSmallTest test; test.safe_run(); 
 
 
 
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 PARAM_TEST_CASE(ConvexityDefects_regression_5908, bool, int)
 {
 public:
@@ -2457,5 +2466,559 @@ TEST(Imgproc_minAreaRect, reproducer_19769)
     EXPECT_TRUE(checkMinAreaRect(rr, contour)) << rr.center << " " << rr.size << " " << rr.angle;
 }
 
+<<<<<<< HEAD
+=======
+TEST(Imgproc_minEnclosingTriangle, regression_17585)
+{
+    const int N = 3;
+    float pts_[N][2] = { {0, 0}, {0, 1}, {1, 1} };
+    cv::Mat points(N, 2, CV_32FC1, static_cast<void*>(pts_));
+    vector<Point2f> triangle;
+
+    EXPECT_NO_THROW(minEnclosingTriangle(points, triangle));
+}
+
+TEST(Imgproc_minEnclosingTriangle, regression_20890)
+{
+    vector<Point> points;
+    points.push_back(Point(0, 0));
+    points.push_back(Point(0, 1));
+    points.push_back(Point(1, 1));
+    vector<Point2f> triangle;
+
+    EXPECT_NO_THROW(minEnclosingTriangle(points, triangle));
+}
+
+TEST(Imgproc_minEnclosingTriangle, regression_mat_with_diff_channels)
+{
+    const int N = 3;
+    float pts_[N][2] = { {0, 0}, {0, 1}, {1, 1} };
+    cv::Mat points1xN(1, N, CV_32FC2, static_cast<void*>(pts_));
+    cv::Mat pointsNx1(N, 1, CV_32FC2, static_cast<void*>(pts_));
+    vector<Point2f> triangle;
+
+    EXPECT_NO_THROW(minEnclosingTriangle(points1xN, triangle));
+    EXPECT_NO_THROW(minEnclosingTriangle(pointsNx1, triangle));
+}
+
+//==============================================================================
+
+typedef testing::TestWithParam<tuple<int, int>> fitLine_Modes;
+
+TEST_P(fitLine_Modes, accuracy)
+{
+    const int data_type = get<0>(GetParam());
+    const int dist_type = get<1>(GetParam());
+    const int CN = CV_MAT_CN(data_type);
+    const int res_type = CV_32FC(CN);
+
+    for (int ITER = 0; ITER < 20; ++ITER)
+    {
+        SCOPED_TRACE(cv::format("iteration %d", ITER));
+
+        Mat v0(1, 1, data_type), v1(1, 1, data_type); // pt = v0 + v1 * t
+        Mat v1n;
+
+        RNG& rng = TS::ptr()->get_rng();
+        cvtest::randUni(rng, v0, Scalar::all(1), Scalar::all(100));
+        cvtest::randUni(rng, v1, Scalar::all(1), Scalar::all(100));
+        normalize(v1, v1n, 1, 0, NORM_L2, res_type);
+        v0.convertTo(v0, res_type);
+        v1.convertTo(v1, res_type);
+
+        const int NUM = rng.uniform(30, 100);
+        Mat points(NUM, 1, data_type, Scalar::all(0));
+        for (int i = 0; i < NUM; ++i)
+        {
+            Mat pt = v0 + v1 * i;
+            if (CV_MAT_DEPTH(data_type) == CV_32F)
+            {
+                Mat noise = cvtest::randomMat(rng, Size(1, 1), res_type, -0.01, 0.01, false);
+                pt += noise;
+
+            }
+            pt.copyTo(points.row(i));
+        }
+
+        Mat line_;
+        cv::fitLine(points, line_, dist_type, 0, 0.1, 0.01);
+        Mat line = line_.reshape(points.channels(), 1);
+
+        // check result type and size
+        EXPECT_EQ(res_type, line.type());
+        EXPECT_EQ(Size(2, 1), line.size());
+
+        // check result pt1
+        const double angle = line.col(0).dot(v1n);
+        EXPECT_NEAR(abs(angle), 1, 1e-2);
+
+        // put result pt0 to the original equation (pt = v0 + v1 * t) and find "t"
+        Mat diff = line.col(1) - v0;
+        cv::divide(diff, v1, diff);
+        cv::divide(diff, diff.at<float>(0, 0), diff);
+        const Mat unit(1, 1, res_type, Scalar::all(1));
+        EXPECT_NEAR(cvtest::norm(diff, unit, NORM_L1), 0, 0.01);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(/**/,
+    fitLine_Modes,
+    testing::Combine(
+        testing::Values(CV_32FC2, CV_32FC3, CV_32SC2, CV_32SC3),
+        testing::Values(DIST_L1, DIST_L2, DIST_L12, DIST_FAIR, DIST_WELSCH, DIST_HUBER)));
+
+//==============================================================================
+
+inline float normAngle(float angle_deg)
+{
+    while (angle_deg < 0.f)
+        angle_deg += 180.f;
+    while (angle_deg > 180.f)
+        angle_deg -= 180.f;
+    if (abs(angle_deg - 180.f) < 0.01) // border case
+        angle_deg = 0.f;
+    return angle_deg;
+}
+
+inline float angleToDeg(float angle_rad)
+{
+    return angle_rad * 180.f / (float)M_PI;
+}
+
+inline float angleDiff(float a, float b)
+{
+    float res = a - b;
+    return normAngle(res);
+}
+
+typedef testing::TestWithParam<int> fitEllipse_Modes;
+
+TEST_P(fitEllipse_Modes, accuracy)
+{
+    const int data_type = GetParam();
+    const float int_scale = 1000.f;
+    const Size sz(1, 2);
+    const Matx22f rot {0.f, -1.f, 1.f, 0.f};
+    RNG& rng = TS::ptr()->get_rng();
+
+    for (int ITER = 0; ITER < 20; ++ITER)
+    {
+        SCOPED_TRACE(cv::format("iteration %d", ITER));
+
+        Mat f0(sz, CV_32FC1), f1(sz, CV_32FC1), f2(sz, CV_32FC1);
+        cvtest::randUni(rng, f0, Scalar::all(-100), Scalar::all(100));
+        cvtest::randUni(rng, f1, Scalar::all(-100), Scalar::all(100));
+        if (ITER % 4 == 0)
+        {
+            // 0/90 degrees case
+            f1.at<float>(0, 0) = 0.;
+        }
+        // f2 is orthogonal to f1 and scaled
+        f2 = rot * f1 * cvtest::randomDouble(0.01, 3);
+
+        const Point2f ref_center(f0.at<float>(0), f0.at<float>(1));
+        const Size2f ref_size(
+            (float)cvtest::norm(f1, NORM_L2) * 2.f,
+            (float)cvtest::norm(f2, NORM_L2) * 2.f);
+        const float ref_angle1 = angleToDeg(atan(f1.at<float>(1) / f1.at<float>(0)));
+        const float ref_angle2 = angleToDeg(atan(f2.at<float>(1) / f2.at<float>(0)));
+
+        const int NUM = rng.uniform(10, 30);
+        Mat points(NUM, 1, data_type, Scalar::all(0));
+        for (int i = 0; i < NUM; ++i)
+        {
+            Mat pt = f0 + f1 * sin(i) + f2 * cos(i);
+            pt = pt.reshape(2);
+            if (data_type == CV_32SC2)
+            {
+                pt.convertTo(points.row(i), CV_32SC2, int_scale);
+            }
+            else if (data_type == CV_32FC2)
+            {
+                pt.copyTo(points.row(i));
+            }
+            else
+            {
+                FAIL() << "unsupported data type: " << data_type;
+            }
+        }
+
+        RotatedRect res = cv::fitEllipse(points);
+
+        if (data_type == CV_32SC2)
+        {
+            res.center /= int_scale;
+            res.size = Size2f(res.size.width / int_scale, res.size.height / int_scale);
+        }
+        const bool sizeSwap = (res.size.width < res.size.height) != (ref_size.width < ref_size.height);
+        if (sizeSwap)
+        {
+            std::swap(res.size.width, res.size.height);
+        }
+        EXPECT_FALSE(res.size.empty());
+        EXPECT_POINT2_NEAR(res.center, ref_center, 0.01);
+        const float sizeDiff = (data_type == CV_32FC2) ? 0.1f : 1.f;
+        EXPECT_NEAR(min(res.size.width, res.size.height), min(ref_size.width, ref_size.height), sizeDiff);
+        EXPECT_NEAR(max(res.size.width, res.size.height), max(ref_size.width, ref_size.height), sizeDiff);
+        if (sizeSwap)
+        {
+            EXPECT_LE(angleDiff(ref_angle2, res.angle), 0.1);
+        }
+        else
+        {
+            EXPECT_LE(angleDiff(ref_angle1, res.angle), 0.1);
+        }
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(/**/,
+    fitEllipse_Modes,
+        testing::Values(CV_32FC2, CV_32SC2));
+
+//==============================================================================
+
+TEST(fitEllipse, small)
+{
+    Size sz(50, 50);
+    vector<vector<Point> > c;
+    c.push_back(vector<Point>());
+    int scale = 1;
+    Point ofs = Point(0,0);//sz.width/2, sz.height/2) - Point(4,4)*scale;
+    c[0].push_back(Point(2, 0)*scale+ofs);
+    c[0].push_back(Point(0, 2)*scale+ofs);
+    c[0].push_back(Point(0, 6)*scale+ofs);
+    c[0].push_back(Point(2, 8)*scale+ofs);
+    c[0].push_back(Point(6, 8)*scale+ofs);
+    c[0].push_back(Point(8, 6)*scale+ofs);
+    c[0].push_back(Point(8, 2)*scale+ofs);
+    c[0].push_back(Point(6, 0)*scale+ofs);
+
+    RotatedRect e = cv::fitEllipse(c[0]);
+
+    EXPECT_NEAR(e.center.x, 4, 1.f);
+    EXPECT_NEAR(e.center.y, 4, 1.f);
+    EXPECT_NEAR(e.size.width, 9, 1.);
+    EXPECT_NEAR(e.size.height, 9, 1.f);
+}
+
+//==============================================================================
+
+// points stored in rows
+inline static int findPointInMat(const Mat & data, const Mat & point)
+{
+    for (int i = 0; i < data.rows; ++i)
+        if (cvtest::norm(data.row(i), point, NORM_L1) == 0)
+            return i;
+    return -1;
+}
+
+// > 0 - "pt" is to the right of AB
+// < 0 - "pt" is to the left of AB
+// points stored in rows
+inline static double getSide(const Mat & ptA, const Mat & ptB, const Mat & pt)
+{
+    Mat d0 = pt - ptA, d1 = ptB - pt, prod;
+    vconcat(d0, d1, prod);
+    prod = prod.reshape(1);
+    if (prod.depth() == CV_32S)
+        prod.convertTo(prod, CV_32F);
+    return determinant(prod);
+}
+
+typedef testing::TestWithParam<perf::MatDepth> convexHull_Modes;
+
+TEST_P(convexHull_Modes, accuracy)
+{
+    const int data_type = CV_MAKE_TYPE(GetParam(), 2);
+    RNG & rng = TS::ptr()->get_rng();
+
+    for (int ITER = 0; ITER < 20; ++ITER)
+    {
+        SCOPED_TRACE(cv::format("iteration %d", ITER));
+
+        const int NUM = cvtest::randomInt(5, 100);
+        Mat points(NUM, 1, data_type, Scalar::all(0));
+        cvtest::randUni(rng, points, Scalar(-10), Scalar::all(10));
+
+        Mat hull, c_hull, indexes;
+        cv::convexHull(points, hull, false, true); // default parameters
+        cv::convexHull(points, c_hull, true, true); // counter-clockwise
+        cv::convexHull(points, indexes, false, false); // point indexes
+
+        ASSERT_EQ(hull.size().width, 1);
+        ASSERT_GE(hull.size().height, 3);
+        ASSERT_EQ(hull.size(), c_hull.size());
+        ASSERT_EQ(hull.size(), indexes.size());
+
+        // find shift between hull and counter-clockwise hull
+        const int c_diff = findPointInMat(hull, c_hull.row(0));
+        ASSERT_NE(c_diff, -1);
+
+        const int sz = (int)hull.total();
+        for (int i = 0; i < sz; ++i)
+        {
+            SCOPED_TRACE(cv::format("vertex %d", i));
+
+            Mat prev = (i == 0) ? hull.row(sz - 1) : hull.row(i - 1);
+            Mat cur = hull.row(i);
+            Mat next = (i != sz - 1) ? hull.row(i + 1) : hull.row(0);
+            // 1. "cur' is one of points
+            EXPECT_NE(findPointInMat(points, cur), -1);
+            // 2. convexity: "cur" is on right side of "prev - next" edge
+            EXPECT_GE(getSide(prev, next, cur), 0);
+            // 3. all points are inside polygon - on the left side of "cur - next" edge
+            for (int j = 0; j < points.rows; ++j)
+            {
+                SCOPED_TRACE(cv::format("point %d", j));
+                EXPECT_LE(getSide(cur, next, points.row(j)), 0);
+            }
+            // check counter-clockwise hull
+            const int c_idx = (sz - i + c_diff) % sz;
+            Mat c_cur = c_hull.row(c_idx);
+            EXPECT_MAT_NEAR(cur, c_cur, 0);
+            // check indexed hull
+            const int pt_index = indexes.at<int>(i);
+            EXPECT_MAT_NEAR(cur, points.row(pt_index), 0);
+        }
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(/**/,
+    convexHull_Modes,
+        testing::Values(CV_32F, CV_32S));
+
+
+//==============================================================================
+
+typedef testing::TestWithParam<perf::MatDepth> minAreaRect_Modes;
+
+TEST_P(minAreaRect_Modes, accuracy)
+{
+    const int data_type = CV_MAKE_TYPE(GetParam(), 2);
+    RNG & rng = TS::ptr()->get_rng();
+    for (int ITER = 0; ITER < 20; ++ITER)
+    {
+        SCOPED_TRACE(cv::format("iteration %d", ITER));
+
+        const int NUM = cvtest::randomInt(5, 100);
+        Mat points(NUM, 1, data_type, Scalar::all(0));
+        cvtest::randUni(rng, points, Scalar(-10), Scalar::all(10));
+
+        const RotatedRect res = cv::minAreaRect(points);
+        Point2f box_pts[4] {};
+        res.points(box_pts);
+
+        // check that the box contains all the points - all on one side
+        double common_side = 0.;
+        bool edgeHasPoint[4] {0};
+        for (int i = 0; i < 4; ++i)
+        {
+            const int j = (i == 3) ? 0 : i + 1;
+            Mat cur(1, 1, CV_32FC2, box_pts + i);
+            Mat next(1, 1, CV_32FC2, box_pts + j);
+            for (int k = 0; k < points.rows; ++k)
+            {
+                SCOPED_TRACE(cv::format("point %d", j));
+                Mat one_point;
+                points.row(k).convertTo(one_point, CV_32FC2);
+                const double side = getSide(cur, next, one_point);
+                if (abs(side) < 0.01) // point on edge - no need to check
+                {
+                    edgeHasPoint[i] = true;
+                    continue;
+                }
+                if (common_side == 0.) // initial state
+                {
+                    common_side = side > 0 ? 1. : -1.; // only sign matters
+                }
+                else
+                {
+                    EXPECT_EQ(common_side > 0, side > 0) << common_side << ", " << side;
+                }
+            }
+        }
+        EXPECT_TRUE(edgeHasPoint[0] && edgeHasPoint[1] && edgeHasPoint[2] && edgeHasPoint[3]);
+    }
+
+}
+
+INSTANTIATE_TEST_CASE_P(/**/,
+    minAreaRect_Modes,
+        testing::Values(CV_32F, CV_32S));
+
+
+//==============================================================================
+
+// true if "point" is on one of hull's edges
+inline static bool isPointOnHull(const Mat &hull, const Mat &point, const double thresh = 0.01)
+{
+    const int sz = hull.rows;
+    for (int k = 0; k < sz; ++k)
+    {
+        const double side = getSide(hull.row(k), hull.row(k == sz - 1 ? 0 : k + 1), point);
+        if (abs(side) < thresh)
+            return true;
+    }
+    return false;
+}
+
+// true if one of hull's edges touches "A-B"
+inline static bool isEdgeOnHull(const Mat &hull, const Mat &ptA, const Mat &ptB, const double thresh = 0.01)
+{
+    const int sz = hull.rows;
+    double prev_side = getSide(ptA, ptB, hull.row(sz - 1));
+    for (int k = 0; k < sz; ++k)
+    {
+        Mat cur = hull.row(k);
+        const double cur_side = getSide(ptA, ptB, cur);
+        if (abs(prev_side) < thresh && abs(cur_side) < thresh)
+            return true;
+        prev_side = cur_side;
+    }
+    return false;
+}
+
+typedef testing::TestWithParam<perf::MatDepth> minEnclosingTriangle_Modes;
+
+TEST_P(minEnclosingTriangle_Modes, accuracy)
+{
+    const int data_type = CV_MAKETYPE(GetParam(), 2);
+    RNG & rng = TS::ptr()->get_rng();
+    for (int ITER = 0; ITER < 20; ++ITER)
+    {
+        SCOPED_TRACE(cv::format("iteration %d", ITER));
+
+        const int NUM = cvtest::randomInt(5, 100);
+        Mat points(NUM, 1, data_type, Scalar::all(0));
+        cvtest::randUni(rng, points, Scalar::all(-100), Scalar::all(100));
+
+        Mat triangle;
+        const double area = cv::minEnclosingTriangle(points, triangle);
+
+        ASSERT_GT(area, 0.0001);
+        ASSERT_EQ(triangle.type(), CV_32FC2);
+        triangle = triangle.reshape(2, 1);
+        ASSERT_EQ(triangle.size(), Size(3, 1));
+
+        Mat hull;
+        cv::convexHull(points, hull);
+        hull.convertTo(hull, CV_32FC2);
+
+        // check that all points are enclosed by triangle sides
+        double commonSide = 0.;
+        bool hasEdgeOnHull = false;
+        for (int i = 0; i < 3; ++i)
+        {
+            SCOPED_TRACE(cv::format("edge %d", i));
+            const int j = (i == 2) ? 0 : i + 1;
+            Mat cur = triangle.col(i);
+            Mat next = triangle.col(j);
+            for (int k = 0; k < points.rows; ++k)
+            {
+                SCOPED_TRACE(cv::format("point %d", k));
+                Mat pt;
+                points.row(k).convertTo(pt, CV_32FC2);
+                const double side = getSide(cur, next, pt);
+                if (abs(side) < 0.01) // point on edge - no need to check
+                    continue;
+                if (commonSide == 0.f) // initial state
+                {
+                    commonSide = side > 0 ? 1.f : -1.f; // only sign matters
+                }
+                else
+                {
+                    // either on the same side or close to zero
+                    EXPECT_EQ(commonSide > 0, side > 0) << commonSide << ", side=" << side;
+                }
+            }
+
+            // triangle mid-points must be on the hull edges
+            const Mat midPoint = (cur + next) / 2;
+            EXPECT_TRUE(isPointOnHull(hull, midPoint));
+
+            // at least one of hull edges must be on tirangle edge
+            hasEdgeOnHull = hasEdgeOnHull || isEdgeOnHull(hull, cur, next);
+        }
+        EXPECT_TRUE(hasEdgeOnHull);
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(/**/,
+    minEnclosingTriangle_Modes,
+        testing::Values(CV_32F, CV_32S));
+
+//==============================================================================
+
+typedef testing::TestWithParam<perf::MatDepth> minEnclosingCircle_Modes;
+
+TEST_P(minEnclosingCircle_Modes, accuracy)
+{
+    const int data_type = CV_MAKETYPE(GetParam(), 2);
+    RNG & rng = TS::ptr()->get_rng();
+    for (int ITER = 0; ITER < 20; ++ITER)
+    {
+        SCOPED_TRACE(cv::format("iteration %d", ITER));
+
+        const int NUM = cvtest::randomInt(5, 100);
+        Mat points(NUM, 1, data_type, Scalar::all(0)), fpoints;
+        cvtest::randUni(rng, points, Scalar::all(-100), Scalar::all(100));
+        points.convertTo(fpoints, CV_32FC2);
+
+        Point2f center {};
+        float radius = 0.f;
+        cv::minEnclosingCircle(points, center, radius);
+
+        vector<int> boundPts; // indexes
+        for (int i = 0; i < NUM; ++i)
+        {
+            Point2f pt = fpoints.at<Point2f>(i);
+            const double dist = cv::norm(pt - center);
+            EXPECT_LE(dist, radius);
+            if (abs(dist - radius) < 0.01)
+                boundPts.push_back(i);
+        }
+        // 2 points on diameter or at least 3 points on circle
+        EXPECT_GE(boundPts.size(), 2llu);
+
+        // 2 points on diameter
+        if (boundPts.size() == 2llu)
+        {
+            const Point2f diff = fpoints.at<Point2f>(boundPts[0]) - fpoints.at<Point2f>(boundPts[1]);
+            EXPECT_NEAR(cv::norm(diff), 2 * radius, 0.001);
+        }
+    }
+}
+
+INSTANTIATE_TEST_CASE_P(/**/,
+    minEnclosingCircle_Modes,
+        testing::Values(CV_32F, CV_32S));
+
+//==============================================================================
+
+TEST(minEnclosingCircle, three_points)
+{
+    RNG & rng = TS::ptr()->get_rng();
+    Point2f center = Point2f(rng.uniform(0.0f, 1000.0f), rng.uniform(0.0f, 1000.0f));;
+    float radius = rng.uniform(0.0f, 500.0f);
+    float angle = (float)rng.uniform(0.0f, (float)(CV_2PI));
+    vector<Point2f> pts;
+    pts.push_back(center + Point2f(radius * cos(angle), radius * sin(angle)));
+    angle += (float)CV_PI;
+    pts.push_back(center + Point2f(radius * cos(angle), radius * sin(angle)));
+    float radius2 = radius * radius;
+    float x = rng.uniform(center.x - radius, center.x + radius);
+    float deltaX = x - center.x;
+    float upperBoundY = sqrt(radius2 - deltaX * deltaX);
+    float y = rng.uniform(center.y - upperBoundY, center.y + upperBoundY);
+    pts.push_back(Point2f(x, y));
+    // Find the minimum area enclosing circle
+    Point2f calcCenter;
+    float calcRadius;
+    cv::minEnclosingCircle(pts, calcCenter, calcRadius);
+    const float delta = (float)cv::norm(calcCenter - center) + abs(calcRadius - radius);
+    EXPECT_LE(delta, 1.f);
+}
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }} // namespace
 /* End of file. */

@@ -9,6 +9,7 @@
 #include <float.h>
 #include <algorithm>
 #include <numeric>
+
 using std::max;
 using std::min;
 
@@ -116,6 +117,185 @@ public:
         return false;
     }
 
+<<<<<<< HEAD
+=======
+
+    virtual Ptr<BackendNode> initTimVX(void* timVXInfo_,
+                                       const std::vector<Ptr<BackendWrapper> > &inputsWrapper,
+                                       const std::vector<Ptr<BackendWrapper> > &outputsWrapper,
+                                       bool isLast) CV_OVERRIDE
+    {
+#ifdef HAVE_TIMVX
+        // tvGraph Initialization.
+        auto timVxInfo = reinterpret_cast<TimVXInfo *>(timVXInfo_);
+        CV_Assert(timVxInfo);
+        Ptr<TimVXGraph> tvGraph = timVxInfo->getGraph();
+        CV_Assert(tvGraph);
+        Ptr<tim::vx::Graph> graph = tvGraph->graph;
+
+        tim::vx::PoolType tvPoolType;
+        tim::vx::RoundType tvRoundType;
+        size_t ksize = kernel_size.size();
+        if (ksize != 2)
+            return Ptr<BackendNode>();
+
+        // type Change from OpenCV to TimVX only MAX and AVG are supported.
+        switch (type) {
+            case MAX: {
+                tvPoolType = tim::vx::PoolType::MAX;
+                break;
+            }
+            case AVE:{
+                tvPoolType = tim::vx::PoolType::AVG;
+                break;
+            }
+            default:
+                CV_Error(Error::StsNotImplemented, "Not implemented Pooling type in TimVX Backend.");
+        }
+
+        // Padding Type
+        tim::vx::PadType tvPadType;
+        if (padMode.empty())
+        {
+            tvPadType = tim::vx::PadType::AUTO; // TODO! check the padding type.
+        }
+        else if(padMode == "VALID")
+        {
+            tvPadType = tim::vx::PadType::VALID;
+        }
+        else if (padMode == "SAME")
+        {
+            tvPadType = tim::vx::PadType::SAME;
+        }
+        else
+        {
+            CV_Error(Error::StsError, "Unsupported padding mode in TimVXBackend!");
+        }
+
+        if (ceilMode)
+            tvRoundType = tim::vx::RoundType::CEILING;
+        else
+            tvRoundType = tim::vx::RoundType::FLOOR;
+
+        auto input = inputsWrapper[0];
+        std::vector<int> inputsIndex;
+        std::vector<int> outputsIndex;
+
+        // input Tensor
+        auto inputWrapper = inputsWrapper[0].dynamicCast<TimVXBackendWrapper>();
+        int input_index, output_index;
+
+        if (inputWrapper->isTensor())
+        {
+            input_index = tvGraph->getTensorIndex(inputWrapper->getTensor());
+            if (input_index == -1)
+            {
+                // Copy To New inputWrapper
+                Mat tmp = inputWrapper->getMat();
+                inputWrapper = Ptr<TimVXBackendWrapper>(new TimVXBackendWrapper(tmp));
+            }
+        }
+
+        if (!inputWrapper->isTensor())
+        {
+            Ptr<tim::vx::Quantization> tvInputQuant = Ptr<tim::vx::Quantization>(
+                    new tim::vx::Quantization(tim::vx::QuantType::ASYMMETRIC, input_sc, input_zp));
+            inputWrapper->createTensor(graph,tim::vx::TensorAttribute::INPUT, tvInputQuant);
+            input_index = tvGraph->addWrapper(inputWrapper);
+        }
+        inputsIndex.push_back(input_index);
+
+        // Output tensor
+        CV_Assert(outputsWrapper.size() == 1);
+        auto outputWrapper = outputsWrapper[0].dynamicCast<TimVXBackendWrapper>();
+        Ptr<tim::vx::Quantization> outputQuant = Ptr<tim::vx::Quantization>(
+                new tim::vx::Quantization(tim::vx::QuantType::ASYMMETRIC, output_sc, output_zp));
+
+        if (isLast)
+        {
+            auto shapeType = getShapeTypeFromMat(outputWrapper->getMat());
+            // For Graph Output tensor, we need to set tensor shape before createTensor().
+            outputWrapper->setTensorShape(shapeType);
+            outputWrapper->createTensor(graph, tim::vx::TensorAttribute::OUTPUT, outputQuant);
+        }
+        else
+        {
+            outputWrapper->createTensor(graph, tim::vx::TensorAttribute::TRANSIENT, outputQuant);
+        }
+
+        output_index = tvGraph->addWrapper(outputWrapper);
+        outputsIndex.push_back(output_index);
+        std::shared_ptr<tim::vx::Operation> tvPool;
+
+        if (tvPadType == tim::vx::PadType::AUTO)
+        {
+            tvPool = graph->CreateOperation<tim::vx::ops::Pool2d>( tvPoolType,
+                       std::array<uint32_t, 4>({(uint32_t) pads_begin[1], (uint32_t) pads_end[1],
+                                                (uint32_t) pads_begin[0], (uint32_t) pads_end[0]}),
+                       std::array<uint32_t, 2>({(uint32_t)kernel_size[1], (uint32_t)kernel_size[0]}),
+                       std::array<uint32_t, 2>({(uint32_t)strides[1], (uint32_t)strides[0]}),
+                       tvRoundType);
+        }
+        else
+        {
+            tvPool = graph->CreateOperation<tim::vx::ops::Pool2d>(
+                    tvPoolType, tvPadType,
+                    std::array<uint32_t, 2>({(uint32_t)kernel_size[1], (uint32_t)kernel_size[0]}),
+                    std::array<uint32_t, 2>({(uint32_t)strides[1], (uint32_t)strides[0]}),
+                    tvRoundType);
+        }
+
+        Ptr<TimVXBackendNode> tvBackendNode = new TimVXBackendNode(tvGraph, tvPool, inputsIndex, outputsIndex);
+
+        return tvBackendNode;
+#endif  // HAVE_TIMVX
+        return Ptr<BackendNode>();
+    }
+
+#ifdef HAVE_DNN_NGRAPH
+    virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> > &inputs,
+                                        const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
+    {
+        auto input = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
+
+        input = ngraphDequantize(input, input_sc, input_zp);
+
+        ov::op::PadType pad_type = ov::op::PadType::EXPLICIT;
+        if (!padMode.empty())
+            pad_type = padMode == "VALID" ? ov::op::PadType::VALID : ov::op::PadType::SAME_UPPER;
+
+        auto rounding_type = ceilMode ? ov::op::RoundingType::CEIL : ov::op::RoundingType::FLOOR;
+        ov::Output<ov::Node> pool;
+        if (type == MAX) {
+            pool = std::make_shared<ov::op::v1::MaxPool>(input, ov::Strides(strides),
+                        ov::Shape(pads_begin), ov::Shape(pads_end), ov::Shape(kernel_size),
+                        rounding_type, pad_type);
+        } else if (type == AVE) {
+            pool = std::make_shared<ov::op::v1::AvgPool>(input, ov::Strides(strides),
+                        ov::Shape(pads_begin), ov::Shape(pads_end), ov::Shape(kernel_size),
+                        !avePoolPaddedArea, rounding_type, pad_type);
+        } else if (type == SUM) {
+            ov::Shape inpShape = input.get_shape();
+            CV_Assert(inpShape.size() == 2 + kernel_size.size());
+            std::vector<int64_t> axes;
+            for (size_t i = 0; i < kernel_size.size(); i++)
+            {
+                if (inpShape[2 + i] == kernel_size[i])
+                    axes.push_back(2 + i);
+            }
+            auto reduction_axes = std::make_shared<ov::op::v0::Constant>(ov::element::i64, ov::Shape{axes.size()}, axes);
+            pool = std::make_shared<ov::op::v1::ReduceSum>(input, reduction_axes, true);
+        } else {
+            CV_Error(Error::StsNotImplemented, format("INT8 Pooling type: %d", type));
+        }
+
+        pool = ngraphQuantize(pool, output_sc, output_zp);
+
+        return new InfEngineNgraphNode(pool);
+    }
+#endif  // HAVE_DNN_NGRAPH
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     void forward(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr, OutputArrayOfArrays internals_arr) CV_OVERRIDE
     {
         CV_TRACE_FUNCTION();

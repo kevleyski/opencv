@@ -66,6 +66,60 @@ namespace dnn
 
 void sliceRangesFromShape(const MatShape& inpShape, int& axis, std::vector<std::vector<cv::Range> >& sliceRanges)
 {
+<<<<<<< HEAD
+=======
+    Range range = input_range;
+
+    if (range.start != n){
+        range.start = std::min(std::max(range.start, -n), n - 1);
+        if (range.start < 0)
+        {
+            range.start += n;
+        }
+    }
+
+    range.end = std::min(std::max(range.end, -n), n);
+    if (range.end < 0)
+    {
+        range.end += n;
+    }
+
+    return range;
+}
+
+// TODO: support cv::Range with steps and negative steps to get rid of this transformation
+void tranformForNegSteps(const MatShape& inpShape, std::vector<std::vector<Range> >& sliceRanges, std::vector<std::vector<int> >& sliceSteps)
+{
+    // in case of negative steps,
+    // x of shape [5, 10], x[5:0:-1, 10:1:-3] <=> np.flip(x[1:5:1, 2:10:3], aixs=(0, 1))
+    // new_end_i = start_i + 1 > dim_i ? dim_i : start_i + 1
+    // new_start_i = end + 1
+    // new_start_i = new_end_i - 1 - ((new_end_i - 1 - new_start_i) / abs(step_i)) * abs(step_i)
+    int start, end, new_start, new_end, step;
+    for (int i = 0; i < sliceSteps[0].size(); ++i)
+    {
+        step = sliceSteps[0][i];
+        if (step > 0)
+            continue;
+
+        step = -step;
+        start = sliceRanges[0][i].start;
+        end = sliceRanges[0][i].end;
+        new_end = start >= inpShape[i] ? inpShape[i] : start + 1;
+        new_start = end + 1;
+        new_start = new_end - 1 - ((new_end - 1 - new_start) / step) * step;
+
+        sliceSteps[0][i] = step;
+        sliceRanges[0][i].start = new_start;
+        sliceRanges[0][i].end = new_end;
+    }
+}
+
+std::vector<std::vector<cv::Range> > finalizeSliceRange(const MatShape& inpShape, int& axis,
+                                                        const std::vector<std::vector<cv::Range> >& inputSliceRanges)
+{
+    std::vector<std::vector<cv::Range> > sliceRanges = inputSliceRanges;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     CV_Assert(inpShape.size() > 0);
     bool axisNeg = (axis < 0);
     axis = (axis + static_cast<int>(inpShape.size())) % inpShape.size();
@@ -551,7 +605,9 @@ public:
         {
             for (size_t i = 0; i < outputs.size(); i++)
             {
-                inpMat(finalSliceRanges[i]).copyTo(outputs[i]);
+                if (finalSliceRanges[i][0].start != finalSliceRanges[i][0].end){
+                    inpMat(finalSliceRanges[i]).copyTo(outputs[i]);
+                }
             }
         }
         else
@@ -562,7 +618,7 @@ public:
             {
                 std::vector<int> inpIdx(dimsNum, 0);
                 std::vector<int> outIdx(dimsNum, 0);
-                if (inpMat.type() == CV_16S)
+                if (inpMat.type() == CV_16F)
                     getSliceRecursive<int16_t>(inpMat, inpIdx, finalSliceRanges[i], sliceSteps[i], 0, dimsNum, outputs[i], outIdx);
                 else if (inpMat.type() == CV_8S)
                     getSliceRecursive<int8_t>(inpMat, inpIdx, finalSliceRanges[i], sliceSteps[i], 0, dimsNum, outputs[i], outIdx);
@@ -646,14 +702,14 @@ public:
             dims.push_back(finalSliceRanges[0][i].end);
         }
 
-        auto lower_bounds = std::make_shared<ngraph::op::Constant>(ngraph::element::i64,
-                                             ngraph::Shape{offsets.size()}, offsets.data());
-        auto upper_bounds = std::make_shared<ngraph::op::Constant>(ngraph::element::i64,
-                                             ngraph::Shape{dims.size()}, dims.data());
-        auto strides = std::make_shared<ngraph::op::Constant>(ngraph::element::i64,
-                                        ngraph::Shape{dims.size()}, std::vector<int64_t>((int64_t)dims.size(), 1));
+        auto lower_bounds = std::make_shared<ov::op::v0::Constant>(ov::element::i64,
+                                             ov::Shape{offsets.size()}, offsets.data());
+        auto upper_bounds = std::make_shared<ov::op::v0::Constant>(ov::element::i64,
+                                             ov::Shape{dims.size()}, dims.data());
+        auto strides = std::make_shared<ov::op::v0::Constant>(ov::element::i64,
+                                        ov::Shape{dims.size()}, std::vector<int64_t>((int64_t)dims.size(), 1));
 
-        auto slice = std::make_shared<ngraph::op::v1::StridedSlice>(ieInpNode,
+        auto slice = std::make_shared<ov::op::v1::StridedSlice>(ieInpNode,
                                       lower_bounds, upper_bounds, strides, std::vector<int64_t>{}, std::vector<int64_t>{});
 
         return Ptr<BackendNode>(new InfEngineNgraphNode(slice));

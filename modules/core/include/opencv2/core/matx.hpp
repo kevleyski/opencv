@@ -61,8 +61,6 @@ namespace cv
 //! @addtogroup core_basic
 //! @{
 
-////////////////////////////// Small Matrix ///////////////////////////
-
 //! @cond IGNORED
 // FIXIT Remove this (especially CV_EXPORTS modifier)
 struct CV_EXPORTS Matx_AddOp { Matx_AddOp() {} Matx_AddOp(const Matx_AddOp&) {} };
@@ -73,6 +71,8 @@ struct CV_EXPORTS Matx_DivOp { Matx_DivOp() {} Matx_DivOp(const Matx_DivOp&) {} 
 struct CV_EXPORTS Matx_MatMulOp { Matx_MatMulOp() {} Matx_MatMulOp(const Matx_MatMulOp&) {} };
 struct CV_EXPORTS Matx_TOp { Matx_TOp() {} Matx_TOp(const Matx_TOp&) {} };
 //! @endcond
+
+////////////////////////////// Small Matrix ///////////////////////////
 
 /** @brief Template class for small matrices whose type and size are known at compilation time
 
@@ -256,56 +256,83 @@ typedef Matx<double, 4, 4> Matx44d;
 typedef Matx<float, 6, 6> Matx66f;
 typedef Matx<double, 6, 6> Matx66d;
 
-/*!
-  traits
-*/
-template<typename _Tp, int m, int n> class DataType< Matx<_Tp, m, n> >
-{
-public:
-    typedef Matx<_Tp, m, n>                               value_type;
-    typedef Matx<typename DataType<_Tp>::work_type, m, n> work_type;
-    typedef _Tp                                           channel_type;
-    typedef value_type                                    vec_type;
+template<typename _Tp, int m> static inline
+double determinant(const Matx<_Tp, m, m>& a);
 
-    enum { generic_type = 0,
-           channels     = m * n,
-           fmt          = traits::SafeFmt<channel_type>::fmt + ((channels - 1) << 8)
-#ifdef OPENCV_TRAITS_ENABLE_DEPRECATED
-           ,depth        = DataType<channel_type>::depth
-           ,type         = CV_MAKETYPE(depth, channels)
-#endif
-         };
-};
+template<typename _Tp, int m, int n> static inline
+double trace(const Matx<_Tp, m, n>& a);
 
-namespace traits {
-template<typename _Tp, int m, int n>
-struct Depth< Matx<_Tp, m, n> > { enum { value = Depth<_Tp>::value }; };
-template<typename _Tp, int m, int n>
-struct Type< Matx<_Tp, m, n> > { enum { value = CV_MAKETYPE(Depth<_Tp>::value, n*m) }; };
-} // namespace
+template<typename _Tp, int m, int n> static inline
+double norm(const Matx<_Tp, m, n>& M);
 
+template<typename _Tp, int m, int n> static inline
+double norm(const Matx<_Tp, m, n>& M, int normType);
 
-/** @brief  Comma-separated Matrix Initializer
-*/
-template<typename _Tp, int m, int n> class MatxCommaInitializer
-{
-public:
-    MatxCommaInitializer(Matx<_Tp, m, n>* _mtx);
-    template<typename T2> MatxCommaInitializer<_Tp, m, n>& operator , (T2 val);
-    Matx<_Tp, m, n> operator *() const;
+template<typename _Tp1, typename _Tp2, int m, int n> static inline
+Matx<_Tp1, m, n>& operator += (Matx<_Tp1, m, n>& a, const Matx<_Tp2, m, n>& b);
 
-    Matx<_Tp, m, n>* dst;
-    int idx;
-};
+template<typename _Tp1, typename _Tp2, int m, int n> static inline
+Matx<_Tp1, m, n>& operator -= (Matx<_Tp1, m, n>& a, const Matx<_Tp2, m, n>& b);
 
-/*
- Utility methods
-*/
-template<typename _Tp, int m> static double determinant(const Matx<_Tp, m, m>& a);
-template<typename _Tp, int m, int n> static double trace(const Matx<_Tp, m, n>& a);
-template<typename _Tp, int m, int n> static double norm(const Matx<_Tp, m, n>& M);
-template<typename _Tp, int m, int n> static double norm(const Matx<_Tp, m, n>& M, int normType);
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator + (const Matx<_Tp, m, n>& a, const Matx<_Tp, m, n>& b);
 
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator - (const Matx<_Tp, m, n>& a, const Matx<_Tp, m, n>& b);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n>& operator *= (Matx<_Tp, m, n>& a, int alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n>& operator *= (Matx<_Tp, m, n>& a, float alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n>& operator *= (Matx<_Tp, m, n>& a, double alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator * (const Matx<_Tp, m, n>& a, int alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator * (const Matx<_Tp, m, n>& a, float alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator * (const Matx<_Tp, m, n>& a, double alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator * (int alpha, const Matx<_Tp, m, n>& a);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator * (float alpha, const Matx<_Tp, m, n>& a);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator * (double alpha, const Matx<_Tp, m, n>& a);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n>& operator /= (Matx<_Tp, m, n>& a, float alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n>& operator /= (Matx<_Tp, m, n>& a, double alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator / (const Matx<_Tp, m, n>& a, float alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator / (const Matx<_Tp, m, n>& a, double alpha);
+
+template<typename _Tp, int m, int n> static inline
+Matx<_Tp, m, n> operator - (const Matx<_Tp, m, n>& a);
+
+template<typename _Tp, int m, int n, int l> static inline
+Matx<_Tp, m, n> operator * (const Matx<_Tp, m, l>& a, const Matx<_Tp, l, n>& b);
+
+template<typename _Tp, int m, int n> static inline
+Vec<_Tp, m> operator * (const Matx<_Tp, m, n>& a, const Vec<_Tp, n>& b);
+
+template<typename _Tp, int m, int n> static inline
+bool operator == (const Matx<_Tp, m, n>& a, const Matx<_Tp, m, n>& b);
+
+template<typename _Tp, int m, int n> static inline
+bool operator != (const Matx<_Tp, m, n>& a, const Matx<_Tp, m, n>& b);
 
 
 /////////////////////// Vec (used as element of multi-channel images /////////////////////
@@ -372,6 +399,15 @@ public:
     Vec(const Vec<_Tp, cn>& v);
 
     static Vec all(_Tp alpha);
+<<<<<<< HEAD
+=======
+    static Vec ones();
+    static Vec randn(_Tp a, _Tp b);
+    static Vec randu(_Tp a, _Tp b);
+    static Vec zeros();
+    static Vec diag(_Tp alpha) = delete;
+    static Vec eye() = delete;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     //! per-element multiplication
     Vec mul(const Vec<_Tp, cn>& v) const;
@@ -394,9 +430,7 @@ public:
     const _Tp& operator ()(int i) const;
     _Tp& operator ()(int i);
 
-#ifdef CV_CXX11
     Vec<_Tp, cn>& operator=(const Vec<_Tp, cn>& rhs) = default;
-#endif
 
     Vec(const Matx<_Tp, cn, 1>& a, const Matx<_Tp, cn, 1>& b, Matx_AddOp);
     Vec(const Matx<_Tp, cn, 1>& a, const Matx<_Tp, cn, 1>& b, Matx_SubOp);
@@ -435,50 +469,78 @@ typedef Vec<double, 4> Vec4d;
 typedef Vec<double, 6> Vec6d;
 /** @} */
 
-/*!
-  traits
-*/
-template<typename _Tp, int cn> class DataType< Vec<_Tp, cn> >
-{
-public:
-    typedef Vec<_Tp, cn>                               value_type;
-    typedef Vec<typename DataType<_Tp>::work_type, cn> work_type;
-    typedef _Tp                                        channel_type;
-    typedef value_type                                 vec_type;
+template<typename _Tp, int cn> inline
+Vec<_Tp, cn> normalize(const Vec<_Tp, cn>& v);
 
-    enum { generic_type = 0,
-           channels     = cn,
-           fmt          = DataType<channel_type>::fmt + ((channels - 1) << 8),
-#ifdef OPENCV_TRAITS_ENABLE_DEPRECATED
-           depth        = DataType<channel_type>::depth,
-           type         = CV_MAKETYPE(depth, channels),
-#endif
-           _dummy_enum_finalizer = 0
-         };
-};
+template<typename _Tp1, typename _Tp2, int cn> static inline
+Vec<_Tp1, cn>& operator += (Vec<_Tp1, cn>& a, const Vec<_Tp2, cn>& b);
 
-namespace traits {
-template<typename _Tp, int cn>
-struct Depth< Vec<_Tp, cn> > { enum { value = Depth<_Tp>::value }; };
-template<typename _Tp, int cn>
-struct Type< Vec<_Tp, cn> > { enum { value = CV_MAKETYPE(Depth<_Tp>::value, cn) }; };
-} // namespace
+template<typename _Tp1, typename _Tp2, int cn> static inline
+Vec<_Tp1, cn>& operator -= (Vec<_Tp1, cn>& a, const Vec<_Tp2, cn>& b);
 
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator + (const Vec<_Tp, cn>& a, const Vec<_Tp, cn>& b);
 
-/** @brief  Comma-separated Vec Initializer
-*/
-template<typename _Tp, int m> class VecCommaInitializer : public MatxCommaInitializer<_Tp, m, 1>
-{
-public:
-    VecCommaInitializer(Vec<_Tp, m>* _vec);
-    template<typename T2> VecCommaInitializer<_Tp, m>& operator , (T2 val);
-    Vec<_Tp, m> operator *() const;
-};
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator - (const Vec<_Tp, cn>& a, const Vec<_Tp, cn>& b);
 
-template<typename _Tp, int cn> static Vec<_Tp, cn> normalize(const Vec<_Tp, cn>& v);
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn>& operator *= (Vec<_Tp, cn>& a, int alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn>& operator *= (Vec<_Tp, cn>& a, float alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn>& operator *= (Vec<_Tp, cn>& a, double alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn>& operator /= (Vec<_Tp, cn>& a, int alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn>& operator /= (Vec<_Tp, cn>& a, float alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn>& operator /= (Vec<_Tp, cn>& a, double alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator * (const Vec<_Tp, cn>& a, int alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator * (int alpha, const Vec<_Tp, cn>& a);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator * (const Vec<_Tp, cn>& a, float alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator * (float alpha, const Vec<_Tp, cn>& a);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator * (const Vec<_Tp, cn>& a, double alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator * (double alpha, const Vec<_Tp, cn>& a);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator / (const Vec<_Tp, cn>& a, int alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator / (const Vec<_Tp, cn>& a, float alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator / (const Vec<_Tp, cn>& a, double alpha);
+
+template<typename _Tp, int cn> static inline
+Vec<_Tp, cn> operator - (const Vec<_Tp, cn>& a);
+
+template<typename _Tp> inline
+Vec<_Tp, 4> operator * (const Vec<_Tp, 4>& v1, const Vec<_Tp, 4>& v2);
+
+template<typename _Tp> inline
+Vec<_Tp, 4>& operator *= (Vec<_Tp, 4>& v1, const Vec<_Tp, 4>& v2);
 
 //! @} core_basic
 
+<<<<<<< HEAD
 //! @cond IGNORED
 
 ///////////////////////////////////// helper classes /////////////////////////////////////
@@ -1503,6 +1565,10 @@ template<typename _Tp> inline Vec<_Tp, 4>& operator *= (Vec<_Tp, 4>& v1, const V
 
 //! @}
 
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 } // cv
+
+#include "opencv2/core/matx.inl.hpp"
 
 #endif // OPENCV_CORE_MATX_HPP

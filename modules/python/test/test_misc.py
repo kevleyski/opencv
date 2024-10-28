@@ -287,8 +287,13 @@ class Arguments(NewOpenCVTests):
     def test_parse_to_float_convertible(self):
         try_to_convert = partial(self._try_to_convert, cv.utils.dumpFloat)
         min_float, max_float = get_limits(ctypes.c_float)
+<<<<<<< HEAD
         for convertible in (2, -13, 1.24, float(32), np.float(32.45), np.double(12.23),
                             np.float32(-12.3), np.float64(3.22), np.float_(-1.5), min_float,
+=======
+        for convertible in (2, -13, 1.24, np.float32(32.45), float(32), np.double(12.23),
+                            np.float32(-12.3), np.float64(3.22), min_float,
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                             max_float, np.inf, -np.inf, float('Inf'), -float('Inf'),
                             np.double(np.inf), np.double(-np.inf), np.double(float('Inf')),
                             np.double(-float('Inf'))):
@@ -331,8 +336,13 @@ class Arguments(NewOpenCVTests):
         try_to_convert = partial(self._try_to_convert, cv.utils.dumpDouble)
         min_float, max_float = get_limits(ctypes.c_float)
         min_double, max_double = get_limits(ctypes.c_double)
+<<<<<<< HEAD
         for convertible in (2, -13, 1.24, np.float(32.45), float(2), np.double(12.23),
                             np.float32(-12.3), np.float64(3.22), np.float_(-1.5), min_float,
+=======
+        for convertible in (2, -13, 1.24, np.float32(32.45), float(2), np.double(12.23),
+                            np.float32(-12.3), np.float64(3.22), min_float,
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                             max_float, min_double, max_double, np.inf, -np.inf, float('Inf'),
                             -float('Inf'), np.double(np.inf), np.double(-np.inf),
                             np.double(float('Inf')), np.double(-float('Inf'))):
@@ -425,6 +435,38 @@ class Arguments(NewOpenCVTests):
             self.assertEqual(expected, actual,
                              msg=get_conversion_error_msg(convertible, expected, actual))
 
+<<<<<<< HEAD
+=======
+
+    def test_wrap_rotated_rect(self):
+        center = (34.5, 52.)
+        size = (565.0, 140.0)
+        angle = -177.5
+        rect1 = cv.RotatedRect(center, size, angle)
+        self.assertEqual(rect1.center, center)
+        self.assertEqual(rect1.size, size)
+        self.assertEqual(rect1.angle, angle)
+
+        pts = [[ 319.7845, -5.6109037],
+               [ 313.6778, 134.25586],
+               [-250.78448, 109.6109],
+               [-244.6778, -30.25586]]
+        self.assertLess(np.max(np.abs(rect1.points() - pts)), 1e-4)
+
+        rect2 = cv.RotatedRect(pts[0], pts[1], pts[2])
+        _, inter_pts = cv.rotatedRectangleIntersection(rect1, rect2)
+        self.assertLess(np.max(np.abs(inter_pts.reshape(-1, 2) - pts)), 1e-4)
+
+    def test_result_rotated_rect_boundingRect2f(self):
+        center = (0, 0)
+        size = (10, 10)
+        angle = 0
+        gold_box = (-5.0, -5.0, 10.0, 10.0)
+        rect1 = cv.RotatedRect(center, size, angle)
+        bbox = rect1.boundingRect2f()
+        self.assertEqual(gold_box, bbox)
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     def test_parse_to_rotated_rect_not_convertible(self):
         for not_convertible in ([], (), np.array([]), (123, (45, 34), 1), {1: 2, 3: 4}, 123,
                                 np.array([[123, 123, 14], [1, 3], 56], dtype=object), '123'):
@@ -619,7 +661,7 @@ class CanUsePurePythonModuleFunction(NewOpenCVTests):
 class SamplesFindFile(NewOpenCVTests):
 
     def test_ExistedFile(self):
-        res = cv.samples.findFile('lena.jpg', False)
+        res = cv.samples.findFile('HappyFish.jpg', False)
         self.assertNotEqual(res, '')
 
     def test_MissingFile(self):
@@ -633,6 +675,10 @@ class SamplesFindFile(NewOpenCVTests):
         except cv.error as _e:
             pass
 
+class AlgorithmImplHit(NewOpenCVTests):
+    def test_callable(self):
+        res = cv.getDefaultAlgorithmHint()
+        self.assertTrue(res is not None)
 
 if __name__ == '__main__':
     NewOpenCVTests.bootstrap()

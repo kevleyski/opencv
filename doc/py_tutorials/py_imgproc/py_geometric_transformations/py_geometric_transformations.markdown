@@ -158,6 +158,3 @@ Additional Resources
 --------------------
 
 -#  "Computer Vision: Algorithms and Applications", Richard Szeliski
-
-Exercises
----------

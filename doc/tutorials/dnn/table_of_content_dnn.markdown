@@ -4,7 +4,11 @@ Deep Neural Networks (dnn module) {#tutorial_table_of_content_dnn}
 -   @subpage tutorial_dnn_googlenet
 -   @subpage tutorial_dnn_halide
 -   @subpage tutorial_dnn_halide_scheduling
+<<<<<<< HEAD
 -   @subpage tutorial_dnn_android
+=======
+-   @subpage tutorial_dnn_openvino
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 -   @subpage tutorial_dnn_yolo
 -   @subpage tutorial_dnn_javascript
 -   @subpage tutorial_dnn_custom_layers

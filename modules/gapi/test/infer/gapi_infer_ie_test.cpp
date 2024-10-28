@@ -6,7 +6,7 @@
 
 #include "../test_precomp.hpp"
 
-#ifdef HAVE_INF_ENGINE
+#if defined HAVE_INF_ENGINE && INF_ENGINE_RELEASE < 2023010000
 
 #include <stdexcept>
 #include <mutex>
@@ -1433,7 +1433,13 @@ TEST(Infer, SetInvalidNumberOfRequests)
 
 TEST(Infer, TestStreamingInfer)
 {
+<<<<<<< HEAD
     initTestDataPath();
+=======
+    if (cvtest::skipUnstableTests)
+        throw SkipTestException("Skip InferROI.TestStreamingInfer as it hangs sporadically");
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     initDLDTDataPath();
 
     std::string filepath = findDataFile("cv/video/768x576.avi");
@@ -1501,7 +1507,13 @@ TEST(Infer, TestStreamingInfer)
 
 TEST(InferROI, TestStreamingInfer)
 {
+<<<<<<< HEAD
     initTestDataPath();
+=======
+    if (cvtest::skipUnstableTests)
+        throw SkipTestException("Skip InferROI.TestStreamingInfer as it hangs sporadically");
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     initDLDTDataPath();
 
     std::string filepath = findDataFile("cv/video/768x576.avi");
@@ -1580,7 +1592,13 @@ TEST(InferROI, TestStreamingInfer)
 
 TEST(InferList, TestStreamingInfer)
 {
+<<<<<<< HEAD
     initTestDataPath();
+=======
+    if (cvtest::skipUnstableTests)
+        throw SkipTestException("Skip InferList.TestStreamingInfer as it hangs sporadically");
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     initDLDTDataPath();
 
     std::string filepath = findDataFile("cv/video/768x576.avi");
@@ -1670,7 +1688,13 @@ TEST(InferList, TestStreamingInfer)
 
 TEST(Infer2, TestStreamingInfer)
 {
+<<<<<<< HEAD
     initTestDataPath();
+=======
+    if (cvtest::skipUnstableTests)
+        throw SkipTestException("Skip InferROI.TestStreamingInfer as it hangs sporadically");
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     initDLDTDataPath();
 
     std::string filepath = findDataFile("cv/video/768x576.avi");

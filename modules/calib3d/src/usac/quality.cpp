@@ -48,10 +48,23 @@ public:
                 break;
         }
         // score is negative inlier number! If less then better
+<<<<<<< HEAD
         return Score(inlier_number, -static_cast<double>(inlier_number));
+=======
+        return {inlier_number, -static_cast<float>(inlier_number)};
     }
 
-    void setBestScore(double best_score_) override {
+    Score getScore (const std::vector<float> &errors) const override {
+        int inlier_number = 0;
+        for (int point = 0; point < points_size; point++)
+            if (errors[point] < threshold)
+                inlier_number++;
+        // score is negative inlier number! If less then better
+        return {inlier_number, -static_cast<float>(inlier_number)};
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
+    }
+
+    void setBestScore(float best_score_) override {
         if (best_score > best_score_) best_score = best_score_;
     }
 
@@ -77,6 +90,7 @@ class MsacQualityImpl : public MsacQuality {
 protected:
     const Ptr<Error> error;
     const int points_size;
+<<<<<<< HEAD
     const double threshold;
     double best_score, norm_thr, one_over_thr;
 public:
@@ -86,10 +100,20 @@ public:
         norm_thr = threshold*9/4;
         one_over_thr = 1 / norm_thr;
     }
+=======
+    const double threshold, k_msac;
+    const float norm_thr, one_over_thr;
+    float best_score;
+public:
+    MsacQualityImpl (int points_size_, double threshold_, const Ptr<Error> &error_, double k_msac_)
+            : error (error_), points_size (points_size_), threshold (threshold_), k_msac(k_msac_),
+              norm_thr(static_cast<float>(threshold*k_msac)), one_over_thr(1.f/norm_thr),
+              best_score(std::numeric_limits<float>::max()) {}
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     inline Score getScore (const Mat &model) const override {
         error->setModelParameters(model);
-        double err, sum_errors = 0;
+        float err, sum_errors = 0;
         int inlier_number = 0;
         for (int point = 0; point < points_size; point++) {
             err = error->getError(point);
@@ -101,10 +125,28 @@ public:
             if (sum_errors - points_size + point > best_score)
                 break;
         }
+<<<<<<< HEAD
         return Score(inlier_number, sum_errors);
+=======
+        return {inlier_number, sum_errors};
     }
 
-    void setBestScore(double best_score_) override {
+    Score getScore (const std::vector<float> &errors) const override {
+        float sum_errors = 0;
+        int inlier_number = 0;
+        for (int point = 0; point < points_size; point++) {
+            const auto err = errors[point];
+            if (err < norm_thr) {
+                sum_errors -= (1 - err * one_over_thr);
+                if (err < threshold)
+                    inlier_number++;
+            }
+        }
+        return {inlier_number, sum_errors};
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
+    }
+
+    void setBestScore(float best_score_) override {
         if (best_score > best_score_) best_score = best_score_;
     }
 
@@ -244,7 +286,11 @@ public:
             if (total_loss - (points_size - point_idx) > previous_best_loss)
                 break;
         }
+<<<<<<< HEAD
         return Score(num_tentative_inliers, total_loss);
+=======
+        return {num_tentative_inliers, (float)total_loss};
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 
     Score getScore (const std::vector<float> &errors) const override {
@@ -266,10 +312,14 @@ public:
             if (total_loss - (points_size - point_idx) > previous_best_loss)
                 break;
         }
+<<<<<<< HEAD
         return Score(num_tentative_inliers, total_loss);
+=======
+        return {num_tentative_inliers, (float)total_loss};
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 
-    void setBestScore (double best_loss) override {
+    void setBestScore (float best_loss) override {
         if (previous_best_loss > best_loss) previous_best_loss = best_loss;
     }
 
@@ -315,7 +365,7 @@ public:
         return Score(inlier_number, Utils::findMedian (errors));
     }
 
-    void setBestScore (double /*best_score*/) override {}
+    void setBestScore (float /*best_score*/) override {}
 
     int getPointsSize () const override { return points_size; }
     int getInliers (const Mat &model, std::vector<int> &inliers) const override
@@ -456,6 +506,7 @@ public:
                     break;
             } else errors[points_random_pool[random_pool_idx-1]] = (float)error;
         }
+<<<<<<< HEAD
         last_model_is_good = tested_point == points_size;
 
         // increase number of samples processed by current test
@@ -497,6 +548,15 @@ public:
                  * δi+1 = δˆ, i := i + 1)
                  */
                 createTest(current_epsilon, delta_estimated);
+=======
+        if (last_model_is_good && do_sprt) {
+            out_score.inlier_number = tested_inliers;
+            if (score_type == ScoreMethod::SCORE_METHOD_MSAC)
+                out_score.score = static_cast<float>(sum_errors);
+            else if (score_type == ScoreMethod::SCORE_METHOD_RANSAC)
+                out_score.score = -static_cast<float>(tested_inliers);
+            else out_score = quality->getScore(errors);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
         return last_model_is_good;
     }

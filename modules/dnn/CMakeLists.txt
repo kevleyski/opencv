@@ -8,8 +8,17 @@ endif()
 
 set(the_description "Deep neural network module. It allows to load models from different frameworks and to make forward pass")
 
+<<<<<<< HEAD
 ocv_add_dispatched_file_force_all("layers/layers_common" AVX AVX2 AVX512_SKX RVV)
 ocv_add_dispatched_file_force_all("int8layers/layers_common" AVX2 AVX512_SKX)
+=======
+ocv_add_dispatched_file_force_all("layers/layers_common" AVX AVX2 AVX512_SKX RVV LASX)
+ocv_add_dispatched_file_force_all("int8layers/layers_common" AVX2 AVX512_SKX RVV LASX)
+ocv_add_dispatched_file_force_all("layers/cpu_kernels/conv_block" AVX AVX2 NEON NEON_FP16)
+ocv_add_dispatched_file_force_all("layers/cpu_kernels/conv_depthwise" AVX AVX2 RVV LASX)
+ocv_add_dispatched_file_force_all("layers/cpu_kernels/conv_winograd_f63" AVX AVX2 NEON_FP16)
+ocv_add_dispatched_file_force_all("layers/cpu_kernels/fast_gemm_kernels" AVX AVX2 NEON LASX)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 ocv_add_module(dnn opencv_core opencv_imgproc WRAP python java objc js)
 
@@ -125,6 +134,12 @@ if(OPENCV_DNN_CUDA AND HAVE_CUDA AND HAVE_CUBLAS AND HAVE_CUDNN)
     endif()
   endforeach()
   unset(CC_LIST)
+  if(ENABLE_CUDA_FIRST_CLASS_LANGUAGE)
+    list(APPEND libs ${CUDNN_LIBRARIES} CUDA::cublas${CUDA_LIB_EXT})
+    if(NOT CUDA_VERSION VERSION_LESS 10.1)
+      list(APPEND libs CUDA::cublasLt${CUDA_LIB_EXT})
+    endif()
+  endif()
 else()
   set(sources_options ${sources_options} EXCLUDE_CUDA)
 endif()
@@ -143,12 +158,36 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif()
 
 set(dnn_runtime_libs "")
+<<<<<<< HEAD
 if(INF_ENGINE_TARGET)
   set(use_nn_builder OFF)
   if(TARGET inference_engine_nn_builder OR # custom imported target
      TARGET IE::inference_engine_nn_builder OR # default imported target via InferenceEngineConfig.cmake
      INF_ENGINE_RELEASE VERSION_LESS "2020000000") # compatibility with older versions on IE
     set(use_nn_builder ON)
+=======
+
+file(GLOB_RECURSE dnn_srcs
+     "${CMAKE_CURRENT_LIST_DIR}/src/*.cpp"
+)
+file(GLOB_RECURSE dnn_int_hdrs
+     "${CMAKE_CURRENT_LIST_DIR}/src/*.hpp"
+     "${CMAKE_CURRENT_LIST_DIR}/src/*.h"
+)
+set(dnn_plugin_srcs ${dnn_srcs} ${dnn_int_hdrs})
+ocv_list_filterout_ex(dnn_plugin_srcs
+    "/src/dnn.cpp$|/src/dnn_utils.cpp$|/src/dnn_read.cpp$|/src/registry.cpp$|/src/backend.cpp$"
+    # importers
+    "/src/(caffe|darknet|onnx|tensorflow|torch)/"
+    # executors
+    "/src/(cuda|cuda4dnn|ocl4dnn|vkcom|webnn)/"
+)
+
+ocv_option(OPENCV_DNN_OPENVINO "Build with OpenVINO support (2021.4+)" (TARGET ocv.3rdparty.openvino))
+if(TARGET ocv.3rdparty.openvino AND OPENCV_DNN_OPENVINO)
+  if(NOT HAVE_OPENVINO AND NOT HAVE_NGRAPH)
+    message(FATAL_ERROR "DNN: Inference Engine is not supported without enabled 'nGraph'. Check build configuration.")
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
   endif()
   ocv_option(OPENCV_DNN_IE_NN_BUILDER_2019 "Build with Inference Engine NN Builder API support" ${use_nn_builder})  # future: NOT HAVE_NGRAPH
   if(OPENCV_DNN_IE_NN_BUILDER_2019)

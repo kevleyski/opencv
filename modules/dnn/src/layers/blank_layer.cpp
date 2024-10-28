@@ -146,9 +146,15 @@ public:
     virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> >& inputs,
                                         const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
     {
+<<<<<<< HEAD
         auto& ieInpNode = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
         ngraph::OutputVector inp{ieInpNode};
         auto blank = std::make_shared<ngraph::op::Concat>(inp, 0);
+=======
+        auto ieInpNode = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
+        ov::OutputVector inp{ieInpNode};
+        auto blank = std::make_shared<ov::op::v0::Concat>(inp, 0);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         return Ptr<BackendNode>(new InfEngineNgraphNode(blank));
     }
 #endif  // HAVE_DNN_NGRAPH

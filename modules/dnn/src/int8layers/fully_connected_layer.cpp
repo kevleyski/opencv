@@ -91,7 +91,11 @@ public:
     {
     public:
         FullyConnected() : srcMat(0), weights(0), biasMat(0), outputMultiplier(0), activationLUT(0), activ(0),
+<<<<<<< HEAD
                            dstMat(0), nstripes(0), outZp(0), useAVX2(false), useAVX512(false) {}
+=======
+                           dstMat(0), nstripes(0), outZp(0), useAVX2(false), useAVX512(false), useLASX(false), useRVV(false) {}
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
         static void run(const Mat& srcMat, const Mat& weights, const Mat& biasMat, const Mat& outputMultiplier,
                         const Mat& activationLUT, Mat& dstMat, const ActivationLayerInt8* activ, int nstripes, int outZp)
@@ -115,6 +119,11 @@ public:
             p.activ = !activationLUT.empty() ? activ : 0;
             p.useAVX2 = checkHardwareSupport(CPU_AVX2);
             p.useAVX512 = CV_CPU_HAS_SUPPORT_AVX512_SKX;
+<<<<<<< HEAD
+=======
+            p.useLASX = checkHardwareSupport(CPU_LASX);
+            p.useRVV = checkHardwareSupport(CPU_RVV);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
             parallel_for_(Range(0, nstripes), p, nstripes);
         }
@@ -160,6 +169,24 @@ public:
                     opt_AVX2::fastGEMM1T( sptr, wptr, wstep, biasptr, multptr, dptr, nw, vecsize, outZp );
                 else
             #endif
+<<<<<<< HEAD
+=======
+            #if CV_TRY_LASX
+                if( useLASX )
+                    opt_LASX::fastGEMM1T( sptr, wptr, wstep, biasptr, multptr, dptr, nw, vecsize, outZp );
+                else
+            #endif
+            #if CV_TRY_RVV && CV_RVV
+                if( useRVV )
+                    opt_RVV::fastGEMM1T( sptr, wptr, wstep, biasptr, multptr, dptr, nw, vecsize, outZp );
+                else
+            #endif
+            #if CV_RVP052
+                if( 1 )
+                    opt_RVP052::fastGEMM1T( sptr, wptr, wstep, biasptr, multptr, dptr, nw, vecsize, outZp );
+                else
+            #endif
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                 {
                     int i = 0;
             #if CV_SIMD
@@ -214,6 +241,11 @@ public:
         int nstripes, outZp;
         bool useAVX2;
         bool useAVX512;
+<<<<<<< HEAD
+=======
+        bool useLASX;
+        bool useRVV;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     };
 
     void forward(InputArrayOfArrays inputs_arr, OutputArrayOfArrays outputs_arr, OutputArrayOfArrays internals_arr) CV_OVERRIDE
@@ -253,6 +285,80 @@ public:
 
     }
 
+<<<<<<< HEAD
+=======
+#ifdef HAVE_DNN_NGRAPH
+    virtual Ptr<BackendNode> initNgraph(const std::vector<Ptr<BackendWrapper> > &inputs,
+                                        const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
+    {
+        CV_CheckTypeEQ(blobs[0].type(), CV_8S, "");  // weights
+        CV_CheckTypeEQ(blobs[1].type(), CV_32S, "");  // bias
+        CV_CheckTypeEQ(outputMultiplier.type(), CV_32F, "");
+
+        ov::Output<ov::Node> input = nodes[0].dynamicCast<InfEngineNgraphNode>()->node;
+        ov::Output<ov::Node> ieWeights, ieBias, matmul;
+        bool transA = false, transB = true;
+        size_t numOutput = blobs[0].size[0];
+
+        if (nodes.size() == 2)
+        {
+            CV_Error(Error::StsNotImplemented, "");
+            // auto inp2 = nodes[1].dynamicCast<InfEngineNgraphNode>()->node;
+            // matmul = std::make_shared<ov::op::v0::MatMul>(ieInpNode, inp2, transA, transB);
+        }
+        else
+        {
+            std::vector<int> shape(1 + normalize_axis(axis, input.get_shape().size()), 0);
+            shape[shape.size() - 1] = -1;
+            input = std::make_shared<ov::op::v1::Reshape>(
+                input,
+                std::make_shared<ov::op::v0::Constant>(ov::element::i32, ov::Shape{shape.size()}, shape.data()),
+                true
+            );
+
+            input = ngraphDequantize(input, input_sc, input_zp);
+
+            const float low = -128, high = 127;
+            std::vector<float> inpLows(numOutput, low);
+            std::vector<float> inpHighs(numOutput, high);
+            std::vector<float> outLows(numOutput);
+            std::vector<float> outHighs(numOutput);
+            for (int i = 0; i < numOutput; ++i) {
+                outLows[i] = low * outputMultiplier.ptr<float>()[i] * output_sc / input_sc;
+                outHighs[i] = high * outputMultiplier.ptr<float>()[i] * output_sc / input_sc;
+            }
+
+            std::vector<size_t> weight_shape{(size_t)blobs[0].size[0], (size_t)blobs[0].size[1]};
+            ieWeights = std::make_shared<ov::op::v0::Constant>(ov::element::i8, weight_shape, blobs[0].data);
+            ieWeights = std::make_shared<ov::op::v0::Convert>(ieWeights, ov::element::f32);
+            ieWeights = std::make_shared<ov::op::v0::FakeQuantize>(ieWeights,
+                std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{numOutput, 1}, inpLows.data()),
+                std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{numOutput, 1}, inpHighs.data()),
+                std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{numOutput, 1}, outLows.data()),
+                std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{numOutput, 1}, outHighs.data()),
+                256 // levels
+            );
+            matmul = std::make_shared<ov::op::v0::MatMul>(input, ieWeights, transA, transB);
+        }
+
+        if (blobs.size() > 1) {
+            int32_t* bias = blobs[1].ptr<int32_t>();
+            std::vector<float> ovBias(blobs[1].total());
+            for (int i = 0; i < ovBias.size(); ++i) {
+                ovBias[i] = (bias[i] + input_zp * cv::sum(blobs[0].row(i))[0]) * outputMultiplier.ptr<float>()[i] * output_sc;
+            }
+            auto bias_node = std::make_shared<ov::op::v0::Constant>(ov::element::f32,
+                                            ov::Shape{blobs[1].total()}, ovBias.data());
+            matmul = std::make_shared<ov::op::v1::Add>(matmul, bias_node);
+        }
+
+        matmul = ngraphQuantize(matmul, output_sc, output_zp);
+
+        return new InfEngineNgraphNode(matmul);
+    }
+#endif  // HAVE_DNN_NGRAPH
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     Mat weightsMat, biasMat, outputMultiplier, activationLUT;
     Ptr<ActivationLayerInt8> activ;
 };

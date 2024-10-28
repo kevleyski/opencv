@@ -41,6 +41,35 @@ public:
         generatePriors();
     }
 
+    FaceDetectorYNImpl(const String& framework,
+                       const std::vector<uchar>& bufferModel,
+                       const std::vector<uchar>& bufferConfig,
+                       const Size& input_size,
+                       float score_threshold,
+                       float nms_threshold,
+                       int top_k,
+                       int backend_id,
+                       int target_id)
+                       :divisor(32),
+                       strides({8, 16, 32})
+    {
+        net = dnn::readNet(framework, bufferModel, bufferConfig);
+        CV_Assert(!net.empty());
+
+        net.setPreferableBackend(backend_id);
+        net.setPreferableTarget(target_id);
+
+        inputW = input_size.width;
+        inputH = input_size.height;
+
+        padW = (int((inputW - 1) / divisor) + 1) * divisor;
+        padH = (int((inputH - 1) / divisor) + 1) * divisor;
+
+        scoreThreshold = score_threshold;
+        nmsThreshold = nms_threshold;
+        topK = top_k;
+    }
+
     void setInputSize(const Size& input_size) override
     {
         inputW = input_size.width;
@@ -163,8 +192,40 @@ private:
                         float cx = (_w + 0.5f) * steps[i] / inputW;
                         float cy = (_h + 0.5f) * steps[i] / inputH;
 
+<<<<<<< HEAD
                         Rect2f prior = { cx, cy, s_kx, s_ky };
                         priors.push_back(prior);
+=======
+                    // Clamp
+                    cls_score = MIN(cls_score, 1.f);
+                    cls_score = MAX(cls_score, 0.f);
+                    obj_score = MIN(obj_score, 1.f);
+                    obj_score = MAX(obj_score, 0.f);
+                    float score = std::sqrt(cls_score * obj_score);
+                    face.at<float>(0, 14) = score;
+
+                    // Checking if the score meets the threshold before adding the face
+                    if (score < scoreThreshold)
+                        continue;
+                    // Get bounding box
+                    float cx = ((c + bbox_v[idx * 4 + 0]) * strides[i]);
+                    float cy = ((r + bbox_v[idx * 4 + 1]) * strides[i]);
+                    float w = exp(bbox_v[idx * 4 + 2]) * strides[i];
+                    float h = exp(bbox_v[idx * 4 + 3]) * strides[i];
+
+                    float x1 = cx - w / 2.f;
+                    float y1 = cy - h / 2.f;
+
+                    face.at<float>(0, 0) = x1;
+                    face.at<float>(0, 1) = y1;
+                    face.at<float>(0, 2) = w;
+                    face.at<float>(0, 3) = h;
+
+                    // Get landmarks
+                    for(int n = 0; n < 5; ++n) {
+                        face.at<float>(0, 4 + 2 * n) = (kps_v[idx * 10 + 2 * n] + c) * strides[i];
+                        face.at<float>(0, 4 + 2 * n + 1) = (kps_v[idx * 10 + 2 * n + 1]+ r) * strides[i];
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                     }
                 }
             }
@@ -283,6 +344,24 @@ Ptr<FaceDetectorYN> FaceDetectorYN::create(const String& model,
                                            const int target_id)
 {
     return makePtr<FaceDetectorYNImpl>(model, config, input_size, score_threshold, nms_threshold, top_k, backend_id, target_id);
+}
+
+Ptr<FaceDetectorYN> FaceDetectorYN::create(const String& framework,
+                                           const std::vector<uchar>& bufferModel,
+                                           const std::vector<uchar>& bufferConfig,
+                                           const Size& input_size,
+                                           const float score_threshold,
+                                           const float nms_threshold,
+                                           const int top_k,
+                                           const int backend_id,
+                                           const int target_id)
+{
+#ifdef HAVE_OPENCV_DNN
+    return makePtr<FaceDetectorYNImpl>(framework, bufferModel, bufferConfig, input_size, score_threshold, nms_threshold, top_k, backend_id, target_id);
+#else
+    CV_UNUSED(framework);  CV_UNUSED(bufferModel); CV_UNUSED(bufferConfig); CV_UNUSED(input_size); CV_UNUSED(score_threshold); CV_UNUSED(nms_threshold); CV_UNUSED(top_k); CV_UNUSED(backend_id); CV_UNUSED(target_id);
+    CV_Error(cv::Error::StsNotImplemented, "cv::FaceDetectorYN requires enabled 'dnn' module.");
+#endif
 }
 
 } // namespace cv

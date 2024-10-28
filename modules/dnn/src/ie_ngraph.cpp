@@ -14,7 +14,7 @@
 #include <opencv2/dnn/shape_utils.hpp>
 
 #ifdef HAVE_DNN_NGRAPH
-#include <ie_extension.h>
+#include <openvino/core/extension.hpp>
 #endif  // HAVE_DNN_NGRAPH
 
 #include <opencv2/core/utils/configuration.private.hpp>
@@ -35,6 +35,7 @@ static bool DNN_IE_SERIALIZE = utils::getConfigurationParameterBool("OPENCV_DNN_
 static std::string kDefaultInpLayerName = "opencv_ngraph_empty_inp_layer_name";
 static constexpr const char* kOpenCVLayersType = "opencv_ngraph_layer";
 
+<<<<<<< HEAD
 static std::string shapesToStr(const std::vector<Mat>& mats)
 {
     std::ostringstream shapes;
@@ -63,6 +64,8 @@ static void strToShapes(const std::string& str, std::vector<std::vector<size_t> 
     }
 }
 
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 static std::vector<Ptr<NgraphBackendWrapper> >
 ngraphWrappers(const std::vector<Ptr<BackendWrapper> >& ptrs)
 {
@@ -76,6 +79,7 @@ ngraphWrappers(const std::vector<Ptr<BackendWrapper> >& ptrs)
     return wrappers;
 }
 
+<<<<<<< HEAD
 class NgraphCustomOp: public ngraph::op::Op {
 public:
     const ngraph::NodeTypeInfo& get_type_info() const override
@@ -91,10 +95,19 @@ public:
 #endif
                    const std::map<std::string, InferenceEngine::Parameter>& params = {}):
         Op(inputs), params(params)
+=======
+class NgraphCustomOp: public ov::op::Op {
+public:
+    OPENVINO_OP(kOpenCVLayersType);
+
+    NgraphCustomOp(const ov::OutputVector& inputs, Ptr<Layer>& cvLayer, const std::vector<Mat>& outputs, const std::vector<Mat>& internals):
+        Op(inputs), cvLayer(cvLayer), outputs(outputs), internals(internals)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     {
         constructor_validate_and_infer_types();
     }
 
+<<<<<<< HEAD
     ~NgraphCustomOp()
     {
         // nothing
@@ -332,12 +345,67 @@ InfEngineNgraphNode::InfEngineNgraphNode(std::shared_ptr<ngraph::Node>&& _node)
 
 InfEngineNgraphNode::InfEngineNgraphNode(std::shared_ptr<ngraph::Node>& _node)
     : BackendNode(DNN_BACKEND_INFERENCE_ENGINE_NGRAPH), node(_node) {}
+=======
+    void validate_and_infer_types() override
+    {
+        set_output_size(outputs.size());
+        for (int i = 0; i < outputs.size(); ++i)
+        {
+            ov::PartialShape shape;
+            for (int j = 0; j < outputs[i].dims; ++j) {
+                shape.push_back(outputs[i].size[j]);
+            }
+            set_output_type(i, get_input_element_type(0), shape);
+        }
+    }
+
+    std::shared_ptr<ov::Node> clone_with_new_inputs(const ov::OutputVector& new_args) const override
+    {
+        return std::make_shared<NgraphCustomOp>(new_args, cvLayer, outputs, internals);
+    }
+
+    bool has_evaluate() const {
+        return true;
+    }
+
+    bool evaluate(ov::TensorVector& outputs, const ov::TensorVector& inputs) const override {
+        std::vector<Mat> inpMats, outMats;
+        infEngineBlobsToMats(inputs, inpMats);
+        infEngineBlobsToMats(outputs, outMats);
+        try
+        {
+            cvLayer->forward(inpMats, outMats, internals);
+            return true;
+        }
+        catch (...)
+        {
+            return false;
+        }
+    }
+
+    Ptr<Layer>& cvLayer;
+    std::vector<Mat> outputs, internals;
+};
+
+InfEngineNgraphNode::InfEngineNgraphNode(ov::Output<ov::Node>&& _node)
+    : BackendNode(DNN_BACKEND_INFERENCE_ENGINE_NGRAPH), node(std::move(_node)) {
+    CV_Assert(node.get_node());
+    CV_Assert(node.get_node_shared_ptr());
+}
+
+InfEngineNgraphNode::InfEngineNgraphNode(const ov::Output<ov::Node>& _node)
+    : BackendNode(DNN_BACKEND_INFERENCE_ENGINE_NGRAPH), node(_node) {
+    CV_Assert(node.get_node());
+    CV_Assert(node.get_node_shared_ptr());
+}
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 InfEngineNgraphNode::InfEngineNgraphNode(const std::vector<Ptr<BackendNode> >& nodes,
                                          Ptr<Layer>& cvLayer_, std::vector<Mat*>& inputs,
                                          std::vector<Mat>& outputs, std::vector<Mat>& internals)
     : BackendNode(DNN_BACKEND_INFERENCE_ENGINE_NGRAPH), cvLayer(cvLayer_)
 {
+<<<<<<< HEAD
     std::ostringstream oss;
     oss << (size_t)cvLayer.get();
 
@@ -356,6 +424,13 @@ InfEngineNgraphNode::InfEngineNgraphNode(const std::vector<Ptr<BackendNode> >& n
         inp_nodes.emplace_back(node.dynamicCast<InfEngineNgraphNode>()->node);
     node = std::make_shared<NgraphCustomOp>(inp_nodes, params);
 
+=======
+    ov::OutputVector inp_nodes;
+    for (const auto& node : nodes)
+        inp_nodes.emplace_back(node.dynamicCast<InfEngineNgraphNode>()->node);
+
+    node = std::make_shared<NgraphCustomOp>(inp_nodes, cvLayer, outputs, internals);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     CV_Assert(!cvLayer->name.empty());
     setName(cvLayer->name);
 }
@@ -371,7 +446,7 @@ InfEngineNgraphNet::InfEngineNgraphNet(detail::NetImplBase& netImpl)
     device_name = "CPU";
 }
 
-InfEngineNgraphNet::InfEngineNgraphNet(detail::NetImplBase& netImpl, InferenceEngine::CNNNetwork& net)
+InfEngineNgraphNet::InfEngineNgraphNet(detail::NetImplBase& netImpl, std::shared_ptr<ov::Model>& net)
     : netImpl_(netImpl)
     , cnn(net)
 {
@@ -445,6 +520,7 @@ int InfEngineNgraphNet::getNumComponents() {
 void InfEngineNgraphNet::createNet(Target targetId) {
     if (!hasNetOwner)
     {
+<<<<<<< HEAD
         CV_Assert(!unconnectedNodes.empty());
         ngraph::ResultVector outs;
         for (auto& node : unconnectedNodes)
@@ -490,6 +566,24 @@ void InfEngineNgraphNet::createNet(Target targetId) {
             components.clear();
             init(targetId);
         }
+=======
+        CV_Assert(!requestedOutputs.empty());
+        ov::ResultVector outs;
+
+        for (auto output_node_it = requestedOutputs.begin(); output_node_it != requestedOutputs.end(); ++output_node_it)
+        {
+            CV_LOG_DEBUG(NULL, "DNN/NGRAPH: Add 'Result' output: " << output_node_it->first);
+            CV_Assert(output_node_it->second);
+            auto out = std::make_shared<ov::op::v0::Result>(output_node_it->second->node);
+            std::string name = output_node_it->first + (output_node_it->second->node.get_node()->get_output_size() == 1 ? "" : ".0")
+            CV_LOG_DEBUG(NULL, "DNN-IE: Change friendly name from " << out->get_friendly_name() << " to " << name);
+            out->set_friendly_name(name);
+            outs.push_back(out);
+        }
+        CV_Assert_N(!inputs_vec.empty(), !outs.empty());
+        ngraph_function = std::make_shared<ov::Model>(outs, inputs_vec);
+        init(targetId);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 }
 
@@ -499,6 +593,7 @@ void InfEngineNgraphNet::init(Target targetId)
     {
         if (targetId == DNN_TARGET_OPENCL_FP16)
         {
+<<<<<<< HEAD
             auto nodes = ngraph_function->get_ordered_ops();
             for (auto& node : nodes)
             {
@@ -522,8 +617,11 @@ void InfEngineNgraphNet::init(Target targetId)
                 }
             }
             ngraph_function->validate_nodes_and_infer_types();
+=======
+            ov::pass::ConvertFP32ToFP16().run_on_model(ngraph_function);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
-        cnn = InferenceEngine::CNNNetwork(ngraph_function);
+        cnn = ngraph_function;
 
         if (DNN_IE_SERIALIZE)
         {
@@ -531,7 +629,7 @@ void InfEngineNgraphNet::init(Target targetId)
             std::string dumpFileNameBase = netImpl_.getDumpFileNameBase();
             try
             {
-                cnn.serialize(dumpFileNameBase + "_ngraph.xml", dumpFileNameBase + "_ngraph.bin");
+                ov::pass::Serialize(dumpFileNameBase + "_ngraph.xml", dumpFileNameBase + "_ngraph.bin").run_on_model(cnn);
             }
             catch (const std::exception& e)
             {
@@ -569,6 +667,7 @@ void InfEngineNgraphNet::init(Target targetId)
             CV_Error(Error::StsNotImplemented, "Unknown target");
     };
 
+<<<<<<< HEAD
     if (!hasNetOwner) {
         for (size_t i = 0; i < ngraph_function->get_output_size(); ++i) {
             auto node = ngraph_function->output(i).get_node();
@@ -583,10 +682,28 @@ void InfEngineNgraphNet::init(Target targetId)
         }
     }
     for (const auto& name : requestedOutputs)
+=======
+    ov::preprocess::PrePostProcessor ppp(cnn);
+    int i = 0;
+    for (const auto& inp : cnn->inputs()) {  // TODO: not sure why but ngraph_function->inputs() here causes segfault.
+        const std::string& name = inp.get_node()->get_friendly_name();
+        auto blobIt = allBlobs.find(name);
+        CV_Assert(blobIt != allBlobs.end());
+
+        auto srcT = blobIt->second.get_element_type();
+        if (srcT != inp.get_node()->get_element_type()) {
+            ppp.input(i++).tensor().set_element_type(srcT);
+        }
+    }
+
+    i = 0;
+    for (const auto& it : cnn->outputs())
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     {
         cnn.addOutput(name);
     }
 
+<<<<<<< HEAD
     for (const auto& it : cnn.getInputsInfo())
     {
         const std::string& name = it.first;
@@ -602,22 +719,25 @@ void InfEngineNgraphNet::init(Target targetId)
         CV_Assert(blobIt != allBlobs.end());
         it.second->setPrecision(blobIt->second->getTensorDesc().getPrecision());  // Should be always FP32
     }
+=======
+    ppp.build();
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     initPlugin(cnn);
 }
 
-ngraph::ParameterVector InfEngineNgraphNet::setInputs(const std::vector<cv::Mat>& inputs,
+ov::ParameterVector InfEngineNgraphNet::setInputs(const std::vector<cv::Mat>& inputs,
                                    const std::vector<std::string>& names) {
     CV_Assert_N(inputs.size() == names.size());
-    ngraph::ParameterVector current_inp;
+    ov::ParameterVector current_inp;
     for (size_t i = 0; i < inputs.size(); i++)
     {
         std::vector<size_t> shape = getShape<size_t>(inputs[i]);
-        auto inp = std::make_shared<ngraph::op::Parameter>(ngraph::element::f32, ngraph::Shape(shape));
+        auto inp = std::make_shared<ov::op::v0::Parameter>(ov::element::f32, ov::Shape(shape));
         inp->set_friendly_name(names[i]);
 
         auto it = std::find_if(inputs_vec.begin(), inputs_vec.end(),
-                                [&inp](const std::shared_ptr<ngraph::op::Parameter>& a) {
+                                [&inp](const std::shared_ptr<ov::op::v0::Parameter>& a) {
                                 return a->get_friendly_name() == inp->get_friendly_name();
                   });
         if (it == inputs_vec.end()) {
@@ -634,14 +754,14 @@ void InfEngineNgraphNet::setUnconnectedNodes(Ptr<InfEngineNgraphNode>& node) {
     unconnectedNodes.insert(node->node);
 }
 
-void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
+void InfEngineNgraphNet::initPlugin(std::shared_ptr<ov::Model>& net)
 {
     CV_Assert(!isInitialized());
 
     try
     {
         AutoLock lock(getInitializationMutex());
-        InferenceEngine::Core& ie = getCore(device_name);
+        ov::Core& ie = getCore(device_name);
         {
             isInit = true;
             std::vector<std::string> candidates;
@@ -656,6 +776,7 @@ void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
                 const std::string& libName = candidates[i];
                 try
                 {
+<<<<<<< HEAD
                     InferenceEngine::IExtensionPtr extension =
 #if INF_ENGINE_VER_MAJOR_GE(INF_ENGINE_RELEASE_2021_4)
                         std::make_shared<InferenceEngine::Extension>(libName);
@@ -664,6 +785,9 @@ void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
 #endif
 
                     ie.AddExtension(extension, "CPU");
+=======
+                    ie.add_extension(libName);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                     CV_LOG_INFO(NULL, "DNN-IE: Loaded extension plugin: " << libName);
                     found = true;
                     break;
@@ -674,6 +798,7 @@ void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
             {
                 CV_LOG_WARNING(NULL, "DNN-IE: Can't load extension plugin (extra layers for some networks). Specify path via OPENCV_DNN_IE_EXTRA_PLUGIN_PATH parameter");
             }
+<<<<<<< HEAD
             // Some of networks can work without a library of extra layers.
             // OpenCV fallbacks as extensions.
             try
@@ -690,8 +815,13 @@ void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
                 ie.SetConfig({{
                     InferenceEngine::PluginConfigParams::KEY_CPU_THREADS_NUM, format("%d", getNumThreads()),
                 }}, device_name);
+=======
+#ifndef _WIN32
+            // Limit the number of CPU threads.
+            if (device_name == "CPU")
+                ie.set_property(device_name, ov::inference_num_threads(getNumThreads()));
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif
-#if INF_ENGINE_VER_MAJOR_GE(INF_ENGINE_RELEASE_2021_2)
             if (device_name.find("GPU") == 0)
             {
 #if OPENCV_HAVE_FILESYSTEM_SUPPORT
@@ -702,20 +832,27 @@ void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
                 if (!cache_path.empty() && cache_path != "disabled")
                 {
                     CV_LOG_INFO(NULL, "OpenCV/nGraph: using GPU kernels cache: " << cache_path);
+<<<<<<< HEAD
                     ie.SetConfig({{
                         InferenceEngine::PluginConfigParams::KEY_CACHE_DIR, cache_path,
                     }}, device_name);
+=======
+                    ie.set_property(device_name, ov::cache_dir(cache_path));
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                 }
             }
-#endif
         }
-        std::map<std::string, std::string> config;
+        ov::AnyMap config;
         if (device_name == "MYRIAD" || device_name == "HDDL") {
+<<<<<<< HEAD
 #if INF_ENGINE_VER_MAJOR_GT(INF_ENGINE_RELEASE_2020_4)
             config.emplace("MYRIAD_DETECT_NETWORK_BATCH", CONFIG_VALUE(NO));
 #else
             config.emplace("VPU_DETECT_NETWORK_BATCH", CONFIG_VALUE(NO));
 #endif
+=======
+            config.emplace("MYRIAD_DETECT_NETWORK_BATCH", "NO");
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         }
 
         bool isHetero = device_name == "FPGA";
@@ -723,7 +860,7 @@ void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
         // We do not check IR models because they can be with version less than IRv10
         if (!isHetero && device_name != "CPU" && !hasNetOwner)
         {
-            for (auto& node : net.getFunction()->get_ops())
+            for (auto& node : net->get_ops())
             {
                 if (node->description() == kOpenCVLayersType)
                 {
@@ -732,10 +869,17 @@ void InfEngineNgraphNet::initPlugin(InferenceEngine::CNNNetwork& net)
                 }
             }
         }
+<<<<<<< HEAD
         if (isHetero)
             netExec = ie.LoadNetwork(net, "HETERO:" + device_name + ",CPU", config);
         else
             netExec = ie.LoadNetwork(net, device_name, config);
+=======
+
+        std::string ieDevice = isHetero ? ("HETERO:" + device_name + ",CPU") : device_name;
+        CV_LOG_INFO(NULL, "DNN/IE: Calling LoadNetwork(device=" << ieDevice << ")...");
+        netExec = ie.compile_model(net, ieDevice, config);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
     catch (const std::exception& ex)
     {
@@ -753,6 +897,7 @@ bool NgraphBackendLayer::getMemoryShapes(const std::vector<MatShape> &inputs,
                                             std::vector<MatShape> &outputs,
                                             std::vector<MatShape> &internals) const
 {
+<<<<<<< HEAD
     InferenceEngine::ICNNNetwork::InputShapes inShapes = t_net.getInputShapes();
     InferenceEngine::ICNNNetwork::InputShapes::iterator itr;
     bool equal_flag = true;
@@ -761,6 +906,17 @@ bool NgraphBackendLayer::getMemoryShapes(const std::vector<MatShape> &inputs,
     {
         InferenceEngine::SizeVector currentInShape(inputs[i].begin(), inputs[i].end());
         if (itr->second != currentInShape)
+=======
+    bool equal_flag = true;
+    std::map<std::string, ov::PartialShape> inShapes;
+    int i = 0;
+    for (const auto& inp : t_net->get_parameters())
+    {
+        ov::Shape oldShape = inp->get_shape();
+        ov::Shape newShape(inputs[i].begin(), inputs[i].end());
+        inShapes.insert({inp->get_friendly_name(), newShape});
+        if (oldShape != newShape)
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
         {
             itr->second = currentInShape;
             equal_flag = false;
@@ -770,10 +926,21 @@ bool NgraphBackendLayer::getMemoryShapes(const std::vector<MatShape> &inputs,
 
     if (!equal_flag)
     {
-        InferenceEngine::CNNNetwork curr_t_net(t_net);
-        curr_t_net.reshape(inShapes);
+        std::shared_ptr<ov::Model> curr_t_net(t_net);
+        curr_t_net->reshape(inShapes);
     }
+<<<<<<< HEAD
     std::vector<size_t> dims = t_net.getOutputsInfo()[name]->getDims();
+=======
+    std::vector<size_t> dims;
+    for (const auto& it : t_net->outputs()) {
+        if (it.get_node()->get_friendly_name() == name) {
+            dims = it.get_partial_shape().get_max_shape();
+        }
+    }
+    if (dims.empty())
+        CV_Error(Error::StsError, format("Unable find result with name %s", name.c_str()));
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     outputs.push_back(MatShape(dims.begin(), dims.end()));
     return false;
 }
@@ -791,6 +958,7 @@ void NgraphBackendLayer::forward(InputArrayOfArrays inputs, OutputArrayOfArrays 
     CV_Error(Error::StsInternal, "Choose Inference Engine as a preferable backend.");
 }
 
+<<<<<<< HEAD
 
 static InferenceEngine::Layout estimateLayout(int dims)
 {
@@ -828,10 +996,23 @@ static InferenceEngine::DataPtr wrapToInfEngineDataNode(const Mat& m, const std:
     else if (m.type() == CV_8U)
         return InferenceEngine::DataPtr(new InferenceEngine::Data(name,
                {InferenceEngine::Precision::U8, shape, estimateLayout(m)}));
+=======
+ov::Tensor wrapToNgraphBlob(const Mat& m) {
+    std::vector<size_t> shape = getShape<size_t>(m);
+    if (m.type() == CV_32F)
+        return ov::Tensor(ov::element::f32, shape, m.data);
+    else if (m.type() == CV_8U)
+        return ov::Tensor(ov::element::u8, shape, m.data);
+    else if (m.type() == CV_8SC1)
+        return ov::Tensor(ov::element::i8, shape, m.data);
+    else if (m.type() == CV_32SC1)
+        return ov::Tensor(ov::element::i32, shape, m.data);
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     else
         CV_Error(Error::StsNotImplemented, format("Unsupported data type %s", typeToString(m.type()).c_str()));
 }
 
+<<<<<<< HEAD
 InferenceEngine::Blob::Ptr wrapToNgraphBlob(const Mat& m, const std::vector<size_t>& shape,
                                                InferenceEngine::Layout layout)
 {
@@ -850,6 +1031,8 @@ InferenceEngine::Blob::Ptr wrapToNgraphBlob(const Mat& m, InferenceEngine::Layou
     std::vector<size_t> shape = getShape<size_t>(m);
     return wrapToNgraphBlob(m, shape, layout);
 }
+=======
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 NgraphBackendWrapper::NgraphBackendWrapper(int targetId, const cv::Mat& m)
     : BackendWrapper(DNN_BACKEND_INFERENCE_ENGINE_NGRAPH, targetId)
@@ -891,6 +1074,7 @@ void NgraphBackendWrapper::setHostDirty()
     //CV_Error(Error::StsNotImplemented, "");
 }
 
+<<<<<<< HEAD
 InferenceEngine::Blob::Ptr copyBlob(const InferenceEngine::Blob::Ptr& blob)
 {
     InferenceEngine::Blob::Ptr copy;
@@ -990,6 +1174,11 @@ void forwardNgraph(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
     Ptr<InfEngineNgraphNode> ieNode = node.dynamicCast<InfEngineNgraphNode>();
     CV_Assert(!ieNode.empty());
     ieNode->net->forward(outBlobsWrappers, isAsync);
+=======
+ov::Tensor copyBlob(const ov::Tensor& blob)
+{
+    return ov::Tensor(blob.get_element_type(), blob.get_shape());
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 }
 
 void InfEngineNgraphNet::reset()
@@ -1066,7 +1255,7 @@ void InfEngineNgraphNet::forward(const std::vector<Ptr<BackendWrapper> >& outBlo
         reqWrapper = Ptr<NgraphReqWrapper>(new NgraphReqWrapper());
         try
         {
-            reqWrapper->req = netExec.CreateInferRequest();
+            reqWrapper->req = netExec.create_infer_request();
         }
         catch (const std::exception& ex)
         {
@@ -1074,6 +1263,7 @@ void InfEngineNgraphNet::forward(const std::vector<Ptr<BackendWrapper> >& outBlo
         }
         infRequests.push_back(reqWrapper);
 
+<<<<<<< HEAD
         InferenceEngine::BlobMap inpBlobs, outBlobs;
         for (const auto& it : cnn.getInputsInfo())
         {
@@ -1153,25 +1343,102 @@ void InfEngineNgraphNet::forward(const std::vector<Ptr<BackendWrapper> >& outBlo
                     {
                         try {
                             wrapper.outProms[processedOutputs].setException(e);
+=======
+        int i = 0;
+        for (const auto& it : netExec.inputs())
+        {
+            const std::string& name = it.get_node()->get_friendly_name();
+            auto blobIt = allBlobs.find(name);
+            if (blobIt == allBlobs.end())
+            {
+                CV_Error(Error::StsAssert, format("Input blob with name %s not found", name.c_str()));
+            }
+            reqWrapper->req.set_input_tensor(i++, isAsync ? copyBlob(blobIt->second) : blobIt->second);
+        }
+
+        i = 0;
+        for (const auto& it : cnn->outputs())  // Starts from OpenVINO 2024 CompiledModel changes output frindly names
+        {
+            const std::string& name = it.get_node()->get_friendly_name();
+            auto blobIt = allBlobs.find(name);
+            if (blobIt == allBlobs.end())
+            {
+                CV_Error(Error::StsAssert, format("Output blob with name %s not found", name.c_str()));
+            }
+            reqWrapper->req.set_output_tensor(i++, isAsync ? copyBlob(blobIt->second) : blobIt->second);
+        }
+
+    if (isAsync) {
+        bool* isReady = &reqWrapper->isReady;
+        auto* promises = &reqWrapper->outProms;
+        auto* req = &reqWrapper->req;
+        reqWrapper->req.set_callback([isReady, promises, req](std::exception_ptr ex) {
+            CV_LOG_DEBUG(NULL, "DNN(nGraph): completionCallback()");
+
+            size_t processedOutputs = 0;
+            try
+            {
+                for (; processedOutputs < promises->size(); ++processedOutputs)
+                {
+                    Mat m = infEngineBlobToMat(req->get_output_tensor(processedOutputs));
+
+                    try
+                    {
+                        (*promises)[processedOutputs].setValue(m.clone());
+                    }
+                    catch (...)
+                    {
+                        try {
+                            (*promises)[processedOutputs].setException(std::current_exception());
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
                         } catch(...) {
                             CV_LOG_ERROR(NULL, "DNN: Exception occurred during async inference exception propagation");
                         }
                     }
                 }
+<<<<<<< HEAD
                 wrapper.isReady = true;
             }
         );
+=======
+            }
+            catch (...)
+            {
+                std::exception_ptr e = std::current_exception();
+                for (; processedOutputs < promises->size(); ++processedOutputs)
+                {
+                    try {
+                        (*promises)[processedOutputs].setException(e);
+                    } catch(...) {
+                        CV_LOG_ERROR(NULL, "DNN: Exception occurred during async inference exception propagation");
+                    }
+                }
+            }
+            *isReady = true;
+        });
+    }
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     }
 
     if (isAsync)
     {
         // Copy actual data to infer request's input blobs.
+<<<<<<< HEAD
         for (const auto& it : cnn.getInputsInfo())
         {
             const std::string& name = it.first;
             auto blobIt = allBlobs.find(name);
             Mat srcMat = ngraphBlobToMat(blobIt->second);
             Mat dstMat = ngraphBlobToMat(reqWrapper->req.GetBlob(name));
+=======
+        int i = 0;
+        for (const auto& it : cnn->get_parameters())
+        {
+            const std::string& name = it->get_friendly_name();
+            auto blobIt = allBlobs.find(name);
+            Mat srcMat = infEngineBlobToMat(blobIt->second);
+            Mat dstMat = infEngineBlobToMat(reqWrapper->req.get_input_tensor(i++));
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
             srcMat.copyTo(dstMat);
         }
 
@@ -1179,6 +1446,7 @@ void InfEngineNgraphNet::forward(const std::vector<Ptr<BackendWrapper> >& outBlo
         reqWrapper->makePromises(outBlobsWrappers);
 
         reqWrapper->isReady = false;
+<<<<<<< HEAD
         reqWrapper->req.StartAsync();
     }
     else
@@ -1193,6 +1461,42 @@ void forwardNgraph(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
 {
     CV_Assert(false && "nGraph is not enabled in this OpenCV build");
 }
+=======
+        reqWrapper->req.start_async();
+    }
+    else
+    {
+        reqWrapper->req.infer();
+    }
+}
+
+ov::Output<ov::Node> ngraphQuantize(ov::Output<ov::Node> input, float output_sc, float output_zp) {
+    float outLow = -128, outHigh = 127;
+    float inpLow = output_sc * (outLow - output_zp);
+    float inpHigh = output_sc * (outHigh - output_zp);
+    return std::make_shared<ov::op::v0::FakeQuantize>(input,
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &inpLow),
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &inpHigh),
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &outLow),
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &outHigh),
+        256 // levels
+    );
+}
+
+ov::Output<ov::Node> ngraphDequantize(ov::Output<ov::Node> input, float input_sc, float input_zp) {
+    float inpLow = -128, inpHigh = 127;
+    float outLow = input_sc * (inpLow - input_zp);
+    float outHigh = input_sc * (inpHigh - input_zp);
+    return std::make_shared<ov::op::v0::FakeQuantize>(input,
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &inpLow),
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &inpHigh),
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &outLow),
+        std::make_shared<ov::op::v0::Constant>(ov::element::f32, ov::Shape{1}, &outHigh),
+        256 // levels
+    );
+}
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 #endif
 
 }}

@@ -320,7 +320,8 @@ TEST_P(Test_Darknet_nets, YoloVoc)
 #else
         CV_TEST_TAG_MEMORY_1GB,
 #endif
-        CV_TEST_TAG_LONG
+        CV_TEST_TAG_LONG,
+        CV_TEST_TAG_DEBUG_VERYLONG
     );
 
 #if defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2020040000)  // nGraph compilation failure
@@ -396,6 +397,10 @@ TEST_P(Test_Darknet_nets, TinyYoloVoc)
                                     1, 6,  0.928758f, 0.651024f, 0.463539f, 0.823784f, 0.654998f); // a car
 
     double scoreDiff = 8e-5, iouDiff = 3e-4;
+<<<<<<< HEAD
+=======
+    bool useWinograd = true;
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     if (target == DNN_TARGET_OPENCL_FP16 || target == DNN_TARGET_MYRIAD)
     {
         scoreDiff = 8e-3;
@@ -406,18 +411,24 @@ TEST_P(Test_Darknet_nets, TinyYoloVoc)
         scoreDiff = 0.008;
         iouDiff = 0.02;
     }
+    else if (target == DNN_TARGET_CPU_FP16)
+    {
+        useWinograd = false;
+        scoreDiff = 8e-3;
+        iouDiff = 0.018;
+    }
 
     std::string config_file = "tiny-yolo-voc.cfg";
     std::string weights_file = "tiny-yolo-voc.weights";
 
     {
     SCOPED_TRACE("batch size 1");
-    testDarknetModel(config_file, weights_file, ref.rowRange(0, 2), scoreDiff, iouDiff);
+    testDarknetModel(config_file, weights_file, ref.rowRange(0, 2), scoreDiff, iouDiff, 0.24, 0.4, useWinograd);
     }
 
     {
     SCOPED_TRACE("batch size 2");
-    testDarknetModel(config_file, weights_file, ref, scoreDiff, iouDiff);
+    testDarknetModel(config_file, weights_file, ref, scoreDiff, iouDiff, 0.24, 0.4, useWinograd);
     }
 }
 
@@ -695,12 +706,12 @@ TEST_P(Test_Darknet_nets, YOLOv4_tiny)
 
     {
         SCOPED_TRACE("batch size 1");
-        testDarknetModel(config_file, weights_file, ref.rowRange(0, N0), scoreDiff, iouDiff, confThreshold);
+        testDarknetModel(config_file, weights_file, ref.rowRange(0, N0), scoreDiff, iouDiff, confThreshold, 0.4, false);
     }
 
     {
         SCOPED_TRACE("batch size 2");
-        testDarknetModel(config_file, weights_file, ref, scoreDiff, iouDiff, confThreshold);
+        testDarknetModel(config_file, weights_file, ref, scoreDiff, iouDiff, confThreshold, 0.4, false);
     }
 
 #if defined(INF_ENGINE_RELEASE)
@@ -716,7 +727,15 @@ TEST_P(Test_Darknet_nets, YOLOv4_tiny)
 
 TEST_P(Test_Darknet_nets, YOLOv4x_mish)
 {
+<<<<<<< HEAD
     applyTestTag(CV_TEST_TAG_LONG, (target == DNN_TARGET_CPU ? CV_TEST_TAG_MEMORY_1GB : CV_TEST_TAG_MEMORY_2GB));
+=======
+    applyTestTag(
+        CV_TEST_TAG_MEMORY_2GB,
+        CV_TEST_TAG_LONG,
+        CV_TEST_TAG_DEBUG_VERYLONG
+    );
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 #if defined(INF_ENGINE_RELEASE) && INF_ENGINE_VER_MAJOR_EQ(2020040000)  // nGraph compilation failure
     if (backend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH && target == DNN_TARGET_OPENCL)
@@ -825,6 +844,11 @@ TEST_P(Test_Darknet_layers, tanh)
 TEST_P(Test_Darknet_layers, avgpool_softmax)
 {
     testDarknetLayer("avgpool_softmax");
+}
+
+TEST_P(Test_Darknet_layers, crop)
+{
+    testDarknetLayer("crop");
 }
 
 TEST_P(Test_Darknet_layers, region)

@@ -320,7 +320,11 @@ bool OpConv::computeGroupCount()
         group_z_ = batch_;
     }
     else
+<<<<<<< HEAD
         CV_Assert(0);
+=======
+        CV_Error(cv::Error::StsNotImplemented, "shader type is not supported at compute GroupCount.");
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
     CV_Assert(group_x_ <= MAX_GROUP_COUNT_X);
     CV_Assert(group_y_ <= MAX_GROUP_COUNT_Y);

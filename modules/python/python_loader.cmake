@@ -41,10 +41,27 @@ endforeach()
 
 if(NOT OpenCV_FOUND)  # Ignore "standalone" builds of Python bindings
   if(WIN32)
+<<<<<<< HEAD
     if(CMAKE_GENERATOR MATCHES "Visual Studio")
       list(APPEND CMAKE_PYTHON_BINARIES_PATH "'${EXECUTABLE_OUTPUT_PATH}/Release'")  # TODO: CMAKE_BUILD_TYPE is not defined
     else()
       list(APPEND CMAKE_PYTHON_BINARIES_PATH "'${EXECUTABLE_OUTPUT_PATH}'")
+=======
+    list(APPEND CMAKE_PYTHON_BINARIES_INSTALL_PATH "os.path.join(${CMAKE_PYTHON_EXTENSION_INSTALL_PATH_BASE}, '${OPENCV_BIN_INSTALL_PATH}')")
+  else()
+    list(APPEND CMAKE_PYTHON_BINARIES_INSTALL_PATH "os.path.join(${CMAKE_PYTHON_EXTENSION_INSTALL_PATH_BASE}, '${OPENCV_LIB_INSTALL_PATH}')")
+  endif()
+  set(CMAKE_PYTHON_BINARIES_PATH "${CMAKE_PYTHON_BINARIES_INSTALL_PATH}")
+  if (WIN32 AND HAVE_CUDA)
+    if (ENABLE_CUDA_FIRST_CLASS_LANGUAGE)
+      if (DEFINED CUDAToolkit_LIBRARY_ROOT)
+        list(APPEND CMAKE_PYTHON_BINARIES_PATH "os.path.join(os.getenv('CUDA_PATH', '${CUDAToolkit_LIBRARY_ROOT}'), 'bin')")
+      endif()
+    else()
+      if (DEFINED CUDA_TOOLKIT_ROOT_DIR)
+        list(APPEND CMAKE_PYTHON_BINARIES_PATH "os.path.join(os.getenv('CUDA_PATH', '${CUDA_TOOLKIT_ROOT_DIR}'), 'bin')")
+      endif()
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
     endif()
   else()
     list(APPEND CMAKE_PYTHON_BINARIES_PATH "'${LIBRARY_OUTPUT_PATH}'")

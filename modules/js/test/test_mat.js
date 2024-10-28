@@ -68,12 +68,16 @@
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 //
 
+<<<<<<< HEAD
 if (typeof module !== 'undefined' && module.exports) {
     // The environment is Node.js
     var cv = require('./opencv.js'); // eslint-disable-line no-var
 }
 
 QUnit.module('Core', {});
+=======
+QUnit.module('CoreMat', {});
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 
 QUnit.test('test_mat_creation', function(assert) {
     // Mat constructors.

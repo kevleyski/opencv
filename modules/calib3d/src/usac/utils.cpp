@@ -8,6 +8,237 @@
 #include <map>
 
 namespace cv { namespace usac {
+<<<<<<< HEAD
+=======
+/*
+SolvePoly is used to find only real roots of N-degree polynomial using Sturm sequence.
+It recursively finds interval where a root lies, and the actual root is found using Regula-Falsi method.
+*/
+class SolvePoly : public SolverPoly {
+private:
+    static int sgn(double val) {
+        return (double(0) < val) - (val < double(0));
+    }
+    class Poly {
+    public:
+        Poly () = default;
+        Poly (const std::vector<double> &coef_) {
+            coef = coef_;
+            checkDegree();
+        }
+        Poly (const Poly &p) { coef = p.coef; }
+        // a_n x^n + a_n-1 x^(n-1) + ... + a_1 x + a_0
+        // coef[i] = a_i
+        std::vector<double> coef = {0};
+        inline int degree() const { return (int)coef.size()-1; }
+        void multiplyScalar (double s) {
+            // multiplies polynom by scalar
+            if (fabs(s) < DBL_EPSILON) { // check if scalar is 0
+                coef = {0};
+                return;
+            }
+            for (double &c : coef) c *= s;
+        }
+        void checkDegree() {
+            int deg = degree(); // approximate degree
+            // check if coefficients of the highest power is non-zero
+            while (fabs(coef[deg]) < DBL_EPSILON) {
+                coef.pop_back(); // remove last zero element
+                if (--deg == 0)
+                    break;
+            }
+        }
+        double eval (double x) const {
+            // Horner method a0 + x (a1 + x (a2 + x (a3 + ... + x (an-1 + x an))))
+            const int d = degree();
+            double y = coef[d];
+            for (int i = d; i >= 1; i--)
+                y = coef[i-1] + x * y;
+            return y;
+        }
+        // at +inf and -inf
+        std::pair<int,int> signsAtInf () const {
+            // lim x->+-inf p(x) = lim x->+-inf a_n x^n
+            const int d = degree();
+            const int s = sgn(coef[d]); // sign of the highest coefficient
+            // compare even and odd degree
+            return std::make_pair(s, d % 2 == 0 ? s : -s);
+        }
+        Poly derivative () const {
+            Poly deriv;
+            if (degree() == 0)
+                return deriv;
+            // derive.degree = poly.degree-1;
+            deriv.coef = std::vector<double>(coef.size()-1);
+            for (int i = degree(); i > 0; i--)
+                // (a_n * x^n)' =  n * a_n * x^(n-1)
+                deriv.coef[i-1] = i * coef[i];
+            return deriv;
+        }
+        void copyFrom (const Poly &p) { coef = p.coef; }
+    };
+    // return remainder
+    static void dividePoly (const Poly &p1, const Poly &p2, /*Poly &quotient,*/ Poly &remainder) {
+        remainder.copyFrom(p1);
+        int p2_degree = p2.degree(), remainder_degree = remainder.degree();
+        if (p1.degree() < p2_degree)
+            return;
+        if (p2_degree == 0) { // special case for dividing polynomial by constant
+            remainder.multiplyScalar(1/p2.coef[0]);
+            // quotient.coef[0] = p2.coef[0];
+            return;
+        }
+        // quotient.coef = std::vector<double>(p1.degree() - p2_degree + 1, 0);
+        const double p2_term = 1/p2.coef[p2_degree];
+        while (remainder_degree >= p2_degree) {
+            const double temp = remainder.coef[remainder_degree] * p2_term;
+            // quotient.coef[remainder_degree-p2_degree] = temp;
+            // polynoms now have the same degree, but p2 is shorter than remainder
+            for (int i = p2_degree, j = remainder_degree; i >= 0; i--, j--)
+                remainder.coef[j] -= temp * p2.coef[i];
+            remainder.checkDegree();
+            remainder_degree = remainder.degree();
+        }
+    }
+
+    constexpr static int REGULA_FALSI_MAX_ITERS = 500, MAX_POWER = 10, MAX_LEVEL = 200;
+    constexpr static double TOLERANCE = 1e-10, DIFF_TOLERANCE = 1e-7;
+
+    static bool findRootRegulaFalsi (const Poly &poly, double min, double max, double &root) {
+        double f_min = poly.eval(min), f_max = poly.eval(max);
+        if (f_min * f_max > 0 || min > max) {// conditions are not fulfilled
+            return false;
+        }
+        int sign = 0, iter = 0;
+        for (; iter < REGULA_FALSI_MAX_ITERS; iter++) {
+            root = (f_min * max - f_max * min) / (f_min - f_max);
+            const double f_root = poly.eval(root);
+            if (fabs(f_root) < TOLERANCE || fabs(min - max) < DIFF_TOLERANCE) {
+                return true; // root is found
+            }
+
+            if (f_root * f_max > 0) {
+                max = root; f_max = f_root;
+                if (sign == -1)
+                    f_min *= 0.5;
+                sign = -1;
+            } else if (f_min * f_root > 0) {
+                min = root; f_min = f_root;
+                if (sign ==  1)
+                    f_max *= 0.5;
+                sign =  1;
+            }
+        }
+        return false;
+    }
+
+    static int numberOfSignChanges (const std::vector<Poly> &sturm, double x) {
+        int prev_sign = 0, sign_changes = 0;
+        for (const auto &poly : sturm) {
+            const int s = sgn(poly.eval(x));
+            if (s != 0 && prev_sign != 0 && s != prev_sign)
+                sign_changes++;
+            prev_sign = s;
+        }
+        return sign_changes;
+    }
+
+    static void findRootsRecursive (const Poly &poly, const std::vector<Poly> &sturm, double min, double max,
+            int sign_changes_at_min, int sign_changes_at_max, std::vector<double> &roots, int level) {
+        const int num_roots = sign_changes_at_min - sign_changes_at_max;
+        if (level == MAX_LEVEL) {
+            // roots are too close
+            const double mid = (min + max) * 0.5;
+            if (fabs(poly.eval(mid)) < DBL_EPSILON) {
+                roots.emplace_back(mid);
+            }
+        } else if (num_roots == 1) {
+            double root;
+            if (findRootRegulaFalsi(poly, min, max, root)) {
+                roots.emplace_back(root);
+            }
+        } else if (num_roots > 1) { // at least 2 roots
+            const double mid = (min + max) * 0.5;
+            const int sign_changes_at_mid = numberOfSignChanges(sturm, mid);
+            // try to split interval equally for the roots
+            if (sign_changes_at_min - sign_changes_at_mid > 0)
+                findRootsRecursive(poly, sturm, min, mid, sign_changes_at_min, sign_changes_at_mid, roots, level+1);
+            if (sign_changes_at_mid - sign_changes_at_max > 0)
+                findRootsRecursive(poly, sturm, mid, max, sign_changes_at_mid, sign_changes_at_max, roots, level+1);
+        }
+    }
+public:
+    int getRealRoots (const std::vector<double> &coeffs, std::vector<double> &real_roots) override {
+        if (coeffs.empty())
+            return 0;
+        for (auto c : coeffs)
+            if (cvIsNaN(c) || cvIsInf(c))
+                return 0;
+        Poly input(coeffs);
+        if (input.degree() < 1)
+            return 0;
+        // derivative of input polynomial
+        const Poly input_der = input.derivative();
+        /////////// build Sturm sequence //////////
+        Poly p (input), q (input_der), remainder;
+        std::vector<std::pair<int,int>> signs_at_inf; signs_at_inf.reserve(p.degree()); // +inf, -inf pair
+        signs_at_inf.emplace_back(p.signsAtInf());
+        signs_at_inf.emplace_back(q.signsAtInf());
+        std::vector<Poly> sturm_sequence; sturm_sequence.reserve(input.degree());
+        sturm_sequence.emplace_back(input);
+        sturm_sequence.emplace_back(input_der);
+         while (q.degree() > 0) {
+            dividePoly(p, q, remainder);
+            remainder.multiplyScalar(-1);
+            p.copyFrom(q);
+            q.copyFrom(remainder);
+            sturm_sequence.emplace_back(remainder);
+            signs_at_inf.emplace_back(remainder.signsAtInf());
+        }
+        ////////// find changes in signs of Sturm sequence /////////
+        int num_sign_changes_at_pos_inf = 0, num_sign_changes_at_neg_inf = 0;
+        int prev_sign_pos_inf = signs_at_inf[0].first, prev_sign_neg_inf = signs_at_inf[0].second;
+        for (int i = 1; i < (int)signs_at_inf.size(); i++) {
+            const auto s_pos_inf = signs_at_inf[i].first, s_neg_inf = signs_at_inf[i].second;
+            // zeros must be ignored
+            if (s_pos_inf != 0) {
+                if (prev_sign_pos_inf != 0 && prev_sign_pos_inf != s_pos_inf)
+                    num_sign_changes_at_pos_inf++;
+                prev_sign_pos_inf = s_pos_inf;
+            }
+            if (s_neg_inf != 0) {
+                if (prev_sign_neg_inf != 0 && prev_sign_neg_inf != s_neg_inf)
+                    num_sign_changes_at_neg_inf++;
+                prev_sign_neg_inf = s_neg_inf;
+            }
+        }
+        ////////// find roots' bounds for numerical method for roots finding /////////
+        double root_neg_bound = -0.01, root_pos_bound = 0.01;
+        int num_sign_changes_min_x = -1, num_sign_changes_pos_x = -1; // -1 = unknown, trigger next if condition
+        for (int i = 0; i < MAX_POWER; i++) {
+            if (num_sign_changes_min_x != num_sign_changes_at_neg_inf) {
+                root_neg_bound *= 10;
+                num_sign_changes_min_x = numberOfSignChanges(sturm_sequence, root_neg_bound);
+            }
+            if (num_sign_changes_pos_x != num_sign_changes_at_pos_inf) {
+                root_pos_bound *= 10;
+                num_sign_changes_pos_x = numberOfSignChanges(sturm_sequence, root_pos_bound);
+            }
+        }
+        /////////// get real roots //////////
+        real_roots.clear();
+        findRootsRecursive(input, sturm_sequence, root_neg_bound, root_pos_bound, num_sign_changes_min_x, num_sign_changes_pos_x, real_roots, 0 /*level*/);
+        ///////////////////////////////
+        if ((int)real_roots.size() > input.degree())
+            real_roots.resize(input.degree()); // must not happen, unless some roots repeat
+        return (int) real_roots.size();
+    }
+};
+Ptr<SolverPoly> SolverPoly::create() {
+    return makePtr<SolvePoly>();
+}
+
+>>>>>>> dd08328228f008f270a199b7fb25aab37a91135d
 double Utils::getCalibratedThreshold (double threshold, const Mat &K1, const Mat &K2) {
     return threshold / ((K1.at<double>(0, 0) + K1.at<double>(1, 1) +
                          K2.at<double>(0, 0) + K2.at<double>(1, 1)) / 4.0);
